@@ -8,10 +8,10 @@
 import Foundation
 
 /// Characteristic Encryption
-public enum CharacteristicEncryption: UInt8, CaseIterable {
+public enum CharacteristicEncryption: UInt8, Codable, CaseIterable {
     
     case `none`
     case authentication
     case encryptedData
-    
+    case encryptedChunks
 }
