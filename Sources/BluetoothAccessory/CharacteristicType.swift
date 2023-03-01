@@ -104,6 +104,7 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     case lockManagementAutoSecurityTimeout
     case lockPhysicalControls
     case lockTargetState
+    case lockEvents
     case logs
     case macRetransmissionMaximum
     case macTransmissionCounters
