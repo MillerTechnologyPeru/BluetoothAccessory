@@ -8,7 +8,7 @@
 import Foundation
 import Bluetooth
 
-public enum CharacteristicType: UInt16, CaseIterable {
+public enum CharacteristicType: UInt16, Codable, CaseIterable {
     
     case accessoryFlags
     case active
