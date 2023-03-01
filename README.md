@@ -1,2 +1,2 @@
-# MillerBluetooth
-Bluetooth library with custom encryption
+# BluetoothAccessory
+Bluetooth Accessory library

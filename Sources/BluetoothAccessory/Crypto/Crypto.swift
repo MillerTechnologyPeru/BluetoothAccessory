@@ -21,7 +21,7 @@ typealias HMAC = Crypto.HMAC
 
 /// Performs HMAC with the specified key and message.
 internal func authenticationCode(for message: AuthenticationMessage, using key: KeyData) -> AuthenticationData {
-    let encoder = TLVEncoder.millerBluetooth
+    let encoder = TLVEncoder.bluetoothAccessory
     let messageData = try! encoder.encode(message)
     let authenticationCode = HMAC<SHA512>.authenticationCode(for: messageData, using: SymmetricKey(key))
     return AuthenticationData(authenticationCode)
@@ -29,7 +29,7 @@ internal func authenticationCode(for message: AuthenticationMessage, using key: 
 
 /// Encrypt data
 internal func encrypt(_ data: Data, using key: KeyData, nonce: Nonce, authentication: AuthenticationMessage) throws -> Data {
-    let encoder = TLVEncoder.millerBluetooth
+    let encoder = TLVEncoder.bluetoothAccessory
     let authenticatedData = try! encoder.encode(authentication)
     do {
         let sealed = try ChaChaPoly.seal(data, using: SymmetricKey(key), nonce: ChaChaPoly.Nonce(nonce), authenticating: authenticatedData)
@@ -41,7 +41,7 @@ internal func encrypt(_ data: Data, using key: KeyData, nonce: Nonce, authentica
 
 /// Decrypt data
 internal func decrypt(_ data: Data, using key: KeyData, authentication: AuthenticationMessage) throws -> Data {
-    let encoder = TLVEncoder.millerBluetooth
+    let encoder = TLVEncoder.bluetoothAccessory
     let authenticatedData = try! encoder.encode(authentication)
     do {
         let sealed = try ChaChaPoly.SealedBox(combined: data)
@@ -101,7 +101,7 @@ internal extension SymmetricKey {
 }
 
 internal extension ChaChaPoly.Nonce {
-    init(_ nonce: MillerBluetooth.Nonce) {
+    init(_ nonce: BluetoothAccessory.Nonce) {
         try! self.init(data: nonce.data)
     }
 }

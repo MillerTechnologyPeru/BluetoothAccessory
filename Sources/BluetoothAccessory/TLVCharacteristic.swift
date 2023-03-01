@@ -19,9 +19,9 @@ public protocol TLVCharacteristic: GATTProfileCharacteristic {
 
 public extension TLVCharacteristic {
     
-    static var encoder: TLVEncoder { return .millerBluetooth }
+    static var encoder: TLVEncoder { return .bluetoothAccessory }
     
-    static var decoder: TLVDecoder { return .millerBluetooth }
+    static var decoder: TLVDecoder { return .bluetoothAccessory }
 }
 
 public extension TLVCharacteristic where Self: Codable {

@@ -13,8 +13,8 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "MillerBluetooth",
-            targets: ["MillerBluetooth"]
+            name: "BluetoothAccessory",
+            targets: ["BluetoothAccessory"]
         ),
     ],
     dependencies: [
@@ -33,7 +33,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "MillerBluetooth",
+            name: "BluetoothAccessory",
             dependencies: [
                 .product(
                     name: "Bluetooth",
@@ -63,8 +63,8 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "MillerBluetoothTests",
-            dependencies: ["MillerBluetooth"]
+            name: "BluetoothAccessoryTests",
+            dependencies: ["BluetoothAccessory"]
         ),
     ]
 )

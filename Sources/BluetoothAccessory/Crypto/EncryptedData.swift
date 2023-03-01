@@ -33,7 +33,7 @@ public extension EncryptedData {
         guard authentication.isAuthenticated(using: key)
             else { throw AuthenticationError.invalidAuthentication }
         // attempt to decrypt
-        return try MillerBluetooth.decrypt(encryptedData, using: key, authentication: authentication.message)
+        return try BluetoothAccessory.decrypt(encryptedData, using: key, authentication: authentication.message)
     }
 }
 
@@ -47,7 +47,7 @@ extension EncryptedData: TLVCodable {
             return nil
         }
         let prefix = Data(tlvData.prefix(prefixLength))
-        guard let authentication = try? TLVDecoder.millerBluetooth.decode(Authentication.self, from: prefix) else {
+        guard let authentication = try? TLVDecoder.BluetoothAccessory.decode(Authentication.self, from: prefix) else {
             return nil
         }
         self.authentication = authentication
@@ -55,7 +55,7 @@ extension EncryptedData: TLVCodable {
     }
     
     public var tlvData: Data {
-        let authenticationData = try! TLVEncoder.millerBluetooth.encode(authentication)
+        let authenticationData = try! TLVEncoder.BluetoothAccessory.encode(authentication)
         return authenticationData + encryptedData
     }
 }

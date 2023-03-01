@@ -10,7 +10,7 @@ import TLVCoding
 
 public extension TLVEncoder {
     
-    static var millerBluetooth: TLVEncoder {
+    static var bluetoothAccessory: TLVEncoder {
         var encoder = TLVEncoder()
         encoder.numericFormatting = .littleEndian
         encoder.uuidFormatting = .bytes
@@ -21,7 +21,7 @@ public extension TLVEncoder {
 
 public extension TLVDecoder {
     
-    static var millerBluetooth: TLVDecoder {
+    static var bluetoothAccessory: TLVDecoder {
         var decoder = TLVDecoder()
         decoder.numericFormatting = .littleEndian
         decoder.uuidFormatting = .bytes

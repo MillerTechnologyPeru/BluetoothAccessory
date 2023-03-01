@@ -18,7 +18,7 @@ public enum ServiceType: UInt16, CaseIterable {
     case firmwareUpdate
     case wiFiTransport
     case threadTransport
-    case loraTransport
+    case loRaTransport
     
     // Energy
     case battery                    = 100
