@@ -19,6 +19,15 @@ public enum CharacteristicType: UInt16, CaseIterable {
     case assetUpdateReadiness
     case audioFeedback
     case batteryLevel
+    case batteryChargingCurrent
+    case batteryVoltage
+    case batteryVoltageSteady
+    case batteryRatingVoltage
+    case batteryRechargeVoltage
+    case batteryUnderVoltage
+    case batteryBulkVoltage
+    case batteryFloatVoltage
+    case batteryType
     case brightness
     case ccaEnergyDetectThreshold
     case ccaSignalDetectThreshold
@@ -65,6 +74,8 @@ public enum CharacteristicType: UInt16, CaseIterable {
     case firmwareRevision
     case firmwareUpdateReadiness
     case firmwareUpdateStatus
+    case gridVoltage
+    case gridFrequency
     case hardwareFinish
     case hardwareRevision
     case heartBeat
@@ -76,6 +87,13 @@ public enum CharacteristicType: UInt16, CaseIterable {
     case inUse
     case inputDeviceType
     case inputSourceType
+    case inputVoltageRange
+    case inverterHeatSinkTemperature
+    case inverterBusVoltage
+    case inverterChargerSourcePriority
+    case inverterMode
+    case inverterOutputMode
+    case inverterMaxParallel
     case isConfigured
     case labelIndex
     case labelNamespace
@@ -101,6 +119,12 @@ public enum CharacteristicType: UInt16, CaseIterable {
     case occupancyDetected
     case operatingStateResponse
     case outletInUse
+    case outputVoltage
+    case outputFrequency
+    case outputApparentPower
+    case outputActivePower
+    case outputLoadPercent
+    case outputSourcePriority
     case ozoneDensity
     case pm10Density
     case pm25Density
@@ -127,6 +151,7 @@ public enum CharacteristicType: UInt16, CaseIterable {
     case securitySystemTargetState
     case selectedDiagnosticsModes
     case serialNumber
+    case serialConsole
     case setDuration
     case setupTransferTransport
     case signalToNoiseRatio
@@ -135,7 +160,8 @@ public enum CharacteristicType: UInt16, CaseIterable {
     case sleepInterval
     case smokeDetected
     case softwareRevision
-    case solarSerial
+    case solarInputCurrent
+    case solarInputVoltage
     case stagedFirmwareVersion
     case statusActive
     case statusFault
