@@ -6,7 +6,7 @@
 //
 
 /// Accessory Type
-public enum AccessoryType: UInt16, Codable {
+public enum AccessoryType: UInt16, Codable, CaseIterable {
     
     case other
     case bridge
