@@ -65,9 +65,9 @@ public extension GATTConnection {
     
     func characteristic(for type: GATTProfileCharacteristic.Type) throws -> Characteristic<Central.Peripheral, Central.AttributeID> {
         guard let cache = self.characteristics[type.service.uuid]
-            else { throw GATTProfileError.serviceNotFound(type.service.uuid) }
+            else { throw BluetoothAccessoryError.serviceNotFound(type.service.uuid) }
         guard let foundCharacteristic = cache.first(where: { $0.uuid == type.uuid })
-            else { throw GATTProfileError.characteristicNotFound(type.uuid) }
+            else { throw BluetoothAccessoryError.characteristicNotFound(type.uuid) }
         return foundCharacteristic
     }
     
@@ -141,7 +141,7 @@ internal extension CentralManager {
             
             // validate service exists
             guard let service = foundServices.first(where: { $0.uuid == serviceUUID })
-                else { throw GATTProfileError.serviceNotFound(serviceUUID) }
+                else { throw BluetoothAccessoryError.serviceNotFound(serviceUUID) }
             
             // validate characteristic exists
             let foundCharacteristics = try await discoverCharacteristics([], for: service)
@@ -149,7 +149,7 @@ internal extension CentralManager {
             for characteristicUUID in characteristics {
                 
                 guard foundCharacteristics.contains(where: { $0.uuid == characteristicUUID })
-                    else { throw GATTProfileError.characteristicNotFound(characteristicUUID) }
+                    else { throw BluetoothAccessoryError.characteristicNotFound(characteristicUUID) }
             }
             
             results += foundCharacteristics
@@ -202,7 +202,7 @@ internal extension CentralManager {
         let data = try await self.readValue(for: foundCharacteristic)
         
         guard let value = T.init(data: data)
-            else { throw GATTProfileError.invalidData(data) }
+            else { throw BluetoothAccessoryError.invalidData(data) }
         
         return value
     }
@@ -220,7 +220,7 @@ internal extension CentralManager {
         return AsyncIndefiniteStream { continuation in
             for try await data in stream {
                 guard let value = T.init(data: data) else {
-                    throw GATTProfileError.invalidData(data)
+                    throw BluetoothAccessoryError.invalidData(data)
                 }
                 continuation(value)
             }

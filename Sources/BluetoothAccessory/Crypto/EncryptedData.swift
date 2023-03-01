@@ -47,7 +47,7 @@ extension EncryptedData: TLVCodable {
             return nil
         }
         let prefix = Data(tlvData.prefix(prefixLength))
-        guard let authentication = try? TLVDecoder.BluetoothAccessory.decode(Authentication.self, from: prefix) else {
+        guard let authentication = try? TLVDecoder.bluetoothAccessory.decode(Authentication.self, from: prefix) else {
             return nil
         }
         self.authentication = authentication
@@ -55,7 +55,7 @@ extension EncryptedData: TLVCodable {
     }
     
     public var tlvData: Data {
-        let authenticationData = try! TLVEncoder.BluetoothAccessory.encode(authentication)
+        let authenticationData = try! TLVEncoder.bluetoothAccessory.encode(authentication)
         return authenticationData + encryptedData
     }
 }
