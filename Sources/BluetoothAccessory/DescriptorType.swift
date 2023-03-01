@@ -8,5 +8,7 @@
 /// Descriptor Type
 public enum DescriptorType: UInt16, Codable, CaseIterable {
     
+    case format
+    case unit
     case encryption
 }
