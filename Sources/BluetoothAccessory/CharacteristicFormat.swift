@@ -59,6 +59,20 @@ public protocol CharacteristicCodable {
     init?(characteristicValue: CharacteristicValue)
 }
 
+public extension CharacteristicCodable where Self: RawRepresentable, Self.RawValue: CharacteristicCodable {
+    
+    static var characteristicFormat: CharacteristicFormat { RawValue.characteristicFormat }
+    
+    var characteristicValue: CharacteristicValue { rawValue.characteristicValue }
+    
+    init?(characteristicValue: CharacteristicValue) {
+        guard let rawValue = RawValue(characteristicValue: characteristicValue) else {
+            return nil
+        }
+        self.init(rawValue: rawValue)
+    }
+}
+
 extension String: CharacteristicCodable {
     
     public static var characteristicFormat: CharacteristicFormat { .string }
