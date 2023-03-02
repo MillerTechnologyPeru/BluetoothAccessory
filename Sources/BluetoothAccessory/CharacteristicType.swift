@@ -10,6 +10,7 @@ import Bluetooth
 
 public enum CharacteristicType: UInt16, Codable, CaseIterable {
     
+    case accessoryType
     case accessoryFlags
     case active
     case activeIdentifier
