@@ -171,4 +171,114 @@ extension UInt16: CharacteristicCodable {
     }
 }
 
-// TODO: all codable types
+extension UInt32: CharacteristicCodable {
+    
+    public static var characteristicFormat: CharacteristicFormat { .uint32 }
+    
+    public var characteristicValue: CharacteristicValue { .uint32(self) }
+    
+    public init?(characteristicValue: CharacteristicValue) {
+        guard case let .uint32(value) = characteristicValue else {
+            return nil
+        }
+        self = value
+    }
+}
+
+extension UInt64: CharacteristicCodable {
+    
+    public static var characteristicFormat: CharacteristicFormat { .uint64 }
+    
+    public var characteristicValue: CharacteristicValue { .uint64(self) }
+    
+    public init?(characteristicValue: CharacteristicValue) {
+        guard case let .uint64(value) = characteristicValue else {
+            return nil
+        }
+        self = value
+    }
+}
+
+extension Int8: CharacteristicCodable {
+    
+    public static var characteristicFormat: CharacteristicFormat { .int8 }
+    
+    public var characteristicValue: CharacteristicValue { .int8(self) }
+    
+    public init?(characteristicValue: CharacteristicValue) {
+        guard case let .int8(value) = characteristicValue else {
+            return nil
+        }
+        self = value
+    }
+}
+
+extension Int16: CharacteristicCodable {
+    
+    public static var characteristicFormat: CharacteristicFormat { .int16 }
+    
+    public var characteristicValue: CharacteristicValue { .int16(self) }
+    
+    public init?(characteristicValue: CharacteristicValue) {
+        guard case let .int16(value) = characteristicValue else {
+            return nil
+        }
+        self = value
+    }
+}
+
+extension Int32: CharacteristicCodable {
+    
+    public static var characteristicFormat: CharacteristicFormat { .int32 }
+    
+    public var characteristicValue: CharacteristicValue { .int32(self) }
+    
+    public init?(characteristicValue: CharacteristicValue) {
+        guard case let .int32(value) = characteristicValue else {
+            return nil
+        }
+        self = value
+    }
+}
+
+extension Int64: CharacteristicCodable {
+    
+    public static var characteristicFormat: CharacteristicFormat { .int64 }
+    
+    public var characteristicValue: CharacteristicValue { .int64(self) }
+    
+    public init?(characteristicValue: CharacteristicValue) {
+        guard case let .int64(value) = characteristicValue else {
+            return nil
+        }
+        self = value
+    }
+}
+
+extension Float: CharacteristicCodable {
+    
+    public static var characteristicFormat: CharacteristicFormat { .float }
+    
+    public var characteristicValue: CharacteristicValue { .float(self) }
+    
+    public init?(characteristicValue: CharacteristicValue) {
+        guard case let .float(value) = characteristicValue else {
+            return nil
+        }
+        self = value
+    }
+}
+
+extension Double: CharacteristicCodable {
+    
+    public static var characteristicFormat: CharacteristicFormat { .double }
+    
+    public var characteristicValue: CharacteristicValue { .double(self) }
+    
+    public init?(characteristicValue: CharacteristicValue) {
+        guard case let .double(value) = characteristicValue else {
+            return nil
+        }
+        self = value
+    }
+}
