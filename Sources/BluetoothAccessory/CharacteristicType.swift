@@ -213,7 +213,7 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
 public extension UUID {
     
     init(characteristic: CharacteristicType) {
-        self.init(uuidString: "650135C4-45D6-4A00-B240-DF6FE202" + characteristic.rawValue.toHexadecimal())!
+        self.init(bluetoothAccessory: (0x0002, characteristic.rawValue))
     }
 }
 

@@ -61,7 +61,7 @@ public enum ServiceType: UInt16, CaseIterable {
 public extension UUID {
     
     init(service: ServiceType) {
-        self.init(uuidString: "650135C4-45D6-4A00-B240-DF6FE201" + service.rawValue.toHexadecimal())!
+        self.init(bluetoothAccessory: (0x0001, service.rawValue))
     }
 }
 
