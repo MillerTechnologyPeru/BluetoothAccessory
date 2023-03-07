@@ -22,7 +22,6 @@ public extension UUID {
 public extension BluetoothUUID {
     
     init(accessory: UInt32) {
-        let bytes = accessory.bigEndian.bytes
         self = .bit128(.init(bluetoothAccessory: accessory))
     }
     

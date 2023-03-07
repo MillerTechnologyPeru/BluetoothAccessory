@@ -9,7 +9,7 @@ import Foundation
 import Bluetooth
 import GATT
 
-public protocol GATTEncryptedNotification: GATTProfileCharacteristic {
+public protocol GATTEncryptedNotification {
     
     associatedtype Notification: GATTEncryptedNotificationValue
     
@@ -44,7 +44,7 @@ public extension GATTEncryptedNotification {
         return chunk.data
     }
 }
-
+/*
 internal extension GATTConnection {
     
     func list<Write, ChunkNotification>(
@@ -89,3 +89,4 @@ internal extension GATTConnection {
         }
     }
 }
+*/
