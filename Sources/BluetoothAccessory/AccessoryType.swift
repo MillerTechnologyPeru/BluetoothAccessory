@@ -16,6 +16,8 @@ public enum AccessoryType: UInt16, Codable, CaseIterable, CharacteristicCodable 
     case doorLock
     case outlet
     case inverter
+    case generator
+    case solarPanel
     case `switch`
     case thermostat
     case sensor
@@ -58,6 +60,8 @@ extension AccessoryType: CustomStringConvertible {
         case .doorLock: return "Door Lock"
         case .outlet: return "Outlet"
         case .inverter: return "Inverter"
+        case .generator: return "Generator"
+        case .solarPanel: return "Solar Panel"
         case .`switch`: return "Switch"
         case .thermostat: return "Thermostat"
         case .sensor: return "Sensor"
