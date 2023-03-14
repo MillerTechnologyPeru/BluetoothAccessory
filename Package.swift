@@ -41,7 +41,8 @@ let package = Package(
                 ),
                 .product(
                     name: "BluetoothGATT",
-                    package: "Bluetooth"
+                    package: "Bluetooth",
+                    condition: .when(platforms: [.macOS, .linux])
                 ),
                 .product(
                     name: "BluetoothHCI",
@@ -54,9 +55,8 @@ let package = Package(
                     condition: .when(platforms: [.macOS, .linux])
                 ),
                 .product(
-                    name: "DarwinGATT",
-                    package: "GATT",
-                    condition: .when(platforms: [.macOS])
+                    name: "GATT",
+                    package: "GATT"
                 ),
                 "TLVCoding"
             ]
