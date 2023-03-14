@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Credentials: Equatable {
+public struct Credential: Equatable, Hashable, Codable, Identifiable {
     
     public let id: UUID
     

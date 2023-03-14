@@ -9,20 +9,21 @@ import Foundation
 import Bluetooth
 import GATT
 
-@propertyWrapper
-public struct AccessoryTypeCharacteristic: Equatable, Hashable {
+public struct AccessoryTypeCharacteristic: Equatable, Hashable, AccessoryCharacteristic {
     
     public static var type: CharacteristicType { .accessoryType }
     
     public static var properties: Bluetooth.BitMaskOptionSet<GATT.Characteristic.Property> { [.read] }
-    
-    public static var format: CharacteristicFormat { .uint16 }
-    
+        
     public static var encryption: CharacteristicEncryption { .none }
     
-    public init(wrappedValue: AccessoryType) {
-        self.wrappedValue = wrappedValue
+    public init(value: AccessoryType) {
+        self.value = value
     }
     
-    public var wrappedValue: AccessoryType
+    public var value: AccessoryType
+    
+    public var userDescription: String {
+        value.description
+    }
 }

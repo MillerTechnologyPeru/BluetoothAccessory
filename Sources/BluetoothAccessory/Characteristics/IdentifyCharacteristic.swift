@@ -9,16 +9,17 @@ import Foundation
 import Bluetooth
 import GATT
 
-@propertyWrapper
-public struct IdentifyCharacteristic: Equatable, Hashable {
+public struct IdentifyCharacteristic: Equatable, Hashable, AccessoryCharacteristic {
     
     public static var type: CharacteristicType { .identify }
     
     public static let properties: Bluetooth.BitMaskOptionSet<GATT.Characteristic.Property> = [.write]
     
-    public init(wrappedValue: Bool = false) {
-        self.wrappedValue = wrappedValue
+    public static var encryption: CharacteristicEncryption { .none }
+    
+    public init(value: Bool = false) {
+        self.value = value
     }
     
-    public var wrappedValue: Bool
+    public var value: Bool
 }

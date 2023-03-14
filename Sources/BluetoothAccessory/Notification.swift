@@ -9,10 +9,8 @@ import Foundation
 import Bluetooth
 import GATT
 
-public protocol GATTEncryptedNotification {
-    
-    associatedtype Notification: GATTEncryptedNotificationValue
-    
+public protocol GATTEncryptedNotificationProtocol {
+        
     var chunk: Chunk { get }
     
     init(chunk: Chunk)
@@ -26,67 +24,38 @@ public protocol GATTEncryptedNotification {
     static func from(_ value: Notification, id: UUID, key: KeyData, maximumUpdateValueLength: Int) throws -> [Self]
 }
 
-public protocol GATTEncryptedNotificationValue {
+public struct EncryptedNotification: Equatable, Hashable {
     
-    var isLast: Bool { get }
+    public var isLast: Bool
+    
+    public var value: EncryptedData
+    
+    public init(isLast: Bool, value: EncryptedData) {
+        self.isLast = isLast
+        self.value = value
+    }
 }
 
-public extension GATTEncryptedNotification {
+public extension EncryptedNotification {
+    
+    init?(chunks: [Chunk]) {
+        self.init(data: Data(chunks: chunks))
+    }
+    
+    func chunks(maximumUpdateValueLength: Int) -> [Chunk] {
+        Chunk.from(self.data, maximumUpdateValueLength: maximumUpdateValueLength)
+    }
     
     init?(data: Data) {
-        guard let chunk = Chunk(data: data)
+        guard data.count >= 2,
+            let isLast = Bool(byteValue: data[0]),
+            let encryptedData = EncryptedData(tlvData: data.advanced(by: 1))
             else { return nil }
-        
-        self.init(chunk: chunk)
+        self.isLast = isLast
+        self.value = encryptedData
     }
     
     var data: Data {
-        return chunk.data
+        return Data([isLast.byteValue]) + value.tlvData
     }
 }
-/*
-internal extension GATTConnection {
-    
-    func list<Write, ChunkNotification>(
-        _ write: @autoclosure () throws -> (Write),
-        _ notify: ChunkNotification.Type,
-        key: Credentials,
-        log: ((String) -> ())? = nil
-    ) async throws -> AsyncThrowingStream<ChunkNotification.Notification, Error> where Write: GATTProfileCharacteristic, ChunkNotification: GATTEncryptedNotification {
-        let stream = try await self.notify(ChunkNotification.self)
-        let writeValue = try write()
-        try await self.write(writeValue)
-        return AsyncThrowingStream(ChunkNotification.Notification.self, bufferingPolicy: .unbounded) { continuation in
-            Task.detached {
-                do {
-                    var notificationsCount = 0
-                    var chunks = [Chunk]()
-                    chunks.reserveCapacity(2)
-                    for try await chunkNotification in stream {
-                        let chunk = chunkNotification.chunk
-                        chunks.append(chunk)
-                        log?("Received chunk \(chunks.count) (\(chunks.length)/\(chunk.total))")
-                        assert(chunks.isEmpty == false)
-                        guard chunks.length >= chunk.total else {
-                            continue // wait for more chunks
-                        }
-                        let notificationValue = try ChunkNotification.from(chunks: chunks, using: key.secret)
-                        continuation.yield(notificationValue)
-                        notificationsCount += 1
-                        log?("Received\(notificationValue.isLast ? " last" : "") notification \(notificationsCount)")
-                        chunks.removeAll(keepingCapacity: true)
-                        guard notificationValue.isLast else {
-                            continue // wait for final value
-                        }
-                        stream.stop()
-                    }
-                    continuation.finish()
-                } catch {
-                    stream.stop()
-                    continuation.finish(throwing: error)
-                }
-            }
-        }
-    }
-}
-*/
