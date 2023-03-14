@@ -26,5 +26,4 @@ public enum BluetoothAccessoryError: Error {
     /// Invalid data.
     case invalidData(Data?)
     
-    
 }

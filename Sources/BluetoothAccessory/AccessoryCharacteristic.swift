@@ -26,3 +26,18 @@ public protocol AccessoryCharacteristic {
     
     var value: Value { get }
 }
+
+public extension AccessoryCharacteristic {
+    
+    init?(from data: Data) {
+        guard let characteristicValue = CharacteristicValue(from: data, format: Value.characteristicFormat),
+              let value = Value(characteristicValue: characteristicValue) else {
+            return nil
+        }
+        self.init(value: value)
+    }
+    
+    func encode() -> Data {
+        value.characteristicValue.encode()
+    }
+}

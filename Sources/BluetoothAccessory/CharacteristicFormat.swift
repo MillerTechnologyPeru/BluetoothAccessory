@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import TLVCoding
 
 /// Characteristic Format
 public enum CharacteristicFormat: UInt8, Codable, CaseIterable {
@@ -28,6 +29,7 @@ public enum CharacteristicFormat: UInt8, Codable, CaseIterable {
     case double
 }
 
+/// Characteristic Value
 public enum CharacteristicValue: Equatable, Hashable {
     
     case tlv8(Data)
@@ -48,7 +50,48 @@ public enum CharacteristicValue: Equatable, Hashable {
     case double(Double)
 }
 
-// MARK: -
+public extension CharacteristicValue {
+    
+    /// Characteristic format.
+    var format: CharacteristicFormat {
+        switch self {
+        case .tlv8:
+            return .tlv8
+        case .string:
+            return .string
+        case .data:
+            return .data
+        case .date:
+            return .date
+        case .uuid:
+            return .uuid
+        case .bool:
+            return .bool
+        case .int8:
+            return .int8
+        case .int16:
+            return .int16
+        case .int32:
+            return .int32
+        case .int64:
+            return .int64
+        case .uint8:
+            return .uint8
+        case .uint16:
+            return .uint16
+        case .uint32:
+            return .uint32
+        case .uint64:
+            return .uint64
+        case .float:
+            return .float
+        case .double:
+            return .double
+        }
+    }
+}
+
+// MARK: - CharacteristicCodable
 
 public protocol CharacteristicCodable {
     
@@ -280,5 +323,54 @@ extension Double: CharacteristicCodable {
             return nil
         }
         self = value
+    }
+}
+
+// MARK: - Data
+
+public extension CharacteristicValue {
+    
+    init?(from data: Data, format: CharacteristicFormat) {
+        fatalError("Not implemented")
+    }
+    
+    func encode() -> Data {
+        func encode<T: Encodable>(_ value: T) throws -> Data {
+            try TLVEncoder.bluetoothAccessory.encode([value]).suffix(from: 2)
+        }
+        switch self {
+        case .tlv8(let data):
+            return data
+        case .data(let data):
+            return data
+        case .string(let string):
+            return try! encode(string)
+        case .date(let date):
+            return try! encode(date)
+        case .uuid(let uuid):
+            return try! encode(uuid)
+        case .bool(let bool):
+            return try! encode(bool)
+        case .int8(let value):
+            return try! encode(value)
+        case .int16(let value):
+            return try! encode(value)
+        case .int32(let value):
+            return try! encode(value)
+        case .int64(let value):
+            return try! encode(value)
+        case .uint8(let value):
+            return try! encode(value)
+        case .uint16(let value):
+            return try! encode(value)
+        case .uint32(let value):
+            return try! encode(value)
+        case .uint64(let value):
+            return try! encode(value)
+        case .float(let float):
+            return try! encode(float)
+        case .double(let double):
+            return try! encode(double)
+        }
     }
 }
