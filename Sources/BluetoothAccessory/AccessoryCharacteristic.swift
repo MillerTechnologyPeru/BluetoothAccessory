@@ -20,11 +20,16 @@ public protocol AccessoryCharacteristic {
         
     static var encryption: CharacteristicEncryption { get }
     
-    //var userDescription: String { get }
-    
+    static var unit: CharacteristicUnit? { get }
+        
     init(value: Value)
     
     var value: Value { get }
+}
+
+public extension AccessoryCharacteristic {
+    
+    static var unit: CharacteristicUnit? { nil }
 }
 
 public extension AccessoryCharacteristic {

@@ -22,8 +22,4 @@ public struct AccessoryTypeCharacteristic: Equatable, Hashable, AccessoryCharact
     }
     
     public var value: AccessoryType
-    
-    public var userDescription: String {
-        value.description
-    }
 }
