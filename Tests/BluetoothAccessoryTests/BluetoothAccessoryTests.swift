@@ -34,4 +34,29 @@ final class BluetoothAccessoryTests: XCTestCase {
         XCTAssertEqual(BluetoothUUID(characteristic: .accessoryType).description, "00020000-0000-1000-8000-0091002CCCCC")
         XCTAssertEqual(BluetoothUUID(characteristic: .accessoryFlags).description, "00020001-0000-1000-8000-0091002CCCCC")
     }
+    
+    func testCharacteristicValue() {
+        
+        let values: [CharacteristicValue] = [
+            .tlv8(KeyData().data),
+            .data(KeyData().data),
+            .date(Date.init(timeIntervalSinceReferenceDate: 1_000_000)),
+            .uuid(UUID()),
+            .string(UUID().uuidString),
+            .double(.random(in: -1 ... 100)),
+            .float(.random(in: -1 ... 100)),
+            .uint8(.random(in: .min ..< .max)),
+            .uint16(.random(in: .min ..< .max)),
+            .uint32(.random(in: .min ..< .max)),
+            .uint64(.random(in: .min ..< .max)),
+            .int8(.random(in: .min ..< .max)),
+            .int16(.random(in: .min ..< .max)),
+            .int32(.random(in: .min ..< .max)),
+            .int64(.random(in: .min ..< .max)),
+        ]
+        
+        for value in values {
+            XCTAssertEqual(value, CharacteristicValue(from: value.encode(), format: value.format))
+        }
+    }
 }
