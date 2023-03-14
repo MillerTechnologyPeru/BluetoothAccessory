@@ -14,14 +14,14 @@ import BluetoothGATT
 /// Descriptor Type
 public enum DescriptorType: UInt16, Codable, CaseIterable {
     
-    /// Data format of characteristic value. Required. Read-only.
+    /// Data format of characteristic value.
     case format
     
-    /// Unit type. Optional. Read-only.
+    /// Unit type.
     case unit
     
-    /// Type of encryption used. Required. Read-only.
-    case encryption
+    /// Properties.
+    case properties
 }
 
 public extension UUID {
@@ -39,16 +39,16 @@ public extension BluetoothUUID {
 }
 
 /// Accessory Descriptor
-public enum AccessoryDescriptor: Equatable, Hashable, Codable {
+public enum AccessoryDescriptor: Equatable, Hashable {
     
-    /// Data format of characteristic value. Required. Read-only.
+    /// Data format of characteristic value.
     case format(CharacteristicFormat)
     
-    /// Unit type. Optional. Read-only.
+    /// Unit type.
     case unit(CharacteristicUnit)
     
-    /// Type of encryption used. Required. Read-only.
-    case encryption(CharacteristicEncryption)
+    /// Properties.
+    case properties(BitMaskOptionSet<CharacteristicProperty>)
 }
 
 public extension AccessoryDescriptor {
@@ -59,8 +59,8 @@ public extension AccessoryDescriptor {
             return .format
         case .unit:
             return .unit
-        case .encryption:
-            return .encryption
+        case .properties:
+            return .properties
         }
     }
     
@@ -70,7 +70,7 @@ public extension AccessoryDescriptor {
             return CharacteristicValue.uint8(value.rawValue).encode()
         case .unit(let value):
             return CharacteristicValue.uint8(value.rawValue).encode()
-        case .encryption(let value):
+        case .properties(let value):
             return CharacteristicValue.uint8(value.rawValue).encode()
         }
     }

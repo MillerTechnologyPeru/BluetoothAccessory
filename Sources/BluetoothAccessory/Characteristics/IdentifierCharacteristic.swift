@@ -13,9 +13,7 @@ public struct IdentifierCharacteristic: Equatable, Hashable, AccessoryCharacteri
         
     public static var type: CharacteristicType { .identifier }
     
-    public static var properties: Bluetooth.BitMaskOptionSet<GATT.Characteristic.Property> { [.read] }
-        
-    public static var encryption: CharacteristicEncryption { .none }
+    public static var properties: BitMaskOptionSet<CharacteristicProperty> { [.read] }
     
     public init(value: UUID = UUID()) {
         self.value = value

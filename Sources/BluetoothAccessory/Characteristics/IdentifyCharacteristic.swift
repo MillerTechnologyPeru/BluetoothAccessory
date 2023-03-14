@@ -13,9 +13,7 @@ public struct IdentifyCharacteristic: Equatable, Hashable, AccessoryCharacterist
     
     public static var type: CharacteristicType { .identify }
     
-    public static let properties: Bluetooth.BitMaskOptionSet<GATT.Characteristic.Property> = [.write]
-    
-    public static var encryption: CharacteristicEncryption { .none }
+    public static var properties: BitMaskOptionSet<CharacteristicProperty> { [.write, .encrypted] }
     
     public init(value: Bool = false) {
         self.value = value

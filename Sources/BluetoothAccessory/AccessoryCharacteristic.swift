@@ -51,38 +51,66 @@ public extension AccessoryCharacteristic {
 public extension AccessoryCharacteristic {
     
     static var descriptors: [AccessoryDescriptor] {
-        [
-            .encryption(encryption),
-            .format(Value.characteristicFormat),
-            unit.flatMap({ .unit($0) })
+        var descriptors: [AccessoryDescriptor] = [
+            .properties(properties),
+            .format(Value.characteristicFormat)
         ]
-        .compactMap { $0 }
+        if let unit = self.unit {
+            descriptors.append(.unit(unit))
+        }
+        return descriptors
     }
 }
 
 #if canImport(BluetoothGATT)
-public extension AccessoryCharacteristic {
+internal extension AccessoryCharacteristic {
     
-    static var permissions: Bluetooth.BitMaskOptionSet<GATTAttribute.Descriptor.Permission> {
-        var permissions = Bluetooth.BitMaskOptionSet<GATTAttribute.Descriptor.Permission>()
+    static var gattProperties: Bluetooth.BitMaskOptionSet<GATTAttribute.Characteristic.Property> {
+        var properties = Bluetooth.BitMaskOptionSet<GATTAttribute.Characteristic.Property>()
+        if self.properties.contains(.read) {
+            if self.properties.contains(.encrypted) || self.properties.contains(.list) {
+                properties.insert(.notify)
+            } else {
+                properties.insert(.read)
+            }
+        }
+        if self.properties.contains(.write) {
+            properties.insert(.write)
+        }
+        return properties
+    }
+    
+    static var gattPermissions: Bluetooth.BitMaskOptionSet<GATTAttribute.Characteristic.Permission> {
+        var permissions = Bluetooth.BitMaskOptionSet<GATTAttribute.Characteristic.Permission>()
+        if self.properties.contains(.read) {
+            permissions.insert(.read)
+        }
+        if self.properties.contains(.write) {
+            permissions.insert(.write)
+        }
         return permissions
+    }
+    
+    static var gattDescriptors: [GATTAttribute.Descriptor] {
+        var descriptors = self.descriptors.map({ .init($0) })
+            + [GATTUserDescription(userDescription: self.type.description).descriptor]
+        // unencrypted values
+        if !(self.properties.contains(.encrypted) || self.properties.contains(.list)) {
+            descriptors.append(GATTFormatDescriptor(format: .init(bluetoothAccessory: Value.characteristicFormat), exponent: 0, unit: 0, namespace: 0, description: 0).descriptor)
+        }
+        return descriptors
     }
 }
 
 public extension GATTAttribute.Characteristic {
     
     init<T: AccessoryCharacteristic>(_ characteristic: T.Type) {
-        var descriptors = characteristic.descriptors.map({ .init($0) })
-            + [GATTUserDescription(userDescription: characteristic.type.description).descriptor]
-        if characteristic.encryption != .none {
-            descriptors.append(GATTFormatDescriptor(format: .init(bluetoothAccessory: T.Value.format), exponent: 0, unit: 0, namespace: 0, description: 0).descriptor)
-        }
         self.init(
             uuid: BluetoothUUID(characteristic: characteristic.type),
             value: Data(),
-            permissions: characteristic.permissions,
-            properties: characteristic.properties,
-            descriptors: descriptors
+            permissions: characteristic.gattPermissions,
+            properties: characteristic.gattProperties,
+            descriptors: characteristic.gattDescriptors
         )
     }
 }
