@@ -332,7 +332,7 @@ public extension CharacteristicValue {
     
     init?(from data: Data, format: CharacteristicFormat) {
         func decode<T: Decodable>(_ type: T.Type) -> T? {
-            try? TLVDecoder.bluetoothAccessory.decode(type, from: Data([0, UInt8(data.count)]) + data)
+            try? TLVDecoder.bluetoothAccessory.decode([T].self, from: Data([0, UInt8(data.count)]) + data).first
         }
         switch format {
         case .tlv8:
