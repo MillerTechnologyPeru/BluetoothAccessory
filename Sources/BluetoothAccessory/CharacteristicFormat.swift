@@ -331,7 +331,85 @@ extension Double: CharacteristicCodable {
 public extension CharacteristicValue {
     
     init?(from data: Data, format: CharacteristicFormat) {
-        fatalError("Not implemented")
+        func decode<T: Decodable>(_ type: T.Type) -> T? {
+            try? TLVDecoder.bluetoothAccessory.decode(type, from: Data([0, UInt8(data.count)]) + data)
+        }
+        switch format {
+        case .tlv8:
+            self = .tlv8(data)
+        case .data:
+            self = .data(data)
+        case .string:
+            guard let value = decode(String.self) else {
+                return nil
+            }
+            self = .string(value)
+        case .date:
+            guard let value = decode(Date.self) else {
+                return nil
+            }
+            self = .date(value)
+        case .uuid:
+            guard let value = decode(UUID.self) else {
+                return nil
+            }
+            self = .uuid(value)
+        case .bool:
+            guard let value = decode(Bool.self) else {
+                return nil
+            }
+            self = .bool(value)
+        case .int8:
+            guard let value = decode(Int8.self) else {
+                return nil
+            }
+            self = .int8(value)
+        case .int16:
+            guard let value = decode(Int16.self) else {
+                return nil
+            }
+            self = .int16(value)
+        case .int32:
+            guard let value = decode(Int32.self) else {
+                return nil
+            }
+            self = .int32(value)
+        case .int64:
+            guard let value = decode(Int64.self) else {
+                return nil
+            }
+            self = .int64(value)
+        case .uint8:
+            guard let value = decode(UInt8.self) else {
+                return nil
+            }
+            self = .uint8(value)
+        case .uint16:
+            guard let value = decode(UInt16.self) else {
+                return nil
+            }
+            self = .uint16(value)
+        case .uint32:
+            guard let value = decode(UInt32.self) else {
+                return nil
+            }
+            self = .uint32(value)
+        case .uint64:
+            guard let value = decode(UInt64.self) else {
+                return nil
+            }
+            self = .uint64(value)
+        case .float:
+            guard let value = decode(Float.self) else {
+                return nil
+            }
+            self = .float(value)
+        case .double:
+            guard let value = decode(Double.self) else {
+                return nil
+            }
+            self = .double(value)
+        }
     }
     
     func encode() -> Data {
