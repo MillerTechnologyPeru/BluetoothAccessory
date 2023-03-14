@@ -19,12 +19,6 @@ public enum DescriptorType: UInt16, Codable, CaseIterable {
     
     /// Type of encryption used. Required. Read-only.
     case encryption
-    
-    /// Writable descriptor for transmitting authorization.
-    case authorization
-    
-    /// Writable request descriptor used for encryption. Optional. Write-only.
-    case request
 }
 
 public extension UUID {
@@ -38,5 +32,32 @@ public extension BluetoothUUID {
     
     init(descriptor: DescriptorType) {
         self.init(uuid: .init(descriptor: descriptor))
+    }
+}
+
+/// Accessory Descriptor
+public enum AccessoryDescriptor: Equatable, Hashable, Codable {
+    
+    /// Data format of characteristic value. Required. Read-only.
+    case format(CharacteristicFormat)
+    
+    /// Unit type. Optional. Read-only.
+    case unit(CharacteristicUnit)
+    
+    /// Type of encryption used. Required. Read-only.
+    case encryption(CharacteristicEncryption)
+}
+
+public extension AccessoryDescriptor {
+    
+    var type: DescriptorType {
+        switch self {
+        case .format:
+            return .format
+        case .unit:
+            return .unit
+        case .encryption:
+            return .encryption
+        }
     }
 }
