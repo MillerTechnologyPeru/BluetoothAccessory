@@ -40,7 +40,7 @@ final class BluetoothAccessoryTests: XCTestCase {
         let values: [CharacteristicValue] = [
             .tlv8(KeyData().data),
             .data(KeyData().data),
-            .date(Date.init(timeIntervalSinceReferenceDate: 1_000_000)),
+            .date(Date().removingMiliseconds),
             .uuid(UUID()),
             .string(UUID().uuidString),
             .double(.random(in: -1 ... 100)),

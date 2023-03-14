@@ -26,4 +26,12 @@ public enum BluetoothAccessoryError: Error {
     /// Invalid data.
     case invalidData(Data?)
     
+    /// Invalid authentication HMAC signature.
+    case invalidAuthentication
+    
+    /// Could not decrypt value.
+    case decryptionError(Error)
+    
+    /// Could not encrypt value.
+    case encryptionError(Error)
 }

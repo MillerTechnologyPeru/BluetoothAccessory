@@ -31,7 +31,7 @@ public extension EncryptedData {
     func decrypt(using key: KeyData) throws -> Data {
         // validate HMAC
         guard authentication.isAuthenticated(using: key)
-            else { throw AuthenticationError.invalidAuthentication }
+            else { throw BluetoothAccessoryError.invalidAuthentication }
         // attempt to decrypt
         return try BluetoothAccessory.decrypt(encryptedData, using: key, authentication: authentication.message)
     }

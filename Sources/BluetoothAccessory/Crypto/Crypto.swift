@@ -35,7 +35,7 @@ internal func encrypt(_ data: Data, using key: KeyData, nonce: Nonce, authentica
         let sealed = try ChaChaPoly.seal(data, using: SymmetricKey(key), nonce: ChaChaPoly.Nonce(nonce), authenticating: authenticatedData)
         return sealed.combined
     } catch {
-        throw AuthenticationError.encryptionError(error)
+        throw BluetoothAccessoryError.encryptionError(error)
     }
 }
 
@@ -48,7 +48,7 @@ internal func decrypt(_ data: Data, using key: KeyData, authentication: Authenti
         let decrypted = try ChaChaPoly.open(sealed, using: SymmetricKey(key), authenticating: authenticatedData)
         return decrypted
     } catch {
-        throw AuthenticationError.decryptionError(error)
+        throw BluetoothAccessoryError.decryptionError(error)
     }
 }
 
