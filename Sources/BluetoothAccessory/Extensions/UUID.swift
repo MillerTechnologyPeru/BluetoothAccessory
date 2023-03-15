@@ -45,14 +45,6 @@ internal extension UInt128 {
     }
 }
 
-public extension UUID {
-    
-    /// iBeacon UUID for updated data.
-    static var bluetoothAccessoryNotification: UUID {
-        .init(bluetoothAccessory: 0xFFFFFFFF)
-    }
-}
-
 internal extension UUID {
     
     static var zero: UUID { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }

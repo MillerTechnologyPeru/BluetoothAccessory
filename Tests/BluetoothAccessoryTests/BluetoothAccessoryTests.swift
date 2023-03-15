@@ -59,4 +59,19 @@ final class BluetoothAccessoryTests: XCTestCase {
             XCTAssertEqual(value, CharacteristicValue(from: value.encode(), format: value.format))
         }
     }
+    
+    func testBeacon() {
+        
+        let beacons: [AccessoryBeacon] = [
+            .id(UUID()),
+            .characteristicChanged(UUID(), .batteryLevel)
+        ]
+        
+        for beacon in beacons {
+            XCTAssertEqual(beacon.uuid, AppleBeacon(bluetoothAccessory: beacon, rssi: 0).uuid)
+            XCTAssertEqual(beacon.major, AppleBeacon(bluetoothAccessory: beacon, rssi: 0).major)
+            XCTAssertEqual(beacon.minor, AppleBeacon(bluetoothAccessory: beacon, rssi: 0).minor)
+            XCTAssertEqual(AccessoryBeacon(beacon: AppleBeacon(bluetoothAccessory: beacon, rssi: 0)), beacon)
+        }
+    }
 }
