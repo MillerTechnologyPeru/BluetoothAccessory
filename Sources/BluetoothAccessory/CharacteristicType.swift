@@ -161,6 +161,12 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     /// The state of a contact sensor.
     case contactSensorState
     
+    /// The output state of a programmable switch.
+    case programmableSwitchEvent
+    
+    /// The input event of a programmable switch.
+    case programmableSwitchOutputState
+    
     case inputVoltageRange
     case inverterHeatSinkTemperature
     case inverterBusVoltage
@@ -278,24 +284,120 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     case heatingThresholdTemperature
     
     // Humidity
+    
+    /// The current relative humidity measured by the accessory.
     case currentRelativeHumidity            = 800
     
+    /// The target relative humidity for the accessory to achieve.
+    case targetRelativeHumidity
+    
+    /// The current state of a humidifier or dehumidifier accessory.
+    case currentHumidifierDehumidifierState
+    
+    /// The state that a humidifier or dehumidifier accessory should try to achieve.
+    case targetHumidifierDehumidifierState
+    
+    /// The humidity below which a humidifier should begin to work.
+    case relativeHumidityHumidifierThreshold
+    
+    /// The humidity above which a dehumidifier should begin to work.
+    case relativeHumidityDehumidifierThreshold
+    
     // Air Quality / Smoke Detection
+    
+    /// The air quality.
     case currentAirQuality                  = 900
     
-    case ccaEnergyDetectThreshold
-    case ccaSignalDetectThreshold
+    /// An indicator of abnormally high levels of carbon dioxide.
     case carbonDioxideDetected
+    
+    /// The measured carbon dioxide level.
     case carbonDioxideLevel
+    
+    /// The highest recorded level of carbon dioxide.
     case carbonDioxidePeakLevel
+    
+    /// An indicator of abnormally high levels of carbon monoxide.
     case carbonMonoxideDetected
+    
+    /// The measured carbon monoxide level.
     case carbonMonoxideLevel
+    
+    /// The highest recorded level of carbon monoxide.
     case carbonMonoxidePeakLevel
+    
+    /// The measured density of nitrogen dioxide.
+    case nitrogenDioxideDensity
+    
+    /// The measured density of ozone.
+    case ozoneDensity
+    
+    /// A smoke detection indicator.
+    case smokeDetected
+    
+    /// The measured density of sulphur dioxide.
+    ///
+    /// The corresponding value is a number in units of micrograms per cubic meter.
+    case sulphurDioxideDensity
+    
+    /// The measured density of air-particulate matter of size 10 micrograms.
+    case pm10Density
+    
+    /// The measured density of air-particulate matter of size 2.5 micrograms.
+    case pm25Density
+    
+    /// The measured density of volatile organic compounds.
+    case volatileOrganicCompoundDensity
+    
+    // Fans
+    
+    /// The current state of a fan.
+    case currentFanState                    = 1000
+    
+    /// The target state of a fan.
+    case targetFanState
+    
+    /// The rotation direction of an accessory like a fan.
+    case rotationDirection
+    
+    /// The rotation speed of an accessory like a fan.
+    case rotationSpeed
+    
+    /// An indicator of whether a fan swings back and forth during operation.
+    case swingMode
+    
+    // Purifiers and filters
+    
+    /// The current air purifier state.
+    case currentAirPurifierState            = 1100
+    
+    /// The target air purifier state.
+    case targetAirPurifierState
+    
+    /// The amount of useful life remaining in a filter.
+    case filterLifeLevel
+    
+    /// A filter’s change indicator.
+    case filterChangeIndication
+    
+    /// A reset control for a filter change notification.
+    case filterResetChangeIndication
+    
+    // Water
+    
+    /// The water level measured by an accessory.
+    case currentWaterLevel                  = 1200
+    
+    /// The type of automated valve that controls fluid flow.
+    case valveType
+    
+    /// A leak detection indicator.
+    case leakDetected
     
     // Security
     
     /// The alarm trigger state.
-    case securitySystemAlarmType            = 1000
+    case securitySystemAlarmType            = 1300
     
     /// The current security system state.
     case securitySystemCurrentState
@@ -315,7 +417,7 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     // Audio / Video
     
     /// A control for muting audio.
-    case mute                               = 1100
+    case mute                               = 1400
     
     /// An indicator of whether audio feedback, like a beep or other external sound mechanism, is enabled.
     case audioFeedback
@@ -334,13 +436,22 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     // Serial
     
     /// Writable Serial Console
-    case serialConsoleInput             = 64000
+    case serialConsoleInput                 = 1500
     
     /// Readable Serial Console
     case serialConsoleOutput
-
+    
+    // Radio
+    case transmitPower                      = 1600
+    case signalToNoiseRatio
+    case ccaEnergyDetectThreshold
+    case ccaSignalDetectThreshold
+    case receivedSignalStrengthIndication
+    case receiverSensitivity
+    
     // Transport
-    case currentTransport               = 65000
+    case currentTransport                   = 65000
+    case setupTransferTransport
     case wiFiStatus
     case wiFiCapabilities
     case wiFiConfiguration
@@ -352,29 +463,16 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     case loRaStatus
     
     // Other
-    case currentAirPurifierState
-    case currentFanState
-
-
-    case currentHumidifierDehumidifierState
     case currentVisibilityState
-    case currentWaterLevel
     case displayOrder
     case eventRetransmissionMaximum
     case eventTransmissionCounters
-    case filterChangeIndication
-    case filterLifeLevel
-    case filterResetChangeIndication
-    case firmwareUpdateReadiness
-    case firmwareUpdateStatus
-    case hardwareFinish
     case heartBeat
     
     case inputDeviceType
     case inputSourceType
     case labelIndex
     case labelNamespace
-    case leakDetected
     case macRetransmissionMaximum
     case macTransmissionCounters
     case maximumTransmitPower
@@ -383,33 +481,22 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     case characteristicValueActiveTransitionCount
     case characteristicValueTransitionControl
 
-    case nitrogenDioxideDensity
     case operatingStateResponse
-    case ozoneDensity
-    case pm10Density
-    case pm25Density
+    
+    case firmwareUpdateReadiness
+    case firmwareUpdateStatus
+    case hardwareFinish
+    
     case ping
     case powerModeSelection
     case programMode
-    case programmableSwitchEvent
-    case programmableSwitchOutputState
-    case receivedSignalStrengthIndication
-    case receiverSensitivity
-    case relativeHumidityDehumidifierThreshold
-    case relativeHumidityHumidifierThreshold
     case remainingDuration
     case remoteKey
-    case rotationDirection
-    case rotationSpeed
     case selectedDiagnosticsModes
     case setDuration
-    case setupTransferTransport
-    case signalToNoiseRatio
     
     case sleepDiscoveryMode
     case sleepInterval
-    case smokeDetected
-    case sulphurDioxideDensity
     case supportedAssetTypes
     case supportedCharacteristicValueTransitionConfiguration
     case supportedDiagnosticsModes
@@ -417,17 +504,9 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     case supportedFirmwareUpdateConfiguration
     case supportedMetrics
     case supportedTransferTransportConfiguration
-    case swingMode
     case tapType
-    case targetAirPurifierState
-    case targetFanState
-    case targetHumidifierDehumidifierState
-    case targetRelativeHumidity
     case targetVisibilityState
     case token
-    case transmitPower
-    case valveType
-    case volatileOrganicCompoundDensity
 }
 
 public extension UUID {
