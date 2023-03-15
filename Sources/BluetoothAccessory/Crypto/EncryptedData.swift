@@ -8,7 +8,7 @@
 import Foundation
 import TLVCoding
 
-public struct EncryptedData: Equatable, Hashable, Codable {
+public struct EncryptedData: Equatable, Hashable {
     
     /// HMAC signature, signed by secret.
     public let authentication: Authentication
@@ -37,24 +37,24 @@ public extension EncryptedData {
     }
 }
 
-extension EncryptedData: TLVCodable {
+extension EncryptedData {
     
     internal static var authenticationPrefixLength: Int { 176 }
     
-    public init?(tlvData: Data) {
+    public init?(data: Data) {
         let prefixLength = Self.authenticationPrefixLength
-        guard tlvData.count >= prefixLength else {
+        guard data.count >= prefixLength else {
             return nil
         }
-        let prefix = Data(tlvData.prefix(prefixLength))
+        let prefix = Data(data.prefix(prefixLength))
         guard let authentication = try? TLVDecoder.bluetoothAccessory.decode(Authentication.self, from: prefix) else {
             return nil
         }
         self.authentication = authentication
-        self.encryptedData = tlvData.count > prefixLength ? Data(tlvData.suffix(from: prefixLength)) : Data()
+        self.encryptedData = data.count > prefixLength ? Data(data.suffix(from: prefixLength)) : Data()
     }
     
-    public var tlvData: Data {
+    public var data: Data {
         let authenticationData = try! TLVEncoder.bluetoothAccessory.encode(authentication)
         return authenticationData + encryptedData
     }

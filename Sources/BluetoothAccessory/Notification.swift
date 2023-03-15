@@ -49,13 +49,13 @@ public extension EncryptedNotification {
     init?(data: Data) {
         guard data.count >= 2,
             let isLast = Bool(byteValue: data[0]),
-            let encryptedData = EncryptedData(tlvData: data.advanced(by: 1))
+            let encryptedData = EncryptedData(data: data.advanced(by: 1))
             else { return nil }
         self.isLast = isLast
         self.value = encryptedData
     }
     
     var data: Data {
-        return Data([isLast.byteValue]) + value.tlvData
+        return Data([isLast.byteValue]) + value.data
     }
 }

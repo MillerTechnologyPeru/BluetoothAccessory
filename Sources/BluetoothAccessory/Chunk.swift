@@ -6,13 +6,12 @@
 //
 
 import Foundation
-import TLVCoding
 
 /// Chunk of data to send over BLE.
-public struct Chunk: Equatable {
+public struct Chunk: Equatable, Hashable {
     
     /// The minimum length of bytes in this PDU.
-    internal static let headerLength = MemoryLayout<UInt8>.size + MemoryLayout<UInt32>.size
+    internal static var headerLength: Int { MemoryLayout<UInt8>.size + MemoryLayout<UInt32>.size }
     
     /// The bytes in this chunk
     public let isFirst: Bool
@@ -30,9 +29,7 @@ public extension Chunk {
     static func from(_ data: Data, maximumUpdateValueLength: Int) -> [Chunk] {
         
         let chunkSize = maximumUpdateValueLength - headerLength
-        
         let totalBytes = UInt32(data.count)
-        
         return stride(from: 0, to: data.count, by: chunkSize)
             .lazy
             .map { Data(data[$0 ..< min($0 + chunkSize, data.count)]) }
@@ -44,7 +41,6 @@ public extension Chunk {
 public extension Data {
     
     init(chunks: [Chunk]) {
-        
         self = chunks.reduce(into: Data(capacity: chunks.length), { $0.append($1.bytes) })
     }
 }
@@ -52,7 +48,6 @@ public extension Data {
 public extension Array where Iterator.Element == Chunk {
     
     var length: Int {
-        
         return reduce(0, { $0 + $1.bytes.count })
     }
     
@@ -81,9 +76,7 @@ public extension Chunk {
     }
     
     var data: Data {
-        
         let totalBytes = total.littleEndian.bytes
-        
         return [isFirst.byteValue,
                 totalBytes.0,
                 totalBytes.1,

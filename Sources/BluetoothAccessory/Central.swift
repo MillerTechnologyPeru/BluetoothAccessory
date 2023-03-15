@@ -54,6 +54,13 @@ public struct GATTConnection <Central: CentralManager> {
 
 public extension GATTConnection {
     
+    var maximumUpdateValueLength: Int {
+        Int(maximumTransmissionUnit.rawValue) - 3
+    }
+}
+
+public extension GATTConnection {
+    
     struct Cache: Equatable, Hashable {
         
         public var services: [ServiceCache]
@@ -113,10 +120,10 @@ public extension GATTConnection {
     /// Write an unencrypted characteristic.
     func write(
         _ value: Data,
-        for characteristic: Characteristic<Central.Peripheral, Central.AttributeID>,
-        withResponse: Bool = true
+        for characteristic: Characteristic<Central.Peripheral, Central.AttributeID>
     ) async throws {
         assert(characteristic.properties.contains(.write), "Characteristic does not support write")
+        let withResponse = characteristic.properties.contains(.writeWithoutResponse) ? false : true
         try await self.central.writeValue(value, for: characteristic, withResponse: withResponse)
     }
     
@@ -124,12 +131,17 @@ public extension GATTConnection {
     func writeEncrypted(
         _ value: Data,
         for characteristic: Characteristic<Central.Peripheral, Central.AttributeID>,
-        withResponse: Bool = true,
-        key: Credential
+        key: Credential,
+        log: ((String) -> ())? = nil
     ) async throws {
         assert(characteristic.properties.contains(.write), "Characteristic does not support write")
+        let withResponse = characteristic.properties.contains(.writeWithoutResponse) ? false : true
         let encrypted = try EncryptedData(encrypt: value, using: key.secret, id: key.id)
-        try await self.central.writeValue(encrypted.tlvData, for: characteristic, withResponse: withResponse)
+        let chunks = Chunk.from(encrypted.data, maximumUpdateValueLength: maximumUpdateValueLength)
+        for (index, chunk) in chunks.enumerated() {
+            log?("Sent chunk \(index + 1) (\(chunks.length)/\(chunk.total)) for \(characteristic.uuid)")
+            try await self.central.writeValue(chunk.data, for: characteristic, withResponse: withResponse)
+        }
     }
     
     /// Read a characteristic.
@@ -144,14 +156,30 @@ public extension GATTConnection {
     /// Read an encrypted characteristic.
     func readEncryped(
         characteristic: Characteristic<Central.Peripheral, Central.AttributeID>,
-        key: KeyData
+        key: Credential,
+        log: ((String) -> ())? = nil
     ) async throws -> Data {
-        assert(characteristic.properties.contains(.read), "Characteristic does not support reading")
-        let data = try await self.central.readValue(for: characteristic)
-        guard let encryptedData = EncryptedData(tlvData: data) else {
+        assert(characteristic.properties.contains(.notify), "Characteristic does not support notifications")
+        let stream = try await self.central.notify(for: characteristic)
+        var chunks = [Chunk]()
+        chunks.reserveCapacity(2)
+        for try await notification in stream {
+            guard let chunk = Chunk(data: notification) else {
+                throw BluetoothAccessoryError.invalidData(notification)
+            }
+            chunks.append(chunk)
+            log?("Received chunk \(chunks.count) (\(chunks.length)/\(chunk.total)) for \(characteristic.uuid)")
+            assert(chunks.isEmpty == false)
+            guard chunks.length >= chunk.total else {
+                continue // wait for more chunks
+            }
+            stream.stop()
+        }
+        let data = Data(chunks: chunks)
+        guard let encryptedData = EncryptedData(data: data) else {
             throw BluetoothAccessoryError.invalidData(data)
         }
-        let decrypted = try encryptedData.decrypt(using: key)
+        let decrypted = try encryptedData.decrypt(using: key.secret)
         return decrypted
     }
     
@@ -164,7 +192,7 @@ public extension GATTConnection {
         log: ((String) -> ())? = nil
     ) async throws -> AsyncThrowingStream<Data, Error> {
         let stream = try await self.central.notify(for: notifyCharacteristic)
-        try await self.writeEncrypted(writeValue(), for: writeCharacteristic, withResponse: true, key: key)
+        try await self.writeEncrypted(writeValue(), for: writeCharacteristic, key: key)
         return AsyncThrowingStream(Data.self, bufferingPolicy: .unbounded) { continuation in
             Task.detached {
                 do {
@@ -176,7 +204,7 @@ public extension GATTConnection {
                             throw BluetoothAccessoryError.invalidData(chunkNotification)
                         }
                         chunks.append(chunk)
-                        log?("Received chunk \(chunks.count) (\(chunks.length)/\(chunk.total))")
+                        log?("Received chunk \(chunks.count) (\(chunks.length)/\(chunk.total)) for \(notifyCharacteristic.uuid)")
                         assert(chunks.isEmpty == false)
                         guard chunks.length >= chunk.total else {
                             continue // wait for more chunks
@@ -187,7 +215,7 @@ public extension GATTConnection {
                         let decryptedValue = try notification.value.decrypt(using: key.secret)
                         continuation.yield(decryptedValue)
                         notificationsCount += 1
-                        log?("Received\(notification.isLast ? " last" : "") notification \(notificationsCount)")
+                        log?("Received\(notification.isLast ? " last" : "") notification \(notificationsCount) for \(notifyCharacteristic.uuid)")
                         chunks.removeAll(keepingCapacity: true)
                         guard notification.isLast else {
                             continue // wait for final value
@@ -209,20 +237,18 @@ public extension GATTConnection {
     /// Write an unencrypted characteristic.
     func write(
         _ value: CharacteristicValue,
-        for characteristic: Characteristic<Central.Peripheral, Central.AttributeID>,
-        withResponse: Bool = true
+        for characteristic: Characteristic<Central.Peripheral, Central.AttributeID>
     ) async throws {
-        try await write(value.encode(), for: characteristic, withResponse: withResponse)
+        try await write(value.encode(), for: characteristic)
     }
     
     /// Write an encrypted characteristic.
     func writeEncrypted(
         _ value: CharacteristicValue,
         for characteristic: Characteristic<Central.Peripheral, Central.AttributeID>,
-        withResponse: Bool = true,
         key: Credential
     ) async throws {
-        try await writeEncrypted(value.encode(), for: characteristic, withResponse: withResponse, key: key)
+        try await writeEncrypted(value.encode(), for: characteristic, key: key)
     }
     
     /// Read a characteristic.
@@ -241,7 +267,7 @@ public extension GATTConnection {
     func readEncryped(
         characteristic: Characteristic<Central.Peripheral, Central.AttributeID>,
         format: CharacteristicFormat,
-        key: KeyData
+        key: Credential
     ) async throws -> CharacteristicValue {
         let data = try await readEncryped(characteristic: characteristic, key: key)
         guard let value = CharacteristicValue(from: data, format: format) else {
@@ -279,7 +305,7 @@ public extension GATTConnection {
         for characteristic: Characteristic<Central.Peripheral, Central.AttributeID>,
         withResponse: Bool = true
     ) async throws {
-        try await write(value.encode(), for: characteristic, withResponse: withResponse)
+        try await write(value.encode(), for: characteristic)
     }
     
     /// Write an encrypted characteristic.
@@ -289,7 +315,7 @@ public extension GATTConnection {
         withResponse: Bool = true,
         key: Credential
     ) async throws {
-        try await writeEncrypted(value.encode(), for: characteristic, withResponse: withResponse, key: key)
+        try await writeEncrypted(value.encode(), for: characteristic, key: key)
     }
     
     /// Read a characteristic.
@@ -308,7 +334,7 @@ public extension GATTConnection {
     func readEncryped<T: AccessoryCharacteristic>(
         _ type: T.Type,
         characteristic: Characteristic<Central.Peripheral, Central.AttributeID>,
-        key: KeyData
+        key: Credential
     ) async throws -> T {
         let data = try await readEncryped(characteristic: characteristic, key: key)
         guard let value = T.init(from: data) else {

@@ -18,11 +18,11 @@ public protocol AccessoryCharacteristic {
     associatedtype Value: CharacteristicCodable
     
     static var type: CharacteristicType { get }
-        
+    
     static var properties: BitMaskOptionSet<CharacteristicProperty> { get }
     
     static var unit: CharacteristicUnit? { get }
-        
+    
     init(value: Value)
     
     var value: Value { get }
@@ -76,6 +76,9 @@ internal extension AccessoryCharacteristic {
         }
         if self.properties.contains(.write) {
             properties.insert(.write)
+        }
+        if self.properties.contains(.writeWithoutResponse) {
+            properties.insert(.writeWithoutResponse)
         }
         return properties
     }
