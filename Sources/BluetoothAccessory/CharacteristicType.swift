@@ -138,21 +138,68 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     
     /// Whether the battery voltage is steady while charging.
     case batteryVoltageSteady
+    
+    /// Battery rating voltage
+    ///
+    /// The units is V.
     case batteryRatingVoltage
+    
+    /// Battery re-charge voltage
+    ///
+    /// The units is V.
     case batteryRechargeVoltage
+    
+    /// Battery under voltage
+    ///
+    /// The units is V.
     case batteryUnderVoltage
+    
+    /// Battery bulk voltage
+    ///
+    /// The units is V.
     case batteryBulkVoltage
+    
+    /// Battery float voltage
+    ///
+    /// The units is V.
     case batteryFloatVoltage
+    
+    /// Battery re-discharge voltage
+    ///
+    /// The units is V.
+    case batteryRedischargeVoltage
     
     // Outlet / Solar / Inverter
     
     /// The state of an outlet.
     case outletInUse                        = 400
+    
+    /// AC output voltage
+    ///
+    /// The units is V.
     case outputVoltage
+    
+    /// AC output frequency
+    ///
+    /// The units is Hz.
     case outputFrequency
+    
+    /// AC output apparent power
+    ///
+    /// The units is VA.
     case outputApparentPower
+    
+    /// AC output active power
+    ///
+    /// The units is W.
     case outputActivePower
+    
+    /// Output load percent
+    ///
+    /// The units is %.
     case outputLoadPercent
+    
+    /// Output source priority.
     case outputSourcePriority
     
     /// The power state of the accessory.
@@ -168,18 +215,47 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     case programmableSwitchOutputState
     
     case inputVoltageRange
+    
+    /// Inverter heat sink temperature
+    ///
+    /// The units is °C
     case inverterHeatSinkTemperature
+    
+    /// Inverter Bus voltage
+    ///
+    /// The units is V.
     case inverterBusVoltage
+    
+    /// Charger source priority
     case inverterChargerSourcePriority
     
     /// Inverter Device Mode
     case inverterMode
     
+    /// Inverter Output mode
     case inverterOutputMode
+    
+    /// Inverter max parallel units
     case inverterMaxParallel
+    
+    /// Solar PV Input current for battery.
+    ///
+    /// The units is A.
     case solarInputCurrent
+    
+    /// Solar PV Input voltage
+    ///
+    /// The units is V.
     case solarInputVoltage
+    
+    /// Grid voltage
+    ///
+    /// The units is V.
     case gridVoltage
+    
+    /// Grid frequency.
+    ///
+    /// The units is Hz.
     case gridFrequency
     
     // Lock
@@ -939,6 +1015,8 @@ extension CharacteristicType: CustomStringConvertible {
             return "WiFi Status"
         case .loRaStatus:
             return "LoRa Status"
+        case .batteryRedischargeVoltage:
+            return "Battery Re-discharge Voltage"
         }
     }
 }
