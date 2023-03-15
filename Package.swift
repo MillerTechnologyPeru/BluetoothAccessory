@@ -1,6 +1,5 @@
 // swift-tools-version: 5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
-
 import PackageDescription
 
 let package = Package(
@@ -29,7 +28,11 @@ let package = Package(
         .package(
             url: "https://github.com/PureSwift/GATT.git",
             branch: "master"
-        )
+        ),
+        .package(
+            url: "https://github.com/apple/swift-crypto.git",
+            from: "2.4.0"
+        ),
     ],
     targets: [
         .target(
@@ -58,7 +61,12 @@ let package = Package(
                     name: "GATT",
                     package: "GATT"
                 ),
-                "TLVCoding"
+                "TLVCoding",
+                .product(
+                    name: "Crypto",
+                    package: "swift-crypto",
+                    condition: .when(platforms: [.linux])
+                )
             ]
         ),
         .testTarget(
