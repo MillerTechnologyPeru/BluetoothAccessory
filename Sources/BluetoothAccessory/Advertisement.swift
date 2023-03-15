@@ -5,7 +5,7 @@
 //  Created by Alsey Coleman Miller on 2/28/23.
 //
 
-#if os(macOS) || os(Linux)
+#if canImport(BluetoothHCI)
 import Foundation
 import Bluetooth
 import BluetoothHCI
@@ -46,15 +46,8 @@ public extension BluetoothHostControllerInterface {
         flags: GAPFlags = [.lowEnergyGeneralDiscoverableMode, .notSupportedBREDR],
         interval: AdvertisingInterval = .min
     ) async throws {
-        
-        do { try await enableLowEnergyAdvertising(false) }
-        catch HCIError.commandDisallowed { }
-        
         let beacon = AppleBeacon(bluetoothAccessory: accessoryBeacon, rssi: rssi)
         try await iBeacon(beacon, flags: flags, interval: interval)
-        
-        do { try await enableLowEnergyAdvertising() }
-        catch HCIError.commandDisallowed { }
     }
     
     /// Set scan response with service UUID and name.
