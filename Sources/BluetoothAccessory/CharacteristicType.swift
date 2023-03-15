@@ -11,26 +11,278 @@ import Bluetooth
 /// Accessory Characteristic Type
 public enum CharacteristicType: UInt16, Codable, CaseIterable {
     
+    // Information
+    
+    /// The unique identifier of the accessory.
+    case identifier                         = 0
+    
+    /// Accessory Type
     case accessoryType
+    
+    /// The name of the accessory.
+    case name
+    
+    /// A control you can use to ask the accessory to identify itself.
+    case identify
+    
+    /// The model of the accessory.
+    case model
+    
+    /// The manufacturer of the accessory.
+    case manufacturer
+    
+    /// The serial number of the accessory.
+    case serialNumber
+    
+    /// The version of the accessory.
+    case version
+    
+    /// The software version of the accessory.
+    case softwareVersion
+    
+    /// The hardware version of the accessory.
+    case hardwareRevision
+    
+    /// The firmware version of the accessory.
+    case firmwareVersion
+    
+    /// Vendor-specific product data.
+    case productData
+    
+    /// Customizable Accessory name
+    case configuredName
+    
     case accessoryFlags
+    
+    /// An indicator of whether the accessory accepts only administrator access.
+    case administratorOnlyAccess
+    
+    /// 
+    case stagedFirmwareVersion
+    
+    /// An indicator of whether the service is working.
+    case statusActive
+    
+    /// An indicator of whether the accessory has experienced a fault.
+    case statusFault
+    
+    /// An indicator of whether an accessory has been tampered with.
+    case statusTampered
+    
+    /// The current status of an accessory.
     case active
+    
+    /// The current usage state of an accessory.
+    case inUse
+    
+    /// The configuration state of an accessory.
+    case isConfigured
+    
+    ///
     case activeIdentifier
     case activityInterval
-    case administratorOnlyAccess
     case applicationMatchingIdentifier
+    
     case assetUpdateReadiness
-    case audioFeedback
-    case batteryLevel
+    
+    /// Log data for the accessory.
+    case logs
+    
+    // Authentication
+    
+    /// Writable Setup / Pairing characteristic
+    case setup                              = 100
+    
+    /// Writable characteristic for encrypted reads.
+    case encryptedRead
+    
+    /// Hash used for cryptographic operations
+    case cryptoHash
+    
+    // Light
+    
+    /// The brightness of a light.
+    case brightness                         = 200
+    
+    /// The color temperature of a light.
+    case colorTemperature
+    
+    /// The current light level.
+    case currentLightLevel
+    
+    /// The hue of the color used by a light.
+    case hue
+    
+    /// The saturation of the color used by a light.
+    case saturation
+
+    // Battery
+    
+    /// The battery level of the accessory.
+    case batteryLevel                       = 300
+    
+    /// The charging state of a battery.
+    case chargingState
+    
+    /// Battery Type
+    case batteryType
+    
+    /// A low battery indicator.
+    case statusLowBattery
+    
+    /// Current charging current of battery in amperes.
     case batteryChargingCurrent
+    
+    /// Current voltage of battery.
     case batteryVoltage
+    
+    /// Whether the battery voltage is steady while charging.
     case batteryVoltageSteady
     case batteryRatingVoltage
     case batteryRechargeVoltage
     case batteryUnderVoltage
     case batteryBulkVoltage
     case batteryFloatVoltage
-    case batteryType
-    case brightness
+    
+    // Outlet / Solar / Inverter
+    
+    /// The state of an outlet.
+    case outletInUse                        = 400
+    case outputVoltage
+    case outputFrequency
+    case outputApparentPower
+    case outputActivePower
+    case outputLoadPercent
+    case outputSourcePriority
+    
+    /// The power state of the accessory.
+    case powerState
+    
+    /// The state of a contact sensor.
+    case contactSensorState
+    
+    case inputVoltageRange
+    case inverterHeatSinkTemperature
+    case inverterBusVoltage
+    case inverterChargerSourcePriority
+    
+    /// Inverter Device Mode
+    case inverterMode
+    
+    case inverterOutputMode
+    case inverterMaxParallel
+    case solarInputCurrent
+    case solarInputVoltage
+    case gridVoltage
+    case gridFrequency
+    
+    // Lock
+    
+    /// A control that accepts vendor-specific actions for lock management.
+    case lockControlPoint                   = 500
+    
+    /// The current state of the locking mechanism.
+    case lockCurrentState
+    
+    /// The last known action of the locking mechanism.
+    case lockLastKnownAction
+    
+    /// The automatic timeout for a lockable accessory that supports automatic lockout.
+    case lockManagementAutoSecurityTimeout
+    
+    /// The lock’s physical control state.
+    case lockPhysicalControls
+    
+    /// The target state for the locking mechanism.
+    case lockTargetState
+    
+    /// Lock Events
+    case lockEvents
+    
+    // Door / Window
+    
+    /// The current door state.
+    case currentDoorState                   = 600
+    
+    /// The target door state.
+    case targetDoorState
+    
+    /// The current position of a door, window, awning, or window covering.
+    case currentPosition
+    
+    /// The target position of a door, window, awning, or window covering.
+    case targetPosition
+    
+    /// The position of an accessory like a door, window, awning, or window covering.
+    case positionState
+    
+    /// An indicator of whether an accessory is jammed.
+    case statusJammed
+    
+    /// A control for holding the position of an accessory like a door or window.
+    case holdPosition
+    
+    /// The type of slat on an accessory like a window or a fan.
+    case slatType
+    
+    /// The current state of slats on an accessory like a window or a fan.
+    case currentSlatState
+
+    // Tilting mechanisms
+    
+    /// The current tilt angle of a slat for an accessory like a window or a fan.
+    case currentTiltAngle
+    
+    /// The target tilt angle of a slat for an accessory like a window or a fan.
+    case targetTiltAngle
+    
+    /// The current tilt angle of a horizontal slat for an accessory like a window or a fan.
+    case currentHorizontalTiltAngle
+    
+    /// The target tilt angle of a horizontal slat for an accessory like a window or a fan.
+    case targetHorizontalTiltAngle
+    
+    /// The current tilt angle of a vertical slat for an accessory like a window or a fan.
+    case currentVerticalTiltAngle
+    
+    /// The target tilt angle of a vertical slat for an accessory like a window or a fan.
+    case targetVerticalTiltAngle
+    
+    // Temperature
+    
+    /// The current temperature measured by the accessory.
+    case currentTemperature                 = 700
+    
+    /// The target temperature for the accessory to achieve.
+    case targetTemperature
+    
+    /// The units of temperature currently active on the accessory.
+    case temperatureDisplayUnits
+    
+    /// The target heating or cooling mode for a thermostat.
+    case targetHeatingCoolingState
+    
+    /// The current heating or cooling mode for a thermostat.
+    case currentHeatingCoolingState
+    
+    /// The target state for a device that heats or cools, like an oven or a refrigerator.
+    case targetHeaterCoolerState
+    
+    /// The current state for a device that heats or cools, like an oven or a refrigerator.
+    case currentHeaterCoolerState
+    
+    /// The temperature above which cooling will be active.
+    case coolingThresholdTemperature
+    
+    /// The temperature below which heating will be active.
+    case heatingThresholdTemperature
+    
+    // Humidity
+    case currentRelativeHumidity            = 800
+    
+    // Air Quality / Smoke Detection
+    case currentAirQuality                  = 900
+    
     case ccaEnergyDetectThreshold
     case ccaSignalDetectThreshold
     case carbonDioxideDetected
@@ -39,32 +291,72 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     case carbonMonoxideDetected
     case carbonMonoxideLevel
     case carbonMonoxidePeakLevel
-    case characteristicValueActiveTransitionCount
-    case characteristicValueTransitionControl
-    case chargingState
-    case closedCaptions
-    case colorTemperature
-    case configuredName
-    case contactSensorState
-    case coolingThresholdTemperature
-    case cryptoHash
-    case currentAirPurifierState
-    case currentAirQuality
-    case currentDoorState
-    case currentFanState
-    case currentHeaterCoolerState
-    case currentHeatingCoolingState
-    case currentHorizontalTiltAngle
-    case currentHumidifierDehumidifierState
-    case currentLightLevel
+    
+    // Security
+    
+    /// The alarm trigger state.
+    case securitySystemAlarmType            = 1000
+    
+    /// The current security system state.
+    case securitySystemCurrentState
+    
+    /// The target security system state.
+    case securitySystemTargetState
+    
+    /// An indicator of whether an obstruction is detected, as when something prevents a garage door from closing.
+    case obstructionDetected
+    
+    /// An indicator of whether the home is occupied.
+    case occupancyDetected
+    
+    /// An indicator of whether the accessory has detected motion.
+    case motionDetected
+    
+    // Audio / Video
+    
+    /// A control for muting audio.
+    case mute                               = 1100
+    
+    /// An indicator of whether audio feedback, like a beep or other external sound mechanism, is enabled.
+    case audioFeedback
+    
+    /// The input or output volume of an audio device.
+    case volume
+    case volumeControlType
+    case volumeSelector
+    case targetMediaState
     case currentMediaState
-    case currentPosition
-    case currentRelativeHumidity
-    case currentSlatState
-    case currentTemperature
-    case currentTiltAngle
-    case currentTransport
-    case currentVerticalTiltAngle
+    case closedCaptions
+    
+    ///
+    case pictureMode
+    
+    // Serial
+    
+    /// Writable Serial Console
+    case serialConsoleInput             = 64000
+    
+    /// Readable Serial Console
+    case serialConsoleOutput
+
+    // Transport
+    case currentTransport               = 65000
+    case wiFiStatus
+    case wiFiCapabilities
+    case wiFiConfiguration
+    case wiFiNetworkList
+    case threadStatus
+    case threadControlPoint
+    case threadNodeCapabilities
+    case threadOpenthreadVersion
+    case loRaStatus
+    
+    // Other
+    case currentAirPurifierState
+    case currentFanState
+
+
+    case currentHumidifierDehumidifierState
     case currentVisibilityState
     case currentWaterLevel
     case displayOrder
@@ -73,70 +365,31 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     case filterChangeIndication
     case filterLifeLevel
     case filterResetChangeIndication
-    case firmwareRevision
     case firmwareUpdateReadiness
     case firmwareUpdateStatus
-    case gridVoltage
-    case gridFrequency
     case hardwareFinish
-    case hardwareRevision
     case heartBeat
-    case heatingThresholdTemperature
-    case holdPosition
-    case hue
-    case identifier
-    case identify
-    case inUse
+    
     case inputDeviceType
     case inputSourceType
-    case inputVoltageRange
-    case inverterHeatSinkTemperature
-    case inverterBusVoltage
-    case inverterChargerSourcePriority
-    case inverterMode
-    case inverterOutputMode
-    case inverterMaxParallel
-    case isConfigured
     case labelIndex
     case labelNamespace
     case leakDetected
-    case lockControlPoint
-    case lockCurrentState
-    case lockLastKnownAction
-    case lockManagementAutoSecurityTimeout
-    case lockPhysicalControls
-    case lockTargetState
-    case lockEvents
-    case logs
     case macRetransmissionMaximum
     case macTransmissionCounters
-    case manufacturer
     case maximumTransmitPower
     case metricsBufferFullState
-    case model
-    case motionDetected
-    case mute
-    case name
+    
+    case characteristicValueActiveTransitionCount
+    case characteristicValueTransitionControl
+
     case nitrogenDioxideDensity
-    case obstructionDetected
-    case occupancyDetected
     case operatingStateResponse
-    case outletInUse
-    case outputVoltage
-    case outputFrequency
-    case outputApparentPower
-    case outputActivePower
-    case outputLoadPercent
-    case outputSourcePriority
     case ozoneDensity
     case pm10Density
     case pm25Density
-    case pictureMode
     case ping
-    case positionState
     case powerModeSelection
-    case powerState
-    case productData
     case programMode
     case programmableSwitchEvent
     case programmableSwitchOutputState
@@ -148,28 +401,14 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     case remoteKey
     case rotationDirection
     case rotationSpeed
-    case saturation
-    case securitySystemAlarmType
-    case securitySystemCurrentState
-    case securitySystemTargetState
     case selectedDiagnosticsModes
-    case serialNumber
-    case serialConsole
     case setDuration
     case setupTransferTransport
     case signalToNoiseRatio
-    case slatType
+    
     case sleepDiscoveryMode
     case sleepInterval
     case smokeDetected
-    case softwareRevision
-    case solarInputCurrent
-    case solarInputVoltage
-    case stagedFirmwareVersion
-    case statusActive
-    case statusFault
-    case statusLowBattery
-    case statusTampered
     case sulphurDioxideDensity
     case supportedAssetTypes
     case supportedCharacteristicValueTransitionConfiguration
@@ -181,34 +420,14 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     case swingMode
     case tapType
     case targetAirPurifierState
-    case targetDoorState
     case targetFanState
-    case targetHeaterCoolerState
-    case targetHeatingCoolingState
-    case targetHorizontalTiltAngle
     case targetHumidifierDehumidifierState
-    case targetMediaState
-    case targetPosition
     case targetRelativeHumidity
-    case targetTemperature
-    case targetTiltAngle
-    case targetVerticalTiltAngle
     case targetVisibilityState
-    case temperatureDisplayUnits
-    case threadControlPoint
-    case threadNodeCapabilities
-    case threadOpenthreadVersion
-    case threadStatus
     case token
     case transmitPower
     case valveType
     case volatileOrganicCompoundDensity
-    case volume
-    case volumeControlType
-    case volumeSelector
-    case wiFiCapabilities
-    case wiFiConfiguration
-    case wiFiNetworkList
 }
 
 public extension UUID {
@@ -355,8 +574,8 @@ extension CharacteristicType: CustomStringConvertible {
             return "Filter Life Level"
         case .filterResetChangeIndication:
             return "Filter Reset Change Indication"
-        case .firmwareRevision:
-            return "Firmware Revision"
+        case .firmwareVersion:
+            return "Firmware Version"
         case .firmwareUpdateReadiness:
             return "Firmware Update Readiness"
         case .firmwareUpdateStatus:
@@ -517,8 +736,10 @@ extension CharacteristicType: CustomStringConvertible {
             return "Selected Diagnostics Modes"
         case .serialNumber:
             return "Serial Number"
-        case .serialConsole:
-            return "Serial Console"
+        case .serialConsoleInput:
+            return "Serial Input Console"
+        case .serialConsoleOutput:
+            return "Serial Output Console"
         case .setDuration:
             return "Set Duration"
         case .setupTransferTransport:
@@ -533,8 +754,8 @@ extension CharacteristicType: CustomStringConvertible {
             return "Sleep Interval"
         case .smokeDetected:
             return "Smoke Detected"
-        case .softwareRevision:
-            return "Software Revision"
+        case .softwareVersion:
+            return "Software Version"
         case .solarInputCurrent:
             return "Solar Input Current"
         case .solarInputVoltage:
@@ -627,6 +848,18 @@ extension CharacteristicType: CustomStringConvertible {
             return "WiFi Configuration"
         case .wiFiNetworkList:
             return "WiFi Network List"
+        case .version:
+            return "Version"
+        case .setup:
+            return "Setup"
+        case .encryptedRead:
+            return "Encrypted Read"
+        case .statusJammed:
+            return "Jammed Status"
+        case .wiFiStatus:
+            return "WiFi Status"
+        case .loRaStatus:
+            return "LoRa Status"
         }
     }
 }

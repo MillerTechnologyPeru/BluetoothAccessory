@@ -12,7 +12,8 @@ import Bluetooth
 public enum ServiceType: UInt16, CaseIterable {
     
     // Information
-    case information
+    case information                = 0
+    case authentication
     case bridge
     case serial
     case firmwareUpdate
