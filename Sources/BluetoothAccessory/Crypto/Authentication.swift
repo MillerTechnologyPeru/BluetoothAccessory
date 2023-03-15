@@ -40,12 +40,12 @@ public struct AuthenticationMessage: Equatable, Hashable, Codable {
         date: Date = Date(),
         nonce: Nonce = Nonce(),
         digest: Digest,
-        id: UUID
+        id: UUID? = nil
     ) {
         self.date = date.removingMiliseconds
         self.nonce = nonce
         self.digest = digest
-        self.id = id
+        self.id = id ?? .zero
     }
 }
 
