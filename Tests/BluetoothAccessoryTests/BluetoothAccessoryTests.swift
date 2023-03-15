@@ -26,13 +26,13 @@ final class BluetoothAccessoryTests: XCTestCase {
     func testServiceType() {
         
         XCTAssertEqual(BluetoothUUID(service: .information).description, "00010000-0000-1000-8000-0091002CCCCC")
-        XCTAssertEqual(BluetoothUUID(service: .bridge).description, "00010001-0000-1000-8000-0091002CCCCC")
+        XCTAssertEqual(BluetoothUUID(service: .authentication).description, "00010001-0000-1000-8000-0091002CCCCC")
     }
     
     func testCharacteristicType() {
         
-        XCTAssertEqual(BluetoothUUID(characteristic: .accessoryType).description, "00020000-0000-1000-8000-0091002CCCCC")
-        XCTAssertEqual(BluetoothUUID(characteristic: .accessoryFlags).description, "00020001-0000-1000-8000-0091002CCCCC")
+        XCTAssertEqual(BluetoothUUID(characteristic: .identifier).description, "00020000-0000-1000-8000-0091002CCCCC")
+        XCTAssertEqual(BluetoothUUID(characteristic: .accessoryType).description, "00020001-0000-1000-8000-0091002CCCCC")
     }
     
     func testCharacteristicValue() {
