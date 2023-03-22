@@ -67,12 +67,12 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
             }
         }
         
-        try await peripheral.start(
+        try await peripheral.start()
+        try await peripheral.advertise(
+            beacon: beacon,
+            rssi: rssi,
             name: name,
-            service: service,
-            id: id,
-            rssi: rssi
+            service: service
         )
     }
 }
-

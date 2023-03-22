@@ -10,32 +10,22 @@ import Bluetooth
 import GATT
 
 public protocol AccessoryPeripheralManager: PeripheralManager {
-    
-    func start(name: String, service: ServiceType, id: UUID, rssi: Int8) async throws
-    
-    func advertise(beacon: AccessoryBeacon, rssi: Int8) async throws
+        
+    func advertise(beacon: AccessoryBeacon, rssi: Int8, name: String, service: ServiceType) async throws
 }
 
 #if canImport(BluetoothHCI)
 extension GATTPeripheral: AccessoryPeripheralManager {
     
-    public func start(name: String, service: ServiceType, id: UUID, rssi: Int8) async throws {
+    public func advertise(
+        beacon: AccessoryBeacon,
+        rssi: Int8,
+        name: String,
+        service: ServiceType
+    ) async throws {
         // write classic BT name
         try await hostController.writeLocalName(name)
         // advertise iBeacon and set interval
-        try await hostController.setAdvertisingData(
-            beacon: .id(id),
-            rssi: rssi
-        )
-        let advertisingOptions = AdvertisingOptions(
-            advertisingData: LowEnergyAdvertisingData(beacon: .id(id), rssi: rssi),
-            scanResponse: LowEnergyAdvertisingData(service: service, name: name)
-        )
-        // publish GATT server, enable advertising
-        try await start(options: advertisingOptions)
-    }
-    
-    public func advertise(beacon: AccessoryBeacon, rssi: Int8) async throws {
         let flags: GAPFlags
         switch beacon {
         case .id:
@@ -48,6 +38,8 @@ extension GATTPeripheral: AccessoryPeripheralManager {
             rssi: rssi,
             flags: flags
         )
+        // set scan response with name and service UUID
+        try await hostController.setScanResponse(service: service, name: name)
     }
 }
 #endif
