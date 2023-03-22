@@ -599,6 +599,16 @@ public extension BluetoothUUID {
     }
 }
 
+public extension CharacteristicType {
+    
+    init?(uuid: BluetoothUUID) {
+        guard let value = Self.allCases.first(where: { BluetoothUUID(characteristic: $0) == uuid }) else {
+            return nil
+        }
+        self = value
+    }
+}
+
 // MARK: - CustomStringConvertible
 
 extension CharacteristicType: CustomStringConvertible {
