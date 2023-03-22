@@ -17,7 +17,7 @@ public protocol AccessoryCharacteristic {
     
     associatedtype Value: CharacteristicCodable
     
-    static var type: CharacteristicType { get }
+    static var type: BluetoothUUID { get }
     
     static var properties: BitMaskOptionSet<CharacteristicProperty> { get }
     
@@ -109,7 +109,7 @@ public extension GATTAttribute.Characteristic {
     
     init<T: AccessoryCharacteristic>(_ characteristic: T.Type) {
         self.init(
-            uuid: BluetoothUUID(characteristic: characteristic.type),
+            uuid: characteristic.type,
             value: Data(),
             permissions: characteristic.gattPermissions,
             properties: characteristic.gattProperties,

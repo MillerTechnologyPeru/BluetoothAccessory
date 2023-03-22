@@ -11,7 +11,7 @@ import GATT
 
 public struct AccessoryTypeCharacteristic: Equatable, Hashable, AccessoryCharacteristic {
     
-    public static var type: CharacteristicType { .accessoryType }
+    public static var type: BluetoothUUID { BluetoothUUID(characteristic: .accessoryType) }
     
     public static var properties: BitMaskOptionSet<CharacteristicProperty> { [.read] }
     

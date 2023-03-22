@@ -11,7 +11,7 @@ import GATT
 
 public struct IdentifyCharacteristic: Equatable, Hashable, AccessoryCharacteristic {
     
-    public static var type: CharacteristicType { .identify }
+    public static var type: BluetoothUUID { BluetoothUUID(characteristic: .identify) }
     
     public static var properties: BitMaskOptionSet<CharacteristicProperty> { [.write, .encrypted] }
     
