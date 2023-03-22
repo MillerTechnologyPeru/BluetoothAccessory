@@ -72,3 +72,13 @@ public extension BluetoothUUID {
         self.init(uuid: .init(service: service))
     }
 }
+
+public extension ServiceType {
+    
+    init?(uuid: BluetoothUUID) {
+        guard let value = Self.allCases.first(where: { BluetoothUUID(service: $0) == uuid }) else {
+            return nil
+        }
+        self = value
+    }
+}
