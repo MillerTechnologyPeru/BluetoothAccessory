@@ -36,10 +36,20 @@ extension GATTPeripheral: AccessoryPeripheralManager {
     }
     
     public func advertise(beacon: AccessoryBeacon, rssi: Int8) async throws {
+        let flags: GAPFlags
+        switch beacon {
+        case .id:
+            flags = [.lowEnergyGeneralDiscoverableMode, .notSupportedBREDR]
+        case .characteristicChanged:
+            flags = [.lowEnergyLimitedDiscoverableMode, .notSupportedBREDR]
+        }
         try await hostController.setAdvertisingData(
             beacon: beacon,
-            rssi: rssi
+            rssi: rssi,
+            flags: flags
         )
     }
 }
 #endif
+
+
