@@ -95,8 +95,9 @@ internal extension AccessoryCharacteristic {
     }
     
     static var gattDescriptors: [GATTAttribute.Descriptor] {
+        let userDescription = CharacteristicType(uuid: self.type)?.description ?? self.type.description
         var descriptors = self.descriptors.map({ .init($0) })
-            + [GATTUserDescription(userDescription: self.type.description).descriptor]
+            + [GATTUserDescription(userDescription: userDescription).descriptor]
         // unencrypted values
         if !(self.properties.contains(.encrypted) || self.properties.contains(.list)) {
             descriptors.append(GATTFormatDescriptor(format: .init(bluetoothAccessory: Value.characteristicFormat), exponent: 0, unit: 0, namespace: 0, description: 0).descriptor)
