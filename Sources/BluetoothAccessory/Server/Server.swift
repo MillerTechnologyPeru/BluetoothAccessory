@@ -20,11 +20,17 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
     
     public let name: String
     
-    public let service: ServiceType
+    public let advertisedService: ServiceType
     
     public private(set) var beacon: AccessoryBeacon
     
-    public private(set) var characteristicHandles = [UInt16: (service: BluetoothUUID, characteristic: any AccessoryCharacteristic.Type)]()
+    public private(set) var services: [any AccessoryService]
+    
+    deinit {
+        peripheral.willRead = nil
+        peripheral.willWrite = nil
+        peripheral.didWrite = nil
+    }
     
     public init(
         peripheral: Peripheral,
@@ -32,41 +38,33 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         rssi: Int8,
         name: String,
         advertised service: ServiceType,
-        services: [AccessoryService.Type]
+        services: [any AccessoryService]
     ) async throws {
         self.peripheral = peripheral
         self.id = id
         self.rssi = rssi
         self.name = name
-        self.service = service
+        self.advertisedService = service
+        self.services = services
         self.beacon = .id(id)
-        try await self.start(with: services)
+        self.setPeripheralCallbacks()
+        try await self.start()
     }
     
-    private func start(with services: [AccessoryService.Type]) async throws {
-        for service in services {
-            let characteristicAttributes = service.characteristics.map {
-                GATTAttribute.Characteristic(
-                    uuid: $0.type,
-                    value: Data(),
-                    permissions: $0.gattPermissions,
-                    properties: $0.gattProperties,
-                    descriptors: $0.gattDescriptors
-                )
-            }
-            let serviceAttribute = GATTAttribute.Service(
-                uuid: service.type,
-                primary: service.isPrimary,
-                characteristics: characteristicAttributes,
-                includedServices: []
-            )
-            let (_, valueHandles) = try await peripheral.add(service: serviceAttribute)
-            for (index, characteristic) in service.characteristics.enumerated() {
-                let handle = valueHandles[index]
-                characteristicHandles[handle] = (service: serviceAttribute.uuid, characteristic: characteristic)
-            }
+    private func setPeripheralCallbacks() {
+        // set callbacks
+        self.peripheral.willRead = { [unowned self] in
+            return await self.willRead($0)
         }
-        
+        self.peripheral.willWrite = { [unowned self] in
+            return await self.willWrite($0)
+        }
+        self.peripheral.didWrite = { [unowned self] (confirmation) in
+            await self.didWrite(confirmation)
+        }
+    }
+    
+    private func start() async throws {
         try await peripheral.start()
         try await advertise(beacon: beacon)
     }
@@ -76,23 +74,18 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
             beacon: beacon,
             rssi: rssi,
             name: name,
-            service: service
+            service: advertisedService
         )
         self.beacon = beacon
     }
     
     func willRead(_ request: GATTReadRequest<Peripheral.Central>) async -> ATTError? {
-        guard let _ = characteristicHandles[request.handle] else {
-            return .readNotPermitted
-        }
-        //log?("")
+        
         return nil
     }
     
     func willWrite(_ request: GATTWriteRequest<Peripheral.Central>) async -> ATTError? {
-        guard let _ = characteristicHandles[request.handle] else {
-            return .writeNotPermitted
-        }
+        
         return nil
     }
     

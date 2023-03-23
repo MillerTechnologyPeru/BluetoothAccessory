@@ -10,20 +10,13 @@ import Bluetooth
 import GATT
 
 /// Accessory Service
-public protocol AccessoryService {
+public protocol AccessoryService: AnyObject {
     
     static var type: BluetoothUUID { get }
     
-    static var isPrimary: Bool { get }
+    var serviceHandle: UInt16 { get }
     
-    static var characteristics: [any AccessoryCharacteristic.Type] { get }
-    
-    var characteristicValues: [ManagedCharacteristicValue] { get }
-}
-
-public extension AccessoryService {
-    
-    static var isPrimary: Bool { true }
+    var characteristicValues: [ManagedCharacteristicValue] { get async }
 }
 
 public enum ManagedCharacteristicValue {
@@ -33,29 +26,51 @@ public enum ManagedCharacteristicValue {
 }
 
 @propertyWrapper
-public struct ManagedCharacteristic <T: AccessoryCharacteristic> {
+public struct ManagedCharacteristic <Characteristic: AccessoryCharacteristic, Peripheral: AccessoryPeripheralManager> {
     
-    public init(wrappedValue: T.Value) {
+    weak var peripheral: Peripheral?
+    
+    let valueHandle: UInt16
+    
+    public init(
+        wrappedValue: Characteristic.Value,
+        peripheral: Peripheral,
+        valueHandle: UInt16
+    ) async {
+        assert(Characteristic.properties.contains(.list) == false)
         self.wrappedValue = wrappedValue
+        self.peripheral = peripheral
+        self.valueHandle = valueHandle
+        await setValue(wrappedValue) // update DB
     }
     
-    public var wrappedValue: T.Value
+    public private(set) var wrappedValue: Characteristic.Value
     
     public var projectedValue: ManagedCharacteristicValue {
-        return .single(wrappedValue.characteristicValue)
+        .single(wrappedValue.characteristicValue)
+    }
+    
+    public mutating func setValue(_ newValue: Characteristic.Value) async {
+        self.wrappedValue = newValue
+        // write plain text
+        if Characteristic.gattProperties.contains(.read) {
+            await peripheral?.write(newValue.characteristicValue.encode(), forCharacteristic: valueHandle)
+        }
     }
 }
 
+/*
 @propertyWrapper
 public struct ManagedListCharacteristic <T: AccessoryCharacteristic> {
     
+    let peripheral: Peripheral
+    
     public init(wrappedValue: [T.Value] = []) {
+        assert(Characteristic.properties.contains(.list))
         self.wrappedValue = wrappedValue
     }
     
     public var wrappedValue: [T.Value]
     
-    public var projectedValue: ManagedCharacteristicValue {
-        return .list(wrappedValue.map { $0.characteristicValue })
-    }
 }
+*/

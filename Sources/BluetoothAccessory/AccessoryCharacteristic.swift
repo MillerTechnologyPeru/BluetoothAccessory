@@ -117,4 +117,29 @@ public extension GATTAttribute.Characteristic {
         )
     }
 }
+
+public extension PeripheralManager {
+    
+    func add<Service: AccessoryService>(
+        service: Service.Type,
+        with characteristics: [any AccessoryCharacteristic.Type]
+    ) async throws -> (UInt16, [UInt16]) {
+        let characteristicAttributes = characteristics.map {
+            GATTAttribute.Characteristic(
+                uuid: $0.type,
+                value: Data(),
+                permissions: $0.gattPermissions,
+                properties: $0.gattProperties,
+                descriptors: $0.gattDescriptors
+            )
+        }
+        let serviceAttribute = GATTAttribute.Service(
+            uuid: service.type,
+            primary: true,
+            characteristics: characteristicAttributes,
+            includedServices: []
+        )
+        return try await self.add(service: serviceAttribute)
+    }
+}
 #endif
