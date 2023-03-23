@@ -27,23 +27,27 @@ public actor InformationService <Peripheral: AccessoryPeripheralManager> : Acces
     @ManagedCharacteristic<IdentifyCharacteristic, Peripheral>
     public var identify: Bool
     
-    public var manufacturer: String = ""
+    @ManagedCharacteristic<ManufacturerCharacteristic, Peripheral>
+    public var manufacturer: String
     
-    public var model: String = ""
+    @ManagedCharacteristic<ModelCharacteristic, Peripheral>
+    public var model: String
     
-    public var serialNumber: String = ""
+    @ManagedCharacteristic<SerialNumberCharacteristic, Peripheral>
+    public var serialNumber: String
     
-    public var configuredName: String = ""
-        
-    public var hardwareVersion: String = ""
-    
-    public var softwareVersion: String = ""
+    @ManagedCharacteristic<SoftwareVersionCharacteristic, Peripheral>
+    public var softwareVersion: String
     
     public init(
         peripheral: Peripheral,
         id: UUID,
         name: String,
-        accessoryType: AccessoryType
+        accessoryType: AccessoryType,
+        manufacturer: String,
+        model: String,
+        serialNumber: String,
+        softwareVersion: String
     ) async throws {
         let (serviceHandle, valueHandles) = try await peripheral.add(
             service: InformationService.self,
@@ -51,7 +55,11 @@ public actor InformationService <Peripheral: AccessoryPeripheralManager> : Acces
                 IdentifierCharacteristic.self,
                 NameCharacteristic.self,
                 AccessoryTypeCharacteristic.self,
-                IdentifyCharacteristic.self
+                IdentifyCharacteristic.self,
+                ManufacturerCharacteristic.self,
+                ModelCharacteristic.self,
+                SerialNumberCharacteristic.self,
+                SoftwareVersionCharacteristic.self,
             ]
         )
         self.serviceHandle = serviceHandle
@@ -59,6 +67,10 @@ public actor InformationService <Peripheral: AccessoryPeripheralManager> : Acces
         _name = await .init(wrappedValue: name, peripheral: peripheral, valueHandle: valueHandles[1])
         _accessoryType = await .init(wrappedValue: accessoryType, peripheral: peripheral, valueHandle: valueHandles[2])
         _identify = await .init(wrappedValue: false, peripheral: peripheral, valueHandle: valueHandles[3])
+        _manufacturer = await .init(wrappedValue: manufacturer, peripheral: peripheral, valueHandle: valueHandles[4])
+        _model = await .init(wrappedValue: model, peripheral: peripheral, valueHandle: valueHandles[5])
+        _serialNumber = await .init(wrappedValue: serialNumber, peripheral: peripheral, valueHandle: valueHandles[6])
+        _softwareVersion = await .init(wrappedValue: softwareVersion, peripheral: peripheral, valueHandle: valueHandles[7])
     }
 }
 
