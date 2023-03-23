@@ -41,6 +41,16 @@ public struct SetupRequest: Equatable, Hashable, Codable {
     }
 }
 
+internal extension SetupRequest {
+    
+    static var zero: SetupRequest {
+        SetupRequest(
+            id: .zero,
+            secret: KeyData(data: Data(repeating: 0x00, count: KeyData.length))!
+        )
+    }
+}
+
 extension SetupRequest: CharacteristicTLVCodable { }
 
 public extension Key {

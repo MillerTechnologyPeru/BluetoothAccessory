@@ -79,7 +79,14 @@ public extension InformationService {
     var characteristicValues: [ManagedCharacteristicValue] {
         get async {
             [
-                $id
+                $id,
+                $name,
+                $accessoryType,
+                $identify,
+                $manufacturer,
+                $model,
+                $serialNumber,
+                $softwareVersion
             ]
         }
     }

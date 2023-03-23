@@ -12,7 +12,7 @@ import TLVCoding
 /// A Key's permission level.
 public enum Permission: Equatable, Hashable {
     
-    /// This key belongs to the owner of the lock and has unlimited rights.
+    /// This key belongs to the owner of the accessory and has unlimited rights.
     case owner
     
     /// This key can create new keys, and has anytime access.

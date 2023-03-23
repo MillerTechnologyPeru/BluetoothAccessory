@@ -59,18 +59,48 @@ public struct ManagedCharacteristic <Characteristic: AccessoryCharacteristic, Pe
     }
 }
 
-/*
 @propertyWrapper
-public struct ManagedListCharacteristic <T: AccessoryCharacteristic> {
+public struct ManagedWriteOnlyCharacteristic <Characteristic: AccessoryCharacteristic, Peripheral: AccessoryPeripheralManager> {
     
-    let peripheral: Peripheral
+    weak var peripheral: Peripheral?
     
-    public init(wrappedValue: [T.Value] = []) {
-        assert(Characteristic.properties.contains(.list))
-        self.wrappedValue = wrappedValue
+    let valueHandle: UInt16
+    
+    public init(
+        peripheral: Peripheral,
+        valueHandle: UInt16
+    ) {
+        assert(Characteristic.properties.contains(.list) == false)
+        assert(Characteristic.properties.contains(.read) == false)
+        assert(Characteristic.properties.contains(.write))
+        self.peripheral = peripheral
+        self.valueHandle = valueHandle
     }
     
-    public var wrappedValue: [T.Value]
-    
+    public var wrappedValue: Characteristic.Value?
 }
-*/
+
+@propertyWrapper
+public struct ManagedListCharacteristic <Characteristic: AccessoryCharacteristic, Peripheral: AccessoryPeripheralManager> {
+    
+    weak var peripheral: Peripheral?
+    
+    let valueHandle: UInt16
+    
+    public init(
+        wrappedValue: [Characteristic.Value] = [],
+        peripheral: Peripheral,
+        valueHandle: UInt16
+    ) {
+        assert(Characteristic.properties.contains(.list))
+        self.wrappedValue = wrappedValue
+        self.peripheral = peripheral
+        self.valueHandle = valueHandle
+    }
+    
+    public private(set) var wrappedValue: [Characteristic.Value]
+    
+    public var projectedValue: ManagedCharacteristicValue {
+        .list(wrappedValue.map { $0.characteristicValue })
+    }
+}

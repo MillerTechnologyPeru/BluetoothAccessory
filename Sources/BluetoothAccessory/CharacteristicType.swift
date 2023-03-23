@@ -99,6 +99,18 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     /// Hash used for cryptographic operations
     case cryptoHash
     
+    /// Create new key
+    case createKey
+    
+    /// Confirm new key
+    case confirmKey
+    
+    /// Remove Key
+    case removeKey
+    
+    /// List of Keys
+    case keys
+    
     // Light
     
     /// The brightness of a light.
@@ -1027,6 +1039,14 @@ extension CharacteristicType: CustomStringConvertible {
             return "LoRa Status"
         case .batteryRedischargeVoltage:
             return "Battery Re-discharge Voltage"
+        case .createKey:
+            return "Create Key"
+        case .confirmKey:
+            return "Confirm Key"
+        case .removeKey:
+            return "Remove Key"
+        case .keys:
+            return "Keys"
         }
     }
 }
