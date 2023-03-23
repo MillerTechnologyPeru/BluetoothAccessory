@@ -102,6 +102,31 @@ public protocol CharacteristicCodable {
     init?(characteristicValue: CharacteristicValue)
 }
 
+public protocol CharacteristicTLVCodable: CharacteristicCodable, Codable { }
+
+public extension CharacteristicTLVCodable {
+    
+    static var characteristicFormat: CharacteristicFormat { .tlv8 }
+    
+    var characteristicValue: CharacteristicValue {
+        do {
+            let data = try TLVEncoder.bluetoothAccessory.encode(self)
+            return .tlv8(data)
+        }
+        catch {
+            fatalError("\(error)")
+        }
+    }
+    
+    init?(characteristicValue: CharacteristicValue) {
+        guard case let .tlv8(data) = characteristicValue,
+              let value = try? TLVDecoder.bluetoothAccessory.decode(Self.self, from: data) else {
+            return nil
+        }
+        self = value
+    }
+}
+
 public extension CharacteristicCodable where Self: RawRepresentable, Self.RawValue: CharacteristicCodable {
     
     static var characteristicFormat: CharacteristicFormat { RawValue.characteristicFormat }
