@@ -24,7 +24,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
     
     public private(set) var beacon: AccessoryBeacon
     
-    public private(set) var characteristics = [UInt16: (service: BluetoothUUID, characteristic: any AccessoryCharacteristic)]()
+    public private(set) var characteristicHandles = [UInt16: (service: BluetoothUUID, characteristic: any AccessoryCharacteristic.Type)]()
     
     public init(
         peripheral: Peripheral,
@@ -32,7 +32,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         rssi: Int8,
         name: String,
         advertised service: ServiceType,
-        services: [BluetoothUUID: [any AccessoryCharacteristic]]
+        services: [AccessoryService.Type]
     ) async throws {
         self.peripheral = peripheral
         self.id = id
@@ -43,36 +43,60 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         try await self.start(with: services)
     }
     
-    private func start(with services: [BluetoothUUID: [any AccessoryCharacteristic]]) async throws {
-        for (serviceUUID, characteristics) in services {
-            let characteristicAttributes = characteristics.map {
+    private func start(with services: [AccessoryService.Type]) async throws {
+        for service in services {
+            let characteristicAttributes = service.characteristics.map {
                 GATTAttribute.Characteristic(
-                    uuid: type(of: $0).type,
-                    value: $0.encode(),
-                    permissions: type(of: $0).gattPermissions,
-                    properties: type(of: $0).gattProperties,
-                    descriptors: type(of: $0).gattDescriptors
+                    uuid: $0.type,
+                    value: Data(),
+                    permissions: $0.gattPermissions,
+                    properties: $0.gattProperties,
+                    descriptors: $0.gattDescriptors
                 )
             }
-            let service = GATTAttribute.Service(
-                uuid: serviceUUID,
-                primary: true,
+            let serviceAttribute = GATTAttribute.Service(
+                uuid: service.type,
+                primary: service.isPrimary,
                 characteristics: characteristicAttributes,
                 includedServices: []
             )
-            let (_, valueHandles) = try await peripheral.add(service: service)
-            for (index, characteristic) in characteristics.enumerated() {
+            let (_, valueHandles) = try await peripheral.add(service: serviceAttribute)
+            for (index, characteristic) in service.characteristics.enumerated() {
                 let handle = valueHandles[index]
-                self.characteristics[handle] = (service: serviceUUID, characteristic: characteristic)
+                characteristicHandles[handle] = (service: serviceAttribute.uuid, characteristic: characteristic)
             }
         }
         
         try await peripheral.start()
+        try await advertise(beacon: beacon)
+    }
+    
+    private func advertise(beacon: AccessoryBeacon) async throws {
         try await peripheral.advertise(
             beacon: beacon,
             rssi: rssi,
             name: name,
             service: service
         )
+        self.beacon = beacon
+    }
+    
+    func willRead(_ request: GATTReadRequest<Peripheral.Central>) async -> ATTError? {
+        guard let _ = characteristicHandles[request.handle] else {
+            return .readNotPermitted
+        }
+        //log?("")
+        return nil
+    }
+    
+    func willWrite(_ request: GATTWriteRequest<Peripheral.Central>) async -> ATTError? {
+        guard let _ = characteristicHandles[request.handle] else {
+            return .writeNotPermitted
+        }
+        return nil
+    }
+    
+    func didWrite(_ request: GATTWriteConfirmation<Peripheral.Central>) async {
+        
     }
 }

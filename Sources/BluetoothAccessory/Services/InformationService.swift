@@ -6,19 +6,25 @@
 //
 
 import Foundation
-/*
-public struct InformationService {
+import Bluetooth
+
+public struct InformationService: AccessoryService, Identifiable {
     
-    public static var type: ServiceType { .information }
+    public static var type: BluetoothUUID { BluetoothUUID(service: .information) }
     
+    @ManagedCharacteristic<IdentifierCharacteristic>
     public var id: UUID
     
+    @ManagedCharacteristic<NameCharacteristic>
     public var name: String
     
+    @ManagedCharacteristic<AccessoryTypeCharacteristic>
     public var accessoryType: AccessoryType
     
-    public var identify: Bool
+    @ManagedCharacteristic<IdentifyCharacteristic>
+    public var identify: Bool = false
     
+    /*
     public var manufacturer: String
     
     public var model: String
@@ -27,10 +33,31 @@ public struct InformationService {
     
     public var configuredName: String?
     
-    public var firmwareRevision: String?
+    public var firmwareVersion: String?
     
-    public var hardwareRevision: String?
+    public var hardwareVersion: String?
     
-    public var softwareRevision: String?
+    public var softwareVersion: String?
+    */
 }
-*/
+
+public extension InformationService {
+    
+    static var characteristics: [any AccessoryCharacteristic.Type] {
+        [
+            IdentifierCharacteristic.self,
+            NameCharacteristic.self,
+            AccessoryTypeCharacteristic.self,
+            IdentifyCharacteristic.self,
+        ]
+    }
+    
+    var characteristicValues: [ManagedCharacteristicValue] {
+        [
+            $id,
+            $name,
+            $accessoryType,
+            $identify
+        ]
+    }
+}
