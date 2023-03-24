@@ -33,11 +33,17 @@ public struct SetupRequest: Equatable, Hashable, Codable {
     /// Key secret
     public let secret: KeyData
     
-    public init(id: UUID = UUID(),
-                secret: KeyData = KeyData()) {
-        
+    /// Key username
+    public let name: String
+    
+    public init(
+        id: UUID = UUID(),
+        secret: KeyData = KeyData(),
+        name: String
+    ) {
         self.id = id
         self.secret = secret
+        self.name = name
     }
 }
 
@@ -47,12 +53,48 @@ public extension Key {
     
     /// Initialize a new owner key from a setup request.
     init(setup: SetupRequest) {
-        
         self.init(
             id: setup.id,
-            name: "Owner",
-            created: Date(),
+            name: setup.name,
+            created: Date().removingMiliseconds,
             permission: .owner
         )
+    }
+}
+
+// MARK: - Central
+
+public extension CentralManager {
+    
+    /// Setup an accessory
+    func setup(
+        _ request: SetupRequest,
+        using sharedSecret: KeyData,
+        characteristic setupCharacteristic: Characteristic<Peripheral, AttributeID>,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>
+    ) async throws {
+        // write setup request
+        let credentials = Credential(
+            id: .zero,
+            secret: sharedSecret
+        )
+        try await writeEncrypted(
+            SetupCharacteristic(value: request),
+            for: setupCharacteristic,
+            cryptoHash: cryptoHashCharacteristic,
+            key: credentials
+        )
+    }
+}
+
+public extension GATTConnection {
+    
+    func setup(
+        _ request: SetupRequest,
+        using sharedSecret: KeyData
+    ) async throws {
+        let cryptoHashCharacteristic = try self.cache.characteristic(.cryptoHash, service: .authentication)
+        let setupCharacteristic = try self.cache.characteristic(.setup, service: .authentication)
+        try await self.central.setup(request, using: sharedSecret, characteristic: setupCharacteristic, cryptoHash: cryptoHashCharacteristic)
     }
 }

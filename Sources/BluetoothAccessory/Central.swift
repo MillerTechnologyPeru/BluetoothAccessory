@@ -149,11 +149,13 @@ public extension CentralManager {
     func writeEncrypted(
         _ value: Data,
         for characteristic: Characteristic<Peripheral, AttributeID>,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
         key: Credential
     ) async throws {
         assert(characteristic.properties.contains(.write), "Characteristic does not support write")
         let withResponse = characteristic.properties.contains(.writeWithoutResponse) ? false : true
-        let encrypted = try EncryptedData(encrypt: value, using: key.secret, id: key.id)
+        let cryptoHash = try await self.read(CryptoHashCharacteristic.self, characteristic: cryptoHashCharacteristic)
+        let encrypted = try EncryptedData(encrypt: value, using: key.secret, id: key.id, nonce: cryptoHash.value)
         try await self.writeValue(encrypted.data, for: characteristic, withResponse: withResponse)
     }
     
@@ -168,9 +170,21 @@ public extension CentralManager {
     /// Read an encrypted characteristic.
     func readEncryped(
         characteristic: Characteristic<Peripheral, AttributeID>,
+        service: BluetoothUUID,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
         key: Credential
     ) async throws -> Data {
         assert(characteristic.properties.contains(.read), "Characteristic does not support reading")
+        // authenticate for encrypted read
+        try await authenticate(
+            characteristic: characteristic.uuid,
+            service: service,
+            authenticationCharacteristic: authenticationCharacteristic,
+            cryptoHash: cryptoHashCharacteristic,
+            key: key
+        )
+        // read encrypted data
         let data = try await self.readValue(for: characteristic)
         guard let encryptedData = EncryptedData(data: data) else {
             throw BluetoothAccessoryError.invalidData(data)
@@ -180,14 +194,23 @@ public extension CentralManager {
     
     /// Read list characteristic.
     func readList(
-        notify notifyCharacteristic: Characteristic<Peripheral, AttributeID>,
-        write writeCharacteristic: Characteristic<Peripheral, AttributeID>,
-        writeValue: @autoclosure () throws -> (Data),
+        characteristic notifyCharacteristic: Characteristic<Peripheral, AttributeID>,
+        service: BluetoothUUID,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
         key: Credential
     ) async throws -> AsyncThrowingStream<Data, Error> {
         let log = self.log
+        // authenticate for encrypted read
+        try await authenticate(
+            characteristic: notifyCharacteristic.uuid,
+            service: service,
+            authenticationCharacteristic: authenticationCharacteristic,
+            cryptoHash: cryptoHashCharacteristic,
+            key: key
+        )
+        // enable notifications
         let stream = try await self.notify(for: notifyCharacteristic)
-        try await self.writeEncrypted(writeValue(), for: writeCharacteristic, key: key)
         return AsyncThrowingStream(Data.self, bufferingPolicy: .unbounded) { continuation in
             Task.detached {
                 do {
@@ -241,9 +264,10 @@ public extension CentralManager {
     func writeEncrypted(
         _ value: CharacteristicValue,
         for characteristic: Characteristic<Peripheral, AttributeID>,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
         key: Credential
     ) async throws {
-        try await writeEncrypted(value.encode(), for: characteristic, key: key)
+        try await writeEncrypted(value.encode(), for: characteristic, cryptoHash: cryptoHashCharacteristic, key: key)
     }
     
     /// Read a characteristic.
@@ -261,10 +285,19 @@ public extension CentralManager {
     /// Read an encrypted characteristic.
     func readEncryped(
         characteristic: Characteristic<Peripheral, AttributeID>,
-        format: CharacteristicFormat,
-        key: Credential
+        service: BluetoothUUID,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
+        key: Credential,
+        format: CharacteristicFormat
     ) async throws -> CharacteristicValue {
-        let data = try await readEncryped(characteristic: characteristic, key: key)
+        let data = try await readEncryped(
+            characteristic: characteristic,
+            service: service,
+            cryptoHash: cryptoHashCharacteristic,
+            authentication: authenticationCharacteristic,
+            key: key
+        )
         guard let value = CharacteristicValue(from: data, format: format) else {
             throw BluetoothAccessoryError.invalidCharacteristicValue(characteristic.uuid)
         }
@@ -273,13 +306,20 @@ public extension CentralManager {
     
     /// Read list characteristic
     func readList(
-        notify notifyCharacteristic: Characteristic<Peripheral, AttributeID>,
-        write writeCharacteristic: Characteristic<Peripheral, AttributeID>,
-        writeValue: @autoclosure () throws -> (CharacteristicValue),
-        format: CharacteristicFormat,
-        key: Credential
+        characteristic notifyCharacteristic: Characteristic<Peripheral, AttributeID>,
+        service: BluetoothUUID,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
+        key: Credential,
+        format: CharacteristicFormat
     ) async throws -> AsyncThrowingMapSequence<AsyncThrowingStream<Data, Error>, CharacteristicValue> {
-        let stream = try await readList(notify: notifyCharacteristic, write: writeCharacteristic, writeValue: writeValue().encode(), key: key)
+        let stream = try await readList(
+            characteristic: notifyCharacteristic,
+            service: service,
+            cryptoHash: cryptoHashCharacteristic,
+            authentication: authenticationCharacteristic,
+            key: key
+        )
         let mapped = stream.map {
             guard let value = CharacteristicValue(from: $0, format: format) else {
                 throw BluetoothAccessoryError.invalidData($0)
@@ -304,9 +344,10 @@ public extension CentralManager {
     func writeEncrypted<T: AccessoryCharacteristic>(
         _ value: T,
         for characteristic: Characteristic<Peripheral, AttributeID>,
+        cryptoHash: Characteristic<Peripheral, AttributeID>,
         key: Credential
     ) async throws {
-        try await writeEncrypted(value.encode(), for: characteristic, key: key)
+        try await writeEncrypted(value.encode(), for: characteristic, cryptoHash: cryptoHash, key: key)
     }
     
     /// Read a characteristic.
@@ -325,9 +366,18 @@ public extension CentralManager {
     func readEncryped<T: AccessoryCharacteristic>(
         _ type: T.Type,
         characteristic: Characteristic<Peripheral, AttributeID>,
+        service: BluetoothUUID,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
         key: Credential
     ) async throws -> T {
-        let data = try await readEncryped(characteristic: characteristic, key: key)
+        let data = try await readEncryped(
+            characteristic: characteristic,
+            service: service,
+            cryptoHash: cryptoHashCharacteristic,
+            authentication: authenticationCharacteristic,
+            key: key
+        )
         guard let value = T.init(from: data) else {
             throw BluetoothAccessoryError.invalidCharacteristicValue(characteristic.uuid)
         }
@@ -335,13 +385,20 @@ public extension CentralManager {
     }
     
     /// Read list characteristic
-    func readList<Notification: AccessoryCharacteristic, Write: AccessoryCharacteristic>(
-        notify notifyCharacteristic: Characteristic<Peripheral, AttributeID>,
-        write writeCharacteristic: Characteristic<Peripheral, AttributeID>,
-        writeValue: @autoclosure () throws -> (Write),
+    func readList<Notification: AccessoryCharacteristic>(
+        characteristic notifyCharacteristic: Characteristic<Peripheral, AttributeID>,
+        service: BluetoothUUID,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
         key: Credential
     ) async throws -> AsyncThrowingMapSequence<AsyncThrowingStream<Data, Error>, Notification> {
-        let stream = try await readList(notify: notifyCharacteristic, write: writeCharacteristic, writeValue: writeValue().encode(), key: key)
+        let stream = try await readList(
+            characteristic: notifyCharacteristic,
+            service: service,
+            cryptoHash: cryptoHashCharacteristic,
+            authentication: authenticationCharacteristic,
+            key: key
+        )
         let mapped = stream.map {
             guard let value = Notification.init(from: $0) else {
                 throw BluetoothAccessoryError.invalidData($0)

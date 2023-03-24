@@ -19,9 +19,14 @@ public struct EncryptedData: Equatable, Hashable {
 
 public extension EncryptedData {
     
-    init(encrypt data: Data, using key: KeyData, id: UUID) throws {
+    init(
+        encrypt data: Data,
+        using key: KeyData,
+        id: UUID,
+        nonce: Nonce
+    ) throws {
         let digest = Digest(hash: data)
-        let message = AuthenticationMessage(digest: digest, id: id)
+        let message = AuthenticationMessage(nonce: nonce, digest: digest, id: id)
         let encryptedData = try encrypt(data, using: key, nonce: message.nonce, authentication: message)
         let authentication = Authentication(key: key, message: message)
         self.authentication = authentication
