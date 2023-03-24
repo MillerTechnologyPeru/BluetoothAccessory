@@ -72,11 +72,10 @@ internal extension AccessoryCharacteristic {
     static var gattProperties: Bluetooth.BitMaskOptionSet<GATTAttribute.Characteristic.Property> {
         var properties = Bluetooth.BitMaskOptionSet<GATTAttribute.Characteristic.Property>()
         if self.properties.contains(.read) {
-            if self.properties.contains(.encrypted) || self.properties.contains(.list) {
-                properties.insert(.notify)
-            } else {
-                properties.insert(.read)
-            }
+            properties.insert(.read)
+        }
+        if self.properties.contains(.list) || self.properties.contains(.notification) {
+            properties.insert(.notify)
         }
         if self.properties.contains(.write) {
             properties.insert(.write)
@@ -104,6 +103,10 @@ internal extension AccessoryCharacteristic {
         // unencrypted values
         if !(self.properties.contains(.encrypted) || self.properties.contains(.list)) {
             descriptors.append(GATTFormatDescriptor(format: .init(bluetoothAccessory: Value.characteristicFormat), exponent: 0, unit: 0, namespace: 0, description: 0).descriptor)
+        }
+        // notifications
+        if gattProperties.contains(.notify) {
+            descriptors.append(GATTClientCharacteristicConfiguration().descriptor)
         }
         return descriptors
     }

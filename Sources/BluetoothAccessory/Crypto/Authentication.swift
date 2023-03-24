@@ -31,7 +31,7 @@ public struct AuthenticationMessage: Equatable, Hashable, Codable {
     public let date: Date
     
     public let nonce: Nonce
-        
+    
     public let digest: Digest
     
     public let id: UUID

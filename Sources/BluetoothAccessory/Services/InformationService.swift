@@ -9,37 +9,38 @@ import Foundation
 import Bluetooth
 
 /// Accessory Information Service
-public actor InformationService <Peripheral: AccessoryPeripheralManager> : AccessoryService {
+public actor InformationService: AccessoryService {
     
     public static var type: BluetoothUUID { BluetoothUUID(service: .information) }
     
     public let serviceHandle: UInt16
     
-    @ManagedCharacteristic<IdentifierCharacteristic, Peripheral>
+    @ManagedCharacteristic<IdentifierCharacteristic>
     public var id: UUID
     
-    @ManagedCharacteristic<NameCharacteristic, Peripheral>
+    @ManagedCharacteristic<NameCharacteristic>
     public var name: String
     
-    @ManagedCharacteristic<AccessoryTypeCharacteristic, Peripheral>
+    @ManagedCharacteristic<AccessoryTypeCharacteristic>
     public var accessoryType: AccessoryType
     
-    @ManagedCharacteristic<IdentifyCharacteristic, Peripheral>
+    @ManagedCharacteristic<IdentifyCharacteristic>
     public var identify: Bool
     
-    @ManagedCharacteristic<ManufacturerCharacteristic, Peripheral>
+    @ManagedCharacteristic<ManufacturerCharacteristic>
     public var manufacturer: String
     
-    @ManagedCharacteristic<ModelCharacteristic, Peripheral>
+    @ManagedCharacteristic<ModelCharacteristic>
     public var model: String
     
-    @ManagedCharacteristic<SerialNumberCharacteristic, Peripheral>
+    @ManagedCharacteristic<SerialNumberCharacteristic>
     public var serialNumber: String
     
-    @ManagedCharacteristic<SoftwareVersionCharacteristic, Peripheral>
+    @ManagedCharacteristic<SoftwareVersionCharacteristic>
     public var softwareVersion: String
     
-    public init(
+    /// Add service to Peripheral and initialize handles.
+    public init<Peripheral: AccessoryPeripheralManager>(
         peripheral: Peripheral,
         id: UUID,
         name: String,
@@ -63,20 +64,20 @@ public actor InformationService <Peripheral: AccessoryPeripheralManager> : Acces
             ]
         )
         self.serviceHandle = serviceHandle
-        _id = await .init(wrappedValue: id, peripheral: peripheral, valueHandle: valueHandles[0])
-        _name = await .init(wrappedValue: name, peripheral: peripheral, valueHandle: valueHandles[1])
-        _accessoryType = await .init(wrappedValue: accessoryType, peripheral: peripheral, valueHandle: valueHandles[2])
-        _identify = await .init(wrappedValue: false, peripheral: peripheral, valueHandle: valueHandles[3])
-        _manufacturer = await .init(wrappedValue: manufacturer, peripheral: peripheral, valueHandle: valueHandles[4])
-        _model = await .init(wrappedValue: model, peripheral: peripheral, valueHandle: valueHandles[5])
-        _serialNumber = await .init(wrappedValue: serialNumber, peripheral: peripheral, valueHandle: valueHandles[6])
-        _softwareVersion = await .init(wrappedValue: softwareVersion, peripheral: peripheral, valueHandle: valueHandles[7])
+        _id = await .init(wrappedValue: id, valueHandle: valueHandles[0])
+        _name = await .init(wrappedValue: name, valueHandle: valueHandles[1])
+        _accessoryType = await .init(wrappedValue: accessoryType, valueHandle: valueHandles[2])
+        _identify = await .init(wrappedValue: false, valueHandle: valueHandles[3])
+        _manufacturer = await .init(wrappedValue: manufacturer, valueHandle: valueHandles[4])
+        _model = await .init(wrappedValue: model, valueHandle: valueHandles[5])
+        _serialNumber = await .init(wrappedValue: serialNumber, valueHandle: valueHandles[6])
+        _softwareVersion = await .init(wrappedValue: softwareVersion, valueHandle: valueHandles[7])
     }
 }
 
 public extension InformationService {
     
-    var characteristicValues: [ManagedCharacteristicValue] {
+    var characteristics: [AnyManagedCharacteristic] {
         get async {
             [
                 $id,

@@ -16,91 +16,94 @@ public protocol AccessoryService: AnyObject {
     
     var serviceHandle: UInt16 { get }
     
-    var characteristicValues: [ManagedCharacteristicValue] { get async }
+    var characteristics: [AnyManagedCharacteristic] { get async }
 }
 
-public enum ManagedCharacteristicValue {
+public struct AnyManagedCharacteristic: Equatable, Hashable {
     
+    public let handle: UInt16
+    
+    public let value: ManagedCharacteristicValue
+    
+    public let properties: BitMaskOptionSet<CharacteristicProperty>
+    
+    internal init(
+        handle: UInt16,
+        value: ManagedCharacteristicValue,
+        properties: BitMaskOptionSet<CharacteristicProperty>
+    ) {
+        self.handle = handle
+        self.value = value
+        self.properties = properties
+    }
+}
+
+public enum ManagedCharacteristicValue: Equatable, Hashable {
+    
+    case none
     case single(CharacteristicValue)
     case list([CharacteristicValue])
 }
 
 @propertyWrapper
-public struct ManagedCharacteristic <Characteristic: AccessoryCharacteristic, Peripheral: AccessoryPeripheralManager> {
-    
-    weak var peripheral: Peripheral?
-    
-    let valueHandle: UInt16
+public struct ManagedCharacteristic <Characteristic: AccessoryCharacteristic> {
+        
+    public let valueHandle: UInt16
     
     public init(
         wrappedValue: Characteristic.Value,
-        peripheral: Peripheral,
         valueHandle: UInt16
     ) async {
         assert(Characteristic.properties.contains(.list) == false)
         self.wrappedValue = wrappedValue
-        self.peripheral = peripheral
         self.valueHandle = valueHandle
-        await setValue(wrappedValue) // update DB
     }
     
     public private(set) var wrappedValue: Characteristic.Value
-    
-    public var projectedValue: ManagedCharacteristicValue {
-        .single(wrappedValue.characteristicValue)
-    }
-    
-    public mutating func setValue(_ newValue: Characteristic.Value) async {
-        self.wrappedValue = newValue
-        // write plain text
-        if Characteristic.gattProperties.contains(.read) {
-            await peripheral?.write(newValue.characteristicValue.encode(), forCharacteristic: valueHandle)
-        }
+
+    public var projectedValue: AnyManagedCharacteristic {
+        .init(handle: valueHandle, value: .single(wrappedValue.characteristicValue), properties: Characteristic.properties)
     }
 }
 
 @propertyWrapper
-public struct ManagedWriteOnlyCharacteristic <Characteristic: AccessoryCharacteristic, Peripheral: AccessoryPeripheralManager> {
-    
-    weak var peripheral: Peripheral?
-    
-    let valueHandle: UInt16
+public struct ManagedWriteOnlyCharacteristic <Characteristic: AccessoryCharacteristic> {
+        
+    public let valueHandle: UInt16
     
     public init(
-        peripheral: Peripheral,
         valueHandle: UInt16
     ) {
         assert(Characteristic.properties.contains(.list) == false)
         assert(Characteristic.properties.contains(.read) == false)
         assert(Characteristic.properties.contains(.write))
-        self.peripheral = peripheral
         self.valueHandle = valueHandle
     }
     
     public var wrappedValue: Characteristic.Value?
+    
+    public var projectedValue: AnyManagedCharacteristic {
+        .init(handle: valueHandle, value: wrappedValue.flatMap { .single($0.characteristicValue) } ?? .none, properties: Characteristic.properties)
+    }
 }
 
 @propertyWrapper
-public struct ManagedListCharacteristic <Characteristic: AccessoryCharacteristic, Peripheral: AccessoryPeripheralManager> {
-    
-    weak var peripheral: Peripheral?
-    
-    let valueHandle: UInt16
+public struct ManagedListCharacteristic <Characteristic: AccessoryCharacteristic> {
+        
+    public let valueHandle: UInt16
     
     public init(
         wrappedValue: [Characteristic.Value] = [],
-        peripheral: Peripheral,
         valueHandle: UInt16
     ) {
         assert(Characteristic.properties.contains(.list))
         self.wrappedValue = wrappedValue
-        self.peripheral = peripheral
         self.valueHandle = valueHandle
     }
     
     public private(set) var wrappedValue: [Characteristic.Value]
     
-    public var projectedValue: ManagedCharacteristicValue {
-        .list(wrappedValue.map { $0.characteristicValue })
+    public var projectedValue: AnyManagedCharacteristic {
+        .init(handle: valueHandle, value: .list(wrappedValue.map { $0.characteristicValue }), properties: Characteristic.properties)
     }
 }

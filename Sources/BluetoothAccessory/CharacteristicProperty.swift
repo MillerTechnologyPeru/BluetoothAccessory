@@ -20,9 +20,12 @@ public enum CharacteristicProperty: UInt8, Codable, CaseIterable, BitMaskOption 
     /// Write without Response
     case writeWithoutResponse   = 0b00000100
     
+    /// Notifications for changed values
+    case notification           = 0b00001000
+    
     /// Characteristic is encrypted, cannot read or write using normal GATT operations.
-    case encrypted              = 0b00001000
+    case encrypted              = 0b00010000
     
     /// Value is a sequence.
-    case list                   = 0b00010000
+    case list                   = 0b00100000
 }

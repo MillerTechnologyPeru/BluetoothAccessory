@@ -9,25 +9,25 @@ import Foundation
 import Bluetooth
 
 /// Accessory Authentication Service
-public actor AuthenticationService <Peripheral: AccessoryPeripheralManager> : AccessoryService {
+public actor AuthenticationService: AccessoryService {
     
     public static var type: BluetoothUUID { BluetoothUUID(service: .authentication) }
     
     public let serviceHandle: UInt16
     
-    @ManagedWriteOnlyCharacteristic<SetupCharacteristic, Peripheral>
+    @ManagedWriteOnlyCharacteristic<SetupCharacteristic>
     public var setup: SetupRequest?
     
-    @ManagedWriteOnlyCharacteristic<CreateNewKeyCharacteristic, Peripheral>
+    @ManagedWriteOnlyCharacteristic<CreateNewKeyCharacteristic>
     public var createKey: CreateNewKeyRequest?
     
-    @ManagedWriteOnlyCharacteristic<ConfirmNewKeyCharacteristic, Peripheral>
+    @ManagedWriteOnlyCharacteristic<ConfirmNewKeyCharacteristic>
     public var confirmKey: ConfirmNewKeyRequest?
     
-    @ManagedListCharacteristic<KeysCharacteristic, Peripheral>
+    @ManagedListCharacteristic<KeysCharacteristic>
     public var keys: [KeysCharacteristic.Item]
     
-    public init(
+    public init<Peripheral: AccessoryPeripheralManager>(
         peripheral: Peripheral,
         keys: [KeysCharacteristic.Item] = []
     ) async throws {
@@ -41,18 +41,21 @@ public actor AuthenticationService <Peripheral: AccessoryPeripheralManager> : Ac
             ]
         )
         self.serviceHandle = serviceHandle
-        _setup = .init(peripheral: peripheral, valueHandle: valueHandles[0])
-        _createKey = .init(peripheral: peripheral, valueHandle: valueHandles[1])
-        _confirmKey = .init(peripheral: peripheral, valueHandle: valueHandles[2])
-        _keys = .init(wrappedValue: keys, peripheral: peripheral, valueHandle: valueHandles[3])
+        _setup = .init(valueHandle: valueHandles[0])
+        _createKey = .init(valueHandle: valueHandles[1])
+        _confirmKey = .init(valueHandle: valueHandles[2])
+        _keys = .init(wrappedValue: keys, valueHandle: valueHandles[3])
     }
 }
 
 public extension AuthenticationService {
     
-    var characteristicValues: [ManagedCharacteristicValue] {
+    var characteristics: [AnyManagedCharacteristic] {
         get async {
             [
+                $setup,
+                $createKey,
+                $confirmKey,
                 $keys
             ]
         }
