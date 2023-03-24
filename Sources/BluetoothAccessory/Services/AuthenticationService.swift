@@ -80,9 +80,6 @@ public extension AuthenticationService {
             }
             self.setup = request
             return true
-        case (_setup.valueHandle, .none):
-            self.setup = nil
-            return true
         default:
             return false
         }

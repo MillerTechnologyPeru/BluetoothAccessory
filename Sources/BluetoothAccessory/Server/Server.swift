@@ -10,7 +10,7 @@ import Bluetooth
 import GATT
 
 /// Bluetooth Accessory Server
-public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: Identifiable {
+public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: Identifiable {
     
     // MARK: - Properties
     
@@ -92,29 +92,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         block(&newValue)
         self[service] = newValue
         // update DB
-        let oldCharacteristics = oldValue.characteristics
-        for newCharacteristic in newValue.characteristics {
-            // did change
-            guard let oldCharacteristic = oldCharacteristics.first(where: { $0.handle == newCharacteristic.handle }),
-                  oldCharacteristic.value != newCharacteristic.value else {
-                continue
-            }
-            // unencrypted value
-            if newCharacteristic.properties.contains(.read),
-               newCharacteristic.properties.contains(.encrypted) == false,
-               newCharacteristic.properties.contains(.list) == false,
-               case let .single(value) = newCharacteristic.value {
-                // update DB
-                await peripheral.write(value.encode(), forCharacteristic: newCharacteristic.handle)
-            }
-            // write only
-            if newCharacteristic.properties.contains(.write),
-               newCharacteristic.properties.contains(.list) == false,
-               case .none = newCharacteristic.value {
-                // update DB
-                await peripheral.write(Data(), forCharacteristic: newCharacteristic.handle)
-            }
-        }
+        await didModifyService(oldValue: oldValue, newValue: newValue)
     }
     
     private func setPeripheralCallbacks() {
@@ -247,6 +225,36 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
                     else { continue }
                 // update DB
                 await peripheral.write(value.encode(), forCharacteristic: characteristic.handle)
+            }
+        }
+    }
+    
+    public func didModifyService <T: AccessoryService> (
+        oldValue: T,
+        newValue: T
+    ) async {
+        // update DB
+        let oldCharacteristics = oldValue.characteristics
+        for newCharacteristic in newValue.characteristics {
+            // did change
+            guard let oldCharacteristic = oldCharacteristics.first(where: { $0.handle == newCharacteristic.handle }),
+                  oldCharacteristic.value != newCharacteristic.value else {
+                continue
+            }
+            // unencrypted value
+            if newCharacteristic.properties.contains(.read),
+               newCharacteristic.properties.contains(.encrypted) == false,
+               newCharacteristic.properties.contains(.list) == false,
+               case let .single(value) = newCharacteristic.value {
+                // update DB
+                await peripheral.write(value.encode(), forCharacteristic: newCharacteristic.handle)
+            }
+            // write only
+            if newCharacteristic.properties.contains(.write),
+               newCharacteristic.properties.contains(.list) == false,
+               case .none = newCharacteristic.value {
+                // update DB
+                await peripheral.write(Data(), forCharacteristic: newCharacteristic.handle)
             }
         }
     }
