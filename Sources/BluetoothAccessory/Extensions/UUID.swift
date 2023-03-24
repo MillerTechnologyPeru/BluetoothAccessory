@@ -49,3 +49,18 @@ internal extension UUID {
     
     static var zero: UUID { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
 }
+
+internal extension BluetoothUUID {
+    
+    var bluetoothAccessoryName: String? {
+        CharacteristicType(uuid: self)?.description ?? ServiceType(uuid: self).flatMap { "\($0)" }
+    }
+    
+    var bluetoothAccessoryDescription: String {
+        if let name = self.bluetoothAccessoryName {
+            return "\(rawValue) (\(name))"
+        } else {
+            return self.description // fallback to Bluetooth library
+        }
+    }
+}

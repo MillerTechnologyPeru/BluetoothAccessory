@@ -30,8 +30,6 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
     
     weak var delegate: BluetoothAccessoryServerDelegate?
     
-    var willWrite = [UInt16: ManagedCharacteristicValue]()
-    
     // MARK: - Initialization
     
     deinit {
@@ -125,19 +123,19 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
     }
         
     private func willRead(_ request: GATTReadRequest<Peripheral.Central>) async -> ATTError? {
-        delegate?.log("Will read characteristic \(request.uuid)")
+        delegate?.log("Will read characteristic \(request.uuid.bluetoothAccessoryDescription)")
         return nil
     }
     
     private func willWrite(_ request: GATTWriteRequest<Peripheral.Central>) async -> ATTError? {
-        delegate?.log("Will write characteristic \(request.uuid)")
+        delegate?.log("Will write characteristic \(request.uuid.bluetoothAccessoryDescription)")
         // find matching characteristic
         guard let (serviceIndex, characteristic) = self.characteristic(for: request.handle) else {
-            delegate?.log("Cannot write unknown characteristic \(request.uuid)")
+            delegate?.log("Cannot write unknown characteristic \(request.uuid.bluetoothAccessoryDescription)")
             return .writeNotPermitted
         }
         guard characteristic.properties.contains(.write) else {
-            delegate?.log("Characteristic \(request.uuid) is not writable")
+            delegate?.log("Characteristic \(request.uuid.bluetoothAccessoryDescription) is not writable")
             return .writeNotPermitted
         }
         // list write
@@ -147,12 +145,12 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
             return .unlikelyError
         } else if characteristic.properties.contains(.encrypted) {
             guard let delegate = delegate else {
-                delegate?.log("Cannot handle encrypted write for \(request.uuid)")
+                delegate?.log("Cannot handle encrypted write for \(request.uuid.bluetoothAccessoryDescription)")
                 return .unlikelyError
             }
             // encrypted write
             guard let encryptedData = EncryptedData(data: request.newValue) else {
-                delegate.log("Unable to decode encrypted write for \(request.uuid)")
+                delegate.log("Unable to decode encrypted write for \(request.uuid.bluetoothAccessoryDescription)")
                 return .writeNotPermitted
             }
             let keyID = encryptedData.authentication.message.id
@@ -161,7 +159,7 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
                 secret = await delegate.setupSharedSecret
             } else {
                 guard let secretData = await delegate.key(for: keyID) else {
-                    delegate.log("Rejected encrypted write for \(request.uuid) with unknown key \(keyID)")
+                    delegate.log("Rejected encrypted write for \(request.uuid.bluetoothAccessoryDescription) with unknown key \(keyID)")
                     return .writeNotPermitted
                 }
                 secret = secretData
@@ -169,49 +167,42 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
             // verify crypto hash
             let cryptoHash = await delegate.cryptoHash
             guard encryptedData.authentication.message.nonce == cryptoHash else {
-                delegate.log("Write request for \(request.uuid) authenticated with expired nonce")
+                delegate.log("Write request for \(request.uuid.bluetoothAccessoryDescription) authenticated with expired nonce")
                 return .writeNotPermitted
             }
             // decrypt
             guard let decryptedData = try? encryptedData.decrypt(using: secret) else {
-                delegate.log("Unable to decrypt write request for \(request.uuid)")
+                delegate.log("Unable to decrypt write request for \(request.uuid.bluetoothAccessoryDescription)")
                 return .writeNotPermitted
             }
             guard let value = CharacteristicValue(from: decryptedData, format: characteristic.format) else {
-                delegate.log("Unable to decode write request for \(request.uuid) as \(characteristic.format)")
+                delegate.log("Unable to decode write request for \(request.uuid.bluetoothAccessoryDescription) as \(characteristic.format)")
                 return .writeNotPermitted
             }
             guard services[serviceIndex].update(characteristic: request.handle, with: .single(value)) else {
-                delegate.log("Unable to decode write request for \(request.uuid)")
+                delegate.log("Unable to decode write request for \(request.uuid.bluetoothAccessoryDescription)")
                 return .writeNotPermitted
             }
-            willWrite[characteristic.handle] = .single(value)
             return nil
         } else {
             // simple write
             guard let value = CharacteristicValue(from: request.newValue, format: characteristic.format) else {
-                delegate?.log("Unable to decode write request for \(request.uuid)")
+                delegate?.log("Unable to decode write request for \(request.uuid.bluetoothAccessoryDescription)")
                 return .writeNotPermitted
             }
             guard services[serviceIndex].update(characteristic: request.handle, with: .single(value)) else {
-                delegate?.log("Unable to decode write request for \(request.uuid)")
+                delegate?.log("Unable to decode write request for \(request.uuid.bluetoothAccessoryDescription)")
                 return .writeNotPermitted
             }
-            willWrite[characteristic.handle] = .single(value)
             return nil
         }
     }
     
     private func didWrite(_ request: GATTWriteConfirmation<Peripheral.Central>) async {
-        delegate?.log("Did write characteristic \(request.uuid)")
-        guard let value = willWrite[request.handle] else {
-            assertionFailure()
-            return
-        }
-        willWrite[request.handle] = nil
+        delegate?.log("Did write characteristic \(request.uuid.bluetoothAccessoryDescription)")
         // notify delegate
         await delegate?.updateCryptoHash()
-        await delegate?.didWrite(value, for: request.handle)
+        await delegate?.didWrite(request.handle)
     }
     
     /// Update unencrypted readable values.
@@ -283,7 +274,7 @@ public protocol BluetoothAccessoryServerDelegate: AnyObject {
     
     var setupSharedSecret: KeyData { get async }
     
-    func didWrite(_ characteristicValue: ManagedCharacteristicValue, for handle: UInt16) async
+    func didWrite(_ handle: UInt16) async
     
     var cryptoHash: Nonce { get async }
     
