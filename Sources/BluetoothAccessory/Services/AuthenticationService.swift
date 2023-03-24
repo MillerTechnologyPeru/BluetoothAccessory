@@ -9,7 +9,7 @@ import Foundation
 import Bluetooth
 
 /// Accessory Authentication Service
-public actor AuthenticationService: AccessoryService {
+public struct AuthenticationService: AccessoryService {
     
     public static var type: BluetoothUUID { BluetoothUUID(service: .authentication) }
     
@@ -62,19 +62,17 @@ public actor AuthenticationService: AccessoryService {
 public extension AuthenticationService {
     
     var characteristics: [AnyManagedCharacteristic] {
-        get async {
-            [
-                $cryptoHash,
-                $setup,
-                $authenticate,
-                $createKey,
-                $confirmKey,
-                $keys
-            ]
-        }
+        [
+            $cryptoHash,
+            $setup,
+            $authenticate,
+            $createKey,
+            $confirmKey,
+            $keys
+        ]
     }
     
-    func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) async -> Bool {
+    mutating func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) -> Bool {
         switch (characteristic, newValue) {
         case ($setup, .single(let newValue)):
             guard let request = SetupRequest(characteristicValue: newValue) else {

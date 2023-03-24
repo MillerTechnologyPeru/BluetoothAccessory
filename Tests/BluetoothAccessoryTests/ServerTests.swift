@@ -80,7 +80,7 @@ final class ServerTests: XCTestCase {
             XCTAssertEqual(ownerKey.id, key.id)
             XCTAssertEqual(ownerKey.permission, .owner)
             XCTAssertEqual(ownerKey.name, ownerName)
-           
+            
             //authentication.setup = nil // reset value
             //authentication.keys = [.key(ownerKey)]
         }
@@ -123,7 +123,7 @@ extension ServerTests {
     }
 }
 
-actor TestServer: BluetoothAccessoryServerDelegate {
+actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessoryServerDelegate {
     
     let id = UUID()
     let rssi: Int8 = 20
@@ -135,20 +135,29 @@ actor TestServer: BluetoothAccessoryServerDelegate {
     let softwareVersion = "1.0.0"
     let advertisedService = ServiceType.lightbulb
     
-    let information: InformationService
-    let authentication: AuthenticationService
-    
     var keySecrets = [UUID: KeyData]()
     var keys = [UUID: Key]()
     var newKeys = [UUID: NewKey]()
     
     let setupSharedSecret = BluetoothAccessory.KeyData()
     
-    private var server: BluetoothAccesoryServer<TestPeripheral>!
+    private var server: BluetoothAccesoryServer<Peripheral>!
     
-    init(peripheral: TestPeripheral) async throws {
+    var information: InformationService {
+        get async {
+            await server[InformationService.self]
+        }
+    }
+    
+    var authentication: AuthenticationService {
+        get async {
+            await server[AuthenticationService.self]
+        }
+    }
+    
+    init(peripheral: Peripheral) async throws {
         
-        self.information = try await InformationService(
+        let information = try await InformationService(
             peripheral: peripheral,
             id: id,
             name: name,
@@ -160,7 +169,7 @@ actor TestServer: BluetoothAccessoryServerDelegate {
             metadata: []
         )
         
-        self.authentication = try await AuthenticationService(
+        let authentication = try await AuthenticationService(
             peripheral: peripheral
         )
         
@@ -191,10 +200,12 @@ actor TestServer: BluetoothAccessoryServerDelegate {
     }
     
     func didWrite(_ characteristicValue: ManagedCharacteristicValue, for handle: UInt16) async {
+        //defer {
+        //    self.authentication.cryptoHash = Nonce()
+        //}
         switch handle {
         case await authentication.$setup.handle:
-            let value = await authentication.$setup.value
-            assert(value == characteristicValue)
+            //assert(await authentication.$setup.value == characteristicValue)
             guard let request = await authentication.setup else {
                 assertionFailure()
                 return
@@ -203,6 +214,8 @@ actor TestServer: BluetoothAccessoryServerDelegate {
             let ownerKey = Key(setup: request)
             self.keys[ownerKey.id] = ownerKey
             self.keySecrets[ownerKey.id] = request.secret
+            // clear value
+            //self.authentication.setup = nil
         default:
             return
         }

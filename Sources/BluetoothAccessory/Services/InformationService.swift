@@ -9,7 +9,7 @@ import Foundation
 import Bluetooth
 
 /// Accessory Information Service
-public actor InformationService: AccessoryService {
+public struct InformationService: AccessoryService {
     
     public static var type: BluetoothUUID { BluetoothUUID(service: .information) }
     
@@ -84,22 +84,26 @@ public actor InformationService: AccessoryService {
 public extension InformationService {
     
     var characteristics: [AnyManagedCharacteristic] {
-        get async {
-            [
-                $id,
-                $name,
-                $accessoryType,
-                $identify,
-                $manufacturer,
-                $model,
-                $serialNumber,
-                $softwareVersion,
-                $metadata
-            ]
-        }
+        [
+            $id,
+            $name,
+            $accessoryType,
+            $identify,
+            $manufacturer,
+            $model,
+            $serialNumber,
+            $softwareVersion,
+            $metadata
+        ]
     }
     
-    func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) async -> Bool {
-        return false
+    mutating func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) -> Bool {
+        switch (characteristic, newValue) {
+        case ($identify, .single(.bool(let newValue))):
+            self.identify = newValue
+            return true
+        default:
+            return false
+        }
     }
 }

@@ -10,15 +10,15 @@ import Bluetooth
 import GATT
 
 /// Accessory Service
-public protocol AccessoryService: AnyObject {
+public protocol AccessoryService {
     
     static var type: BluetoothUUID { get }
     
     var serviceHandle: UInt16 { get }
     
-    var characteristics: [AnyManagedCharacteristic] { get async }
+    var characteristics: [AnyManagedCharacteristic] { get }
     
-    func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) async -> Bool
+    mutating func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) -> Bool
 }
 
 public struct AnyManagedCharacteristic: Equatable, Hashable {
