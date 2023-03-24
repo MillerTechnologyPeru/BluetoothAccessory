@@ -71,7 +71,12 @@ final class ServerTests: XCTestCase {
             let serverSetupValue = await server.authentication.setup
             XCTAssertEqual(serverSetupValue, setupRequest)
             
-            let ownerKey = Key(setup: setupRequest)
+            try await Task.sleep(nanoseconds: 10_000_000)
+            let serverKeys = await server.keys
+            guard let ownerKey = serverKeys[key.id] else {
+                XCTFail("Missing owner key")
+                return
+            }
             XCTAssertEqual(ownerKey.id, key.id)
             XCTAssertEqual(ownerKey.permission, .owner)
             XCTAssertEqual(ownerKey.name, ownerName)
@@ -118,7 +123,7 @@ extension ServerTests {
     }
 }
 
-final class TestServer: BluetoothAccessoryServerDelegate {
+actor TestServer: BluetoothAccessoryServerDelegate {
     
     let id = UUID()
     let rssi: Int8 = 20
@@ -133,8 +138,11 @@ final class TestServer: BluetoothAccessoryServerDelegate {
     let information: InformationService
     let authentication: AuthenticationService
     
-    var keys = [UUID: KeyData]()
-    var setupSharedSecret = BluetoothAccessory.KeyData()
+    var keySecrets = [UUID: KeyData]()
+    var keys = [UUID: Key]()
+    var newKeys = [UUID: NewKey]()
+    
+    let setupSharedSecret = BluetoothAccessory.KeyData()
     
     private var server: BluetoothAccesoryServer<TestPeripheral>!
     
@@ -170,18 +178,18 @@ final class TestServer: BluetoothAccessoryServerDelegate {
         )
     }
     
-    func log(_ message: String) {
+    nonisolated func log(_ message: String) {
         print(message)
     }
     
-    func didAdvertise(beacon: BluetoothAccessory.AccessoryBeacon) {
+    nonisolated func didAdvertise(beacon: BluetoothAccessory.AccessoryBeacon) {
         
     }
     
-    func key(for id: UUID) -> BluetoothAccessory.KeyData? {
-        self.keys[id]
+    func key(for id: UUID) -> KeyData? {
+        self.keySecrets[id]
     }
-        
+    
     func didWrite(_ characteristicValue: ManagedCharacteristicValue, for handle: UInt16) async {
         switch handle {
         case await authentication.$setup.handle:
@@ -193,7 +201,8 @@ final class TestServer: BluetoothAccessoryServerDelegate {
             }
             // create new key
             let ownerKey = Key(setup: request)
-            self.keys[ownerKey.id] = request.secret
+            self.keys[ownerKey.id] = ownerKey
+            self.keySecrets[ownerKey.id] = request.secret
         default:
             return
         }
