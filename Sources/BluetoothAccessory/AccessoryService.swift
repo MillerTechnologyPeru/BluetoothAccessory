@@ -53,7 +53,7 @@ public struct ManagedCharacteristic <Characteristic: AccessoryCharacteristic> {
     public init(
         wrappedValue: Characteristic.Value,
         valueHandle: UInt16
-    ) async {
+    ) {
         assert(Characteristic.properties.contains(.list) == false)
         self.wrappedValue = wrappedValue
         self.valueHandle = valueHandle

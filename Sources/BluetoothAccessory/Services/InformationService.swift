@@ -64,14 +64,14 @@ public actor InformationService: AccessoryService {
             ]
         )
         self.serviceHandle = serviceHandle
-        _id = await .init(wrappedValue: id, valueHandle: valueHandles[0])
-        _name = await .init(wrappedValue: name, valueHandle: valueHandles[1])
-        _accessoryType = await .init(wrappedValue: accessoryType, valueHandle: valueHandles[2])
-        _identify = await .init(wrappedValue: false, valueHandle: valueHandles[3])
-        _manufacturer = await .init(wrappedValue: manufacturer, valueHandle: valueHandles[4])
-        _model = await .init(wrappedValue: model, valueHandle: valueHandles[5])
-        _serialNumber = await .init(wrappedValue: serialNumber, valueHandle: valueHandles[6])
-        _softwareVersion = await .init(wrappedValue: softwareVersion, valueHandle: valueHandles[7])
+        _id = .init(wrappedValue: id, valueHandle: valueHandles[0])
+        _name = .init(wrappedValue: name, valueHandle: valueHandles[1])
+        _accessoryType = .init(wrappedValue: accessoryType, valueHandle: valueHandles[2])
+        _identify = .init(wrappedValue: false, valueHandle: valueHandles[3])
+        _manufacturer = .init(wrappedValue: manufacturer, valueHandle: valueHandles[4])
+        _model = .init(wrappedValue: model, valueHandle: valueHandles[5])
+        _serialNumber = .init(wrappedValue: serialNumber, valueHandle: valueHandles[6])
+        _softwareVersion = .init(wrappedValue: softwareVersion, valueHandle: valueHandles[7])
     }
 }
 

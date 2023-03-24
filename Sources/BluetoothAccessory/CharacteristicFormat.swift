@@ -141,6 +141,24 @@ public extension CharacteristicCodable where Self: RawRepresentable, Self.RawVal
     }
 }
 
+public extension SecureData where Self: CharacteristicCodable {
+    
+    static var characteristicFormat: CharacteristicFormat { .data }
+    
+    var characteristicValue: CharacteristicValue {
+        .data(self.data)
+    }
+    
+    init?(characteristicValue: CharacteristicValue) {
+        guard case let .data(rawData) = characteristicValue else {
+            return nil
+        }
+        self.init(data: rawData)
+    }
+}
+
+extension Nonce: CharacteristicCodable { }
+
 extension String: CharacteristicCodable {
     
     public static var characteristicFormat: CharacteristicFormat { .string }

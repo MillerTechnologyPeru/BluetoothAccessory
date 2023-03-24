@@ -90,15 +90,15 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     
     // Authentication
     
-    /// Writable Setup / Pairing characteristic
-    case setup                              = 100
-    
-    /// Writable characteristic for encrypted reads.
-    case encryptedRead
-    
     /// Hash used for cryptographic operations
-    case cryptoHash
+    case cryptoHash                         = 100
     
+    /// Writable Setup / Pairing characteristic
+    case setup
+    
+    /// Characteristic for initializing an authenticated session.
+    case authenticate
+        
     /// Create new key
     case createKey
     
@@ -1029,8 +1029,8 @@ extension CharacteristicType: CustomStringConvertible {
             return "Version"
         case .setup:
             return "Setup"
-        case .encryptedRead:
-            return "Encrypted Read"
+        case .authenticate:
+            return "Authenticate"
         case .statusJammed:
             return "Jammed Status"
         case .wiFiStatus:

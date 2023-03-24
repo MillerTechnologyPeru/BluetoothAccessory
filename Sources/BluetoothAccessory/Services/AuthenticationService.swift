@@ -15,8 +15,14 @@ public actor AuthenticationService: AccessoryService {
     
     public let serviceHandle: UInt16
     
+    @ManagedCharacteristic<CryptoHashCharacteristic>
+    public var cryptoHash: Nonce
+    
     @ManagedWriteOnlyCharacteristic<SetupCharacteristic>
     public var setup: SetupRequest?
+    
+    @ManagedWriteOnlyCharacteristic<AuthenticateCharacteristic>
+    public var authenticate: AuthenticationRequest?
     
     @ManagedWriteOnlyCharacteristic<CreateNewKeyCharacteristic>
     public var createKey: CreateNewKeyRequest?
@@ -29,22 +35,27 @@ public actor AuthenticationService: AccessoryService {
     
     public init<Peripheral: AccessoryPeripheralManager>(
         peripheral: Peripheral,
+        cryptoHash: Nonce = Nonce(),
         keys: [KeysCharacteristic.Item] = []
     ) async throws {
         let (serviceHandle, valueHandles) = try await peripheral.add(
             service: AuthenticationService.self,
             with: [
+                CryptoHashCharacteristic.self,
                 SetupCharacteristic.self,
+                AuthenticateCharacteristic.self,
                 CreateNewKeyCharacteristic.self,
                 ConfirmNewKeyCharacteristic.self,
                 KeysCharacteristic.self
             ]
         )
         self.serviceHandle = serviceHandle
-        _setup = .init(valueHandle: valueHandles[0])
-        _createKey = .init(valueHandle: valueHandles[1])
-        _confirmKey = .init(valueHandle: valueHandles[2])
-        _keys = .init(wrappedValue: keys, valueHandle: valueHandles[3])
+        _cryptoHash = .init(wrappedValue: cryptoHash, valueHandle: valueHandles[0])
+        _setup = .init(valueHandle: valueHandles[1])
+        _authenticate = .init(valueHandle: valueHandles[2])
+        _createKey = .init(valueHandle: valueHandles[3])
+        _confirmKey = .init(valueHandle: valueHandles[4])
+        _keys = .init(wrappedValue: keys, valueHandle: valueHandles[5])
     }
 }
 
@@ -53,7 +64,9 @@ public extension AuthenticationService {
     var characteristics: [AnyManagedCharacteristic] {
         get async {
             [
+                $cryptoHash,
                 $setup,
+                $authenticate,
                 $createKey,
                 $confirmKey,
                 $keys
