@@ -77,15 +77,25 @@ final class ServerTests: XCTestCase {
                 XCTFail("Missing owner key")
                 return
             }
+            
+            // verify new key
             XCTAssertEqual(ownerKey.id, key.id)
             XCTAssertEqual(ownerKey.permission, .owner)
             XCTAssertEqual(ownerKey.name, ownerName)
             
+            // verify setup request reset
             try await Task.sleep(nanoseconds: 10_000_000)
             serverSetupValue = await server.authentication.setup
             XCTAssertNil(serverSetupValue, "Should reset setup request")
+            let serverSetupDatabaseValue = await peripheral[characteristic: server.authentication.$setup.handle]
+            XCTAssertEqual(serverSetupDatabaseValue, Data())
             
+            // identify
             try await connection.identify(key: key)
+            try await Task.sleep(nanoseconds: 10_000_000)
+            let lastIdentify = await server.lastIdentify
+            XCTAssertNotNil(lastIdentify)
+            
             //authentication.setup = nil // reset value
             //authentication.keys = [.key(ownerKey)]
         }
@@ -212,7 +222,7 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
         self.keySecrets[id]
     }
     
-    func didWrite(_ characteristicValue: ManagedCharacteristicValue, for handle: UInt16) async {
+    func didWrite(_ handle: UInt16) async {
         
         switch handle {
         case await authentication.$setup.handle:
