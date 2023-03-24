@@ -143,13 +143,13 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
     
     private var server: BluetoothAccesoryServer<Peripheral>!
     
-    var information: InformationService {
+    nonisolated var information: InformationService {
         get async {
             await server[InformationService.self]
         }
     }
     
-    var authentication: AuthenticationService {
+    nonisolated var authentication: AuthenticationService {
         get async {
             await server[AuthenticationService.self]
         }
@@ -215,8 +215,9 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             self.keys[ownerKey.id] = ownerKey
             self.keySecrets[ownerKey.id] = request.secret
             // clear value
-            //self.server.clearValue(for: information.$setup)
-            //self.authentication.setup = nil
+            await self.server.update(AuthenticationService.self) {
+                $0.setup = nil
+            }
         default:
             return
         }

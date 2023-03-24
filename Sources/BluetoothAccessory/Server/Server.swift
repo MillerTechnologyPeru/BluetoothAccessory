@@ -74,34 +74,46 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
             }
             fatalError("Invalid service \(service)")
         }
+        set {
+            guard let index = services.firstIndex(where: { $0 is T }) else {
+                fatalError("Invalid service \(service)")
+            }
+            services[index] = newValue
+        }
     }
     
-    public func setValue<Characteristic>(
-        _ newValue: Characteristic.Value,
-        for characteristic: ManagedCharacteristic<Characteristic>
-    ) where Characteristic: AccessoryCharacteristic {
-        // find service
-        guard let (serviceIndex, _) = self.characteristic(for: characteristic.valueHandle) else {
-            fatalError("Invalid handle \(characteristic.valueHandle)")
-        }
-        // set new value
-        guard self.services[serviceIndex].update(characteristic: characteristic.valueHandle, with: .single(newValue.characteristicValue)) else {
-            fatalError("Invalid new value \"\(newValue)\" for \(characteristic.valueHandle)")
-        }
+    public func update <T: AccessoryService> (
+        _ service: T.Type,
+        _ block: (inout T) -> ()
+    ) async {
+        // update value
+        let oldValue = self[service]
+        var newValue = oldValue
+        block(&newValue)
+        self[service] = newValue
         // update DB
-        
-    }
-    
-    public func clearValue<Characteristic>(
-        for characteristic: ManagedWriteOnlyCharacteristic<Characteristic>
-    ) where Characteristic: AccessoryCharacteristic {
-        // find service
-        guard let (serviceIndex, _) = self.characteristic(for: characteristic.valueHandle) else {
-            fatalError("Invalid handle \(characteristic.valueHandle)")
-        }
-        // set new value
-        guard self.services[serviceIndex].update(characteristic: characteristic.valueHandle, with: .none) else {
-            fatalError("Cannot set nil for \(characteristic.valueHandle)")
+        let oldCharacteristics = oldValue.characteristics
+        for newCharacteristic in newValue.characteristics {
+            // did change
+            guard let oldCharacteristic = oldCharacteristics.first(where: { $0.handle == newCharacteristic.handle }),
+                  oldCharacteristic.value != newCharacteristic.value else {
+                continue
+            }
+            // unencrypted value
+            if newCharacteristic.properties.contains(.read),
+               newCharacteristic.properties.contains(.encrypted) == false,
+               newCharacteristic.properties.contains(.list) == false,
+               case let .single(value) = newCharacteristic.value {
+                // update DB
+                await peripheral.write(value.encode(), forCharacteristic: newCharacteristic.handle)
+            }
+            // write only
+            if newCharacteristic.properties.contains(.write),
+               newCharacteristic.properties.contains(.list) == false,
+               case .none = newCharacteristic.value {
+                // update DB
+                await peripheral.write(Data(), forCharacteristic: newCharacteristic.handle)
+            }
         }
     }
     
