@@ -145,6 +145,9 @@ internal actor TestL2CAPSocket: L2CAPSocket {
         let data = self.receivedData.removeFirst()
         cache.append(data)
         eventContinuation.yield(.read(data.count))
+        
+        try await Task.sleep(nanoseconds: 1_000_000)
+        
         return data
     }
     

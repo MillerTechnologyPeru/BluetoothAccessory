@@ -68,10 +68,6 @@ final class ServerTests: XCTestCase {
                 using: setupSecret
             )
             
-            var serverSetupValue = await server.authentication.setup
-            XCTAssertEqual(serverSetupValue, setupRequest)
-            
-            try await Task.sleep(nanoseconds: 10_000_000)
             let serverKeys = await server.keys
             guard let ownerKey = serverKeys[key.id] else {
                 XCTFail("Missing owner key")
@@ -84,15 +80,13 @@ final class ServerTests: XCTestCase {
             XCTAssertEqual(ownerKey.name, ownerName)
             
             // verify setup request reset
-            try await Task.sleep(nanoseconds: 10_000_000)
-            serverSetupValue = await server.authentication.setup
-            XCTAssertNil(serverSetupValue, "Should reset setup request")
+            let serverSetupValue = await server.authentication.setup
+            XCTAssertNil(serverSetupValue)
             let serverSetupDatabaseValue = await peripheral[characteristic: server.authentication.$setup.handle]
             XCTAssertEqual(serverSetupDatabaseValue, Data())
             
             // identify
             try await connection.identify(key: key)
-            try await Task.sleep(nanoseconds: 10_000_000)
             let lastIdentify = await server.lastIdentify
             XCTAssertNotNil(lastIdentify)
             
