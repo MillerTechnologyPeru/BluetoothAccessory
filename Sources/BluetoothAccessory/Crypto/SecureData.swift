@@ -40,9 +40,9 @@ public extension SecureData where Self: Encodable {
     }
 }
 
-/// A lock's key used for unlocking and actions.
+/// A accessory's key used for authentication.
 public struct KeyData: SecureData, Codable {
-        
+    
     public let data: Data
     
     public init?(data: Data) {

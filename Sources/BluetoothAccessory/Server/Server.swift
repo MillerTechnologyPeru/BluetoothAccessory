@@ -28,6 +28,8 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
     
     weak var delegate: BluetoothAccessoryServerDelegate?
     
+    var willWrite = [UInt16: ManagedCharacteristicValue]()
+    
     deinit {
         peripheral.willRead = nil
         peripheral.willWrite = nil
@@ -104,6 +106,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         // list write
         if characteristic.properties.contains(.list) {
             // TODO: List write
+            assertionFailure("Not implemented")
             return .writeNotPermitted
         } else if characteristic.properties.contains(.encrypted) {
             guard let delegate = delegate else {
@@ -138,6 +141,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
                 delegate.log("Unable to decode write request for \(request.uuid)")
                 return .writeNotPermitted
             }
+            willWrite[characteristic.handle] = .single(value)
             return nil
         } else {
             // simple write
@@ -149,12 +153,19 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
                 delegate?.log("Unable to decode write request for \(request.uuid)")
                 return .writeNotPermitted
             }
+            willWrite[characteristic.handle] = .single(value)
             return nil
         }
     }
     
     private func didWrite(_ request: GATTWriteConfirmation<Peripheral.Central>) async {
         delegate?.log("Did write characteristic \(request.uuid)")
+        guard let value = willWrite[request.handle] else {
+            assertionFailure()
+            return
+        }
+        willWrite[request.handle] = nil
+        await delegate?.didWrite(value, for: request.handle)
     }
     
     /// Update unencrypted readable values.
@@ -196,4 +207,6 @@ public protocol BluetoothAccessoryServerDelegate: AnyObject {
     func key(for id: UUID) async -> KeyData?
     
     var setupSharedSecret: KeyData { get }
+    
+    func didWrite(_ characteristicValue: ManagedCharacteristicValue, for handle: UInt16) async
 }

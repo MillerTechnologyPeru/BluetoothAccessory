@@ -103,7 +103,7 @@ public extension Permission {
         /// The date this permission becomes invalid.
         public var expiry: Date?
         
-        /// The minute interval range the lock can be unlocked.
+        /// The minute interval range the accessory can be used.
         public var interval: Interval
         
         /// The days of the week the permission is valid
@@ -156,7 +156,7 @@ public extension Permission {
 
 public extension Permission.Schedule {
     
-    /// The minute interval range the lock can be unlocked.
+    /// The minute interval range the accessory can be used.
     struct Interval: RawRepresentable, Equatable, Hashable {
         
         internal static let min: UInt16 = 0
@@ -177,7 +177,6 @@ public extension Permission.Schedule {
         }
         
         private init(_ unsafe: ClosedRange<UInt16>) {
-            
             self.rawValue = unsafe
         }
     }

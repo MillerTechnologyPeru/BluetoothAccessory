@@ -16,53 +16,22 @@ final class ServerTests: XCTestCase {
     
     func testInformationService() async throws {
         
-        let id = UUID()
-        let rssi: Int8 = 20
-        let accessoryType = AccessoryType.lightbulb
-        let name = "Lightbulb"
-        let manufacturer = "Apple Inc."
-        let model = "iLight1,1"
-        let serialNumber = UUID().uuidString
-        let softwareVersion = "1.0.0"
-        let advertisedService = ServiceType.lightbulb
         let (peripheral, central, scanData) = try await testPeripheral()
-        
-        let information = try await InformationService(
-            peripheral: peripheral,
-            id: id,
-            name: name,
-            accessoryType: accessoryType,
-            manufacturer: manufacturer,
-            model: model,
-            serialNumber: serialNumber,
-            softwareVersion: softwareVersion,
-            metadata: []
-        )
-        
-        let server = try await BluetoothAccesoryServer(
-            peripheral: peripheral,
-            id: id,
-            rssi: rssi,
-            name: name,
-            advertised: advertisedService,
-            services: [
-                information
-            ]
-        )
+        let server = try await TestServer(peripheral: peripheral)
         
         try await central.connection(for: scanData.peripheral) { connection in
             
             // id
             let idCharacteristic = try await connection.readIdentifier()
-            XCTAssertEqual(idCharacteristic, id)
+            XCTAssertEqual(idCharacteristic, server.id)
             
             // name
             let nameCharacteristic = try await connection.readName()
-            XCTAssertEqual(nameCharacteristic, name)
+            XCTAssertEqual(nameCharacteristic, server.name)
             
             // accessory type
             let accessoryTypeCharacteristic = try await connection.readAccessoryType()
-            XCTAssertEqual(accessoryTypeCharacteristic, accessoryType)
+            XCTAssertEqual(accessoryTypeCharacteristic, server.accessoryType)
             
         }
         
@@ -75,65 +44,23 @@ final class ServerTests: XCTestCase {
     
     func testSetup() async throws {
         
-        let id = UUID()
-        let rssi: Int8 = 20
-        let accessoryType = AccessoryType.lightbulb
-        let name = "Lightbulb"
-        let manufacturer = "Apple Inc."
-        let model = "iLight1,1"
-        let serialNumber = UUID().uuidString
-        let softwareVersion = "1.0.0"
-        let advertisedService = ServiceType.lightbulb
-        
         let (peripheral, central, scanData) = try await testPeripheral()
-                
-        let information = try await InformationService(
-            peripheral: peripheral,
-            id: id,
-            name: name,
-            accessoryType: accessoryType,
-            manufacturer: manufacturer,
-            model: model,
-            serialNumber: serialNumber,
-            softwareVersion: softwareVersion,
-            metadata: []
-        )
-        
-        let authentication = try await AuthenticationService(
-            peripheral: peripheral
-        )
-        
-        let serverDelegate = TestServerDelegate()
-        
-        let server = try await BluetoothAccesoryServer(
-            peripheral: peripheral,
-            delegate: serverDelegate,
-            id: id,
-            rssi: rssi,
-            name: name,
-            advertised: advertisedService,
-            services: [
-                information,
-                authentication
-            ]
-        )
+        let server = try await TestServer(peripheral: peripheral)
         
         let ownerName = "colemancda@icloud.com"
         let key = Credential(id: UUID(), secret: KeyData())
-        let setupSecret = KeyData()
+        let setupSecret = server.setupSharedSecret
         let setupRequest = SetupRequest(
             id: key.id,
             secret: key.secret,
             name: ownerName
         )
         
-        serverDelegate.setupSharedSecret = setupSecret
-        
         try await central.connection(for: scanData.peripheral) { connection in
             
             // id
-            let idCharacteristic = try await connection.readIdentifier()
-            XCTAssertEqual(idCharacteristic, id)
+            let id = try await connection.readIdentifier()
+            XCTAssertEqual(id, server.id)
             
             // write setup characteristic
             try await connection.setup(
@@ -141,11 +68,18 @@ final class ServerTests: XCTestCase {
                 using: setupSecret
             )
             
-            let serverSetupValue = await authentication.setup
+            let serverSetupValue = await server.authentication.setup
             XCTAssertEqual(serverSetupValue, setupRequest)
+            
+            let ownerKey = Key(setup: setupRequest)
+            XCTAssertEqual(ownerKey.id, key.id)
+            XCTAssertEqual(ownerKey.permission, .owner)
+            XCTAssertEqual(ownerKey.name, ownerName)
+           
+            //authentication.setup = nil // reset value
+            //authentication.keys = [.key(ownerKey)]
         }
         
-        withExtendedLifetime(serverDelegate) { _ in }
         withExtendedLifetime(server) { _ in }
         
         // cleanup
@@ -184,9 +118,57 @@ extension ServerTests {
     }
 }
 
-final class TestServerDelegate: BluetoothAccessoryServerDelegate {
+final class TestServer: BluetoothAccessoryServerDelegate {
     
-    init() { }
+    let id = UUID()
+    let rssi: Int8 = 20
+    let accessoryType = AccessoryType.lightbulb
+    let name = "Lightbulb"
+    let manufacturer = "Apple Inc."
+    let model = "iLight1,1"
+    let serialNumber = UUID().uuidString
+    let softwareVersion = "1.0.0"
+    let advertisedService = ServiceType.lightbulb
+    
+    let information: InformationService
+    let authentication: AuthenticationService
+    
+    var keys = [UUID: KeyData]()
+    var setupSharedSecret = BluetoothAccessory.KeyData()
+    
+    private var server: BluetoothAccesoryServer<TestPeripheral>!
+    
+    init(peripheral: TestPeripheral) async throws {
+        
+        self.information = try await InformationService(
+            peripheral: peripheral,
+            id: id,
+            name: name,
+            accessoryType: accessoryType,
+            manufacturer: manufacturer,
+            model: model,
+            serialNumber: serialNumber,
+            softwareVersion: softwareVersion,
+            metadata: []
+        )
+        
+        self.authentication = try await AuthenticationService(
+            peripheral: peripheral
+        )
+        
+        self.server = try await BluetoothAccesoryServer(
+            peripheral: peripheral,
+            delegate: self,
+            id: id,
+            rssi: rssi,
+            name: name,
+            advertised: advertisedService,
+            services: [
+                information,
+                authentication
+            ]
+        )
+    }
     
     func log(_ message: String) {
         print(message)
@@ -197,8 +179,23 @@ final class TestServerDelegate: BluetoothAccessoryServerDelegate {
     }
     
     func key(for id: UUID) -> BluetoothAccessory.KeyData? {
-        return nil
+        self.keys[id]
     }
-    
-    var setupSharedSecret = BluetoothAccessory.KeyData()
+        
+    func didWrite(_ characteristicValue: ManagedCharacteristicValue, for handle: UInt16) async {
+        switch handle {
+        case await authentication.$setup.handle:
+            let value = await authentication.$setup.value
+            assert(value == characteristicValue)
+            guard let request = await authentication.setup else {
+                assertionFailure()
+                return
+            }
+            // create new key
+            let ownerKey = Key(setup: request)
+            self.keys[ownerKey.id] = request.secret
+        default:
+            return
+        }
+    }
 }
