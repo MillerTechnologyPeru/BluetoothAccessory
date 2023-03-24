@@ -62,13 +62,18 @@ final class ServerTests: XCTestCase {
             
             // accessory type
             let accessoryTypeCharacteristic = try await connection.readAccessoryType()
-            XCTAssertEqual(accessoryTypeCharacteristic, .lightbulb)
+            XCTAssertEqual(accessoryTypeCharacteristic, accessoryType)
+            
         }
         
         withExtendedLifetime(server) { _ in }
+        
+        // cleanup
+        await central.disconnectAll()
+        await peripheral.stop()
     }
     
-    func _testSetup() async throws {
+    func testSetup() async throws {
         
         let id = UUID()
         let rssi: Int8 = 20
@@ -79,6 +84,7 @@ final class ServerTests: XCTestCase {
         let serialNumber = UUID().uuidString
         let softwareVersion = "1.0.0"
         let advertisedService = ServiceType.lightbulb
+        
         let (peripheral, central, scanData) = try await testPeripheral()
         
         let information = try await InformationService(
@@ -109,17 +115,36 @@ final class ServerTests: XCTestCase {
             ]
         )
         
+        let ownerName = "colemancda@icloud.com"
+        let key = Credential(id: UUID(), secret: KeyData())
+        let setupSecret = KeyData()
+        let setupRequest = SetupRequest(
+            id: key.id,
+            secret: key.secret,
+            name: ownerName
+        )
+        
         try await central.connection(for: scanData.peripheral) { connection in
             
             // id
-            let identifierCharacteristic = try await central.read(
-                IdentifierCharacteristic.self,
-                characteristic: connection.cache.characteristic(.identifier, service: .information)
+            let idCharacteristic = try await connection.readIdentifier()
+            XCTAssertEqual(idCharacteristic, id)
+            
+            // write setup characteristic
+            try await connection.setup(
+                setupRequest,
+                using: setupSecret
             )
-            XCTAssertEqual(identifierCharacteristic.value, id)
+            
+            //let serverSetupValue = await authentication.setup
+            //XCTAssertEqual(serverSetupValue, setupRequest)
         }
         
         withExtendedLifetime(server) { _ in }
+        
+        // cleanup
+        await central.disconnectAll()
+        await peripheral.stop()
     }
 }
 
