@@ -57,11 +57,8 @@ final class ServerTests: XCTestCase {
             XCTAssertEqual(idCharacteristic, id)
             
             // name
-            let nameCharacteristic = try await central.read(
-                NameCharacteristic.self,
-                characteristic: connection.cache.characteristic(.name, service: .information)
-            )
-            XCTAssertEqual(nameCharacteristic.value, name)
+            let nameCharacteristic = try await connection.readName()
+            XCTAssertEqual(nameCharacteristic, name)
             
             // accessory type
             let accessoryTypeCharacteristic = try await connection.readAccessoryType()
