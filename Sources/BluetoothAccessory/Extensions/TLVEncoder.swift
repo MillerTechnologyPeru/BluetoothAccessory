@@ -6,7 +6,10 @@
 //
 
 import Foundation
+import Bluetooth
 import TLVCoding
+
+// MARK: - Encoder
 
 public extension TLVEncoder {
     
@@ -27,5 +30,21 @@ public extension TLVDecoder {
         decoder.uuidFormatting = .bytes
         decoder.dateFormatting = .secondsSince1970
         return decoder
+    }
+}
+
+// MARK: - BluetoothUUID
+
+extension BluetoothUUID: TLVCodable {
+    
+    public init?(tlvData: Data) {
+        guard let littleEndian = BluetoothUUID(data: tlvData) else {
+            return nil
+        }
+        self.init(littleEndian: littleEndian)
+    }
+    
+    public var tlvData: Data {
+        self.littleEndian.data
     }
 }

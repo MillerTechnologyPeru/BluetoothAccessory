@@ -39,6 +39,9 @@ public actor InformationService: AccessoryService {
     @ManagedCharacteristic<SoftwareVersionCharacteristic>
     public var softwareVersion: String
     
+    @ManagedListCharacteristic<MetadataCharacteristic>
+    public var metadata: [CharacteristicMetadata]
+    
     /// Add service to Peripheral and initialize handles.
     public init<Peripheral: AccessoryPeripheralManager>(
         peripheral: Peripheral,
@@ -48,7 +51,8 @@ public actor InformationService: AccessoryService {
         manufacturer: String,
         model: String,
         serialNumber: String,
-        softwareVersion: String
+        softwareVersion: String,
+        metadata: [CharacteristicMetadata] = []
     ) async throws {
         let (serviceHandle, valueHandles) = try await peripheral.add(
             service: InformationService.self,
@@ -61,6 +65,7 @@ public actor InformationService: AccessoryService {
                 ModelCharacteristic.self,
                 SerialNumberCharacteristic.self,
                 SoftwareVersionCharacteristic.self,
+                MetadataCharacteristic.self
             ]
         )
         self.serviceHandle = serviceHandle
@@ -72,6 +77,7 @@ public actor InformationService: AccessoryService {
         _model = .init(wrappedValue: model, valueHandle: valueHandles[5])
         _serialNumber = .init(wrappedValue: serialNumber, valueHandle: valueHandles[6])
         _softwareVersion = .init(wrappedValue: softwareVersion, valueHandle: valueHandles[7])
+        _metadata = .init(wrappedValue: metadata, valueHandle: valueHandles[8])
     }
 }
 
@@ -87,7 +93,8 @@ public extension InformationService {
                 $manufacturer,
                 $model,
                 $serialNumber,
-                $softwareVersion
+                $softwareVersion,
+                $metadata
             ]
         }
     }

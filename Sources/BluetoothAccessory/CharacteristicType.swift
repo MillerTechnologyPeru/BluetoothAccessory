@@ -88,6 +88,9 @@ public enum CharacteristicType: UInt16, Codable, CaseIterable {
     /// Log data for the accessory.
     case logs
     
+    /// Characteristic Metadata
+    case metadata
+    
     // Authentication
     
     /// Hash used for cryptographic operations
@@ -1047,6 +1050,8 @@ extension CharacteristicType: CustomStringConvertible {
             return "Remove Key"
         case .keys:
             return "Keys"
+        case .metadata:
+            return "Metadata"
         }
     }
 }

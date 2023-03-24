@@ -15,7 +15,7 @@ public struct KeysCharacteristic: Equatable, Hashable, AccessoryCharacteristic {
     
     public static var type: BluetoothUUID { BluetoothUUID(characteristic: .keys) }
     
-    public static var properties: BitMaskOptionSet<CharacteristicProperty> { [.read, .encrypted, .list] }
+    public static var properties: BitMaskOptionSet<CharacteristicProperty> { [.encrypted, .list] }
     
     public init(value: Item) {
         self.value = value
