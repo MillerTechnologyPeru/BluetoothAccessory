@@ -48,11 +48,8 @@ final class ServerTests: XCTestCase {
         try await central.connection(for: scanData.peripheral) { connection in
             
             // id
-            let identifierCharacteristic = try await central.read(
-                IdentifierCharacteristic.self,
-                characteristic: connection.cache.characteristic(.identifier, service: .information)
-            )
-            XCTAssertEqual(identifierCharacteristic.value, id)
+            let idValue = try await connection.readIdentifier()
+            XCTAssertEqual(idValue, id)
             
             // name
             let nameCharacteristic = try await central.read(

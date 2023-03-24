@@ -337,6 +337,8 @@ public extension CentralManager {
         _ value: T,
         for characteristic: Characteristic<Peripheral, AttributeID>
     ) async throws {
+        assert(T.properties.contains(.write))
+        assert(T.properties.contains(.encrypted) == false)
         try await write(value.encode(), for: characteristic)
     }
     
@@ -347,6 +349,8 @@ public extension CentralManager {
         cryptoHash: Characteristic<Peripheral, AttributeID>,
         key: Credential
     ) async throws {
+        assert(T.properties.contains(.write))
+        assert(T.properties.contains(.encrypted))
         try await writeEncrypted(value.encode(), for: characteristic, cryptoHash: cryptoHash, key: key)
     }
     
@@ -355,6 +359,8 @@ public extension CentralManager {
         _ type: T.Type,
         characteristic: Characteristic<Peripheral, AttributeID>
     ) async throws -> T {
+        assert(type.properties.contains(.read))
+        assert(type.properties.contains(.encrypted) == false)
         let data = try await read(characteristic: characteristic)
         guard let value = T.init(from: data) else {
             throw BluetoothAccessoryError.invalidCharacteristicValue(characteristic.uuid)
@@ -371,6 +377,8 @@ public extension CentralManager {
         authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
         key: Credential
     ) async throws -> T {
+        assert(type.properties.contains(.read))
+        assert(type.properties.contains(.encrypted))
         let data = try await readEncryped(
             characteristic: characteristic,
             service: service,
