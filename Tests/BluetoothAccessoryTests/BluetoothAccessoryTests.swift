@@ -41,6 +41,10 @@ final class BluetoothAccessoryTests: XCTestCase {
             XCTAssertEqual(BluetoothUUID(service: serviceType), BluetoothUUID(rawValue: uuidString))
             XCTAssertEqual(BluetoothUUID(service: serviceType).description, uuidString)
         }
+                
+        for serviceType in ServiceType.allCases {
+            XCTAssertEqual(ServiceType(uuid: BluetoothUUID(service: serviceType)), serviceType)
+        }
         
         XCTAssertNil(ServiceType(uuid: BluetoothUUID()))
     }
@@ -61,6 +65,11 @@ final class BluetoothAccessoryTests: XCTestCase {
         }
         
         XCTAssertNil(CharacteristicType(uuid: BluetoothUUID()))
+        
+        for characteristicType in CharacteristicType.allCases {
+            XCTAssertEqual(CharacteristicType(uuid: BluetoothUUID(characteristic: characteristicType)), characteristicType)
+            XCTAssertFalse(characteristicType.description.isEmpty)
+        }
     }
     
     func testCharacteristicValue() {
