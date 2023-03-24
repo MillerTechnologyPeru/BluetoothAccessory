@@ -16,6 +16,9 @@ public enum AccessoryBeacon: Equatable, Hashable {
     
     /// Characteristic changed
     case characteristicChanged(UUID, CharacteristicType)
+    
+    // Setup mode
+    //case setup(UUID, AccessoryType)
 }
 
 public extension AccessoryBeacon {

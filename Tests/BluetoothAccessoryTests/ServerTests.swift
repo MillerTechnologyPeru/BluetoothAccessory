@@ -86,7 +86,7 @@ final class ServerTests: XCTestCase {
         let advertisedService = ServiceType.lightbulb
         
         let (peripheral, central, scanData) = try await testPeripheral()
-        
+                
         let information = try await InformationService(
             peripheral: peripheral,
             id: id,
@@ -103,8 +103,11 @@ final class ServerTests: XCTestCase {
             peripheral: peripheral
         )
         
+        let serverDelegate = TestServerDelegate()
+        
         let server = try await BluetoothAccesoryServer(
             peripheral: peripheral,
+            delegate: serverDelegate,
             id: id,
             rssi: rssi,
             name: name,
@@ -124,6 +127,8 @@ final class ServerTests: XCTestCase {
             name: ownerName
         )
         
+        serverDelegate.setupSharedSecret = setupSecret
+        
         try await central.connection(for: scanData.peripheral) { connection in
             
             // id
@@ -136,10 +141,11 @@ final class ServerTests: XCTestCase {
                 using: setupSecret
             )
             
-            //let serverSetupValue = await authentication.setup
-            //XCTAssertEqual(serverSetupValue, setupRequest)
+            let serverSetupValue = await authentication.setup
+            XCTAssertEqual(serverSetupValue, setupRequest)
         }
         
+        withExtendedLifetime(serverDelegate) { _ in }
         withExtendedLifetime(server) { _ in }
         
         // cleanup
@@ -176,4 +182,23 @@ extension ServerTests {
         
         return (peripheral, central, scanData)
     }
+}
+
+final class TestServerDelegate: BluetoothAccessoryServerDelegate {
+    
+    init() { }
+    
+    func log(_ message: String) {
+        print(message)
+    }
+    
+    func didAdvertise(beacon: BluetoothAccessory.AccessoryBeacon) {
+        
+    }
+    
+    func key(for id: UUID) -> BluetoothAccessory.KeyData? {
+        return nil
+    }
+    
+    var setupSharedSecret = BluetoothAccessory.KeyData()
 }

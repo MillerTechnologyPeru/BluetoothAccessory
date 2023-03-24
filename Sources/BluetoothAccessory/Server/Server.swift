@@ -26,6 +26,8 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
     
     public let services: [any AccessoryService]
     
+    weak var delegate: BluetoothAccessoryServerDelegate?
+    
     deinit {
         peripheral.willRead = nil
         peripheral.willWrite = nil
@@ -34,6 +36,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
     
     public init(
         peripheral: Peripheral,
+        delegate: BluetoothAccessoryServerDelegate? = nil,
         id: UUID,
         rssi: Int8,
         name: String,
@@ -41,6 +44,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         services: [any AccessoryService]
     ) async throws {
         self.peripheral = peripheral
+        self.delegate = delegate
         self.id = id
         self.rssi = rssi
         self.name = name
@@ -78,20 +82,79 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
             service: advertisedService
         )
         self.beacon = beacon
+        delegate?.didAdvertise(beacon: beacon)
     }
     
     private func willRead(_ request: GATTReadRequest<Peripheral.Central>) async -> ATTError? {
-        
+        delegate?.log("Will read characteristic \(request.uuid)")
         return nil
     }
     
     private func willWrite(_ request: GATTWriteRequest<Peripheral.Central>) async -> ATTError? {
-        
-        return nil
+        delegate?.log("Will write characteristic \(request.uuid)")
+        // find matching characteristic
+        guard let (service, characteristic) = await characteristic(for: request.handle) else {
+            delegate?.log("Cannot write unknown characteristic \(request.uuid)")
+            return .writeNotPermitted
+        }
+        guard characteristic.properties.contains(.write) else {
+            delegate?.log("Characteristic \(request.uuid) is not writable")
+            return .writeNotPermitted
+        }
+        // list write
+        if characteristic.properties.contains(.list) {
+            // TODO: List write
+            return .writeNotPermitted
+        } else if characteristic.properties.contains(.encrypted) {
+            guard let delegate = delegate else {
+                delegate?.log("Cannot handle encrypted write for \(request.uuid)")
+                return .unlikelyError
+            }
+            // encrypted write
+            guard let encryptedData = EncryptedData(data: request.newValue) else {
+                delegate.log("Unable to decode encrypted write for \(request.uuid)")
+                return .writeNotPermitted
+            }
+            let keyID = encryptedData.authentication.message.id
+            let secret: KeyData
+            if keyID == .zero, request.uuid == BluetoothUUID(characteristic: .setup) {
+                secret = delegate.setupSharedSecret
+            } else {
+                guard let secretData = await delegate.key(for: keyID) else {
+                    delegate.log("Rejected encrypted write for \(request.uuid) with unknown key \(keyID)")
+                    return .writeNotPermitted
+                }
+                secret = secretData
+            }
+            guard let decryptedData = try? encryptedData.decrypt(using: secret) else {
+                delegate.log("Unable to decrypt write request for \(request.uuid)")
+                return .writeNotPermitted
+            }
+            guard let value = CharacteristicValue(from: decryptedData, format: characteristic.format) else {
+                delegate.log("Unable to decode write request for \(request.uuid) as \(characteristic.format)")
+                return .writeNotPermitted
+            }
+            guard await service.update(characteristic: characteristic, with: .single(value)) else {
+                delegate.log("Unable to decode write request for \(request.uuid)")
+                return .writeNotPermitted
+            }
+            return nil
+        } else {
+            // simple write
+            guard let value = CharacteristicValue(from: request.newValue, format: characteristic.format) else {
+                delegate?.log("Unable to decode write request for \(request.uuid)")
+                return .writeNotPermitted
+            }
+            guard await service.update(characteristic: characteristic, with: .single(value)) else {
+                delegate?.log("Unable to decode write request for \(request.uuid)")
+                return .writeNotPermitted
+            }
+            return nil
+        }
     }
     
     private func didWrite(_ request: GATTWriteConfirmation<Peripheral.Central>) async {
-        
+        delegate?.log("Did write characteristic \(request.uuid)")
     }
     
     /// Update unencrypted readable values.
@@ -109,4 +172,28 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
             }
         }
     }
+    
+    private func characteristic(for handle: UInt16) async -> (any AccessoryService, AnyManagedCharacteristic)? {
+        for service in services {
+            for characteristic in await service.characteristics {
+                guard characteristic.handle == handle else {
+                    continue
+                }
+                return (service, characteristic)
+            }
+        }
+        return nil
+    }
+}
+
+public protocol BluetoothAccessoryServerDelegate: AnyObject {
+    
+    func log(_ message: String)
+    
+    func didAdvertise(beacon: AccessoryBeacon)
+    
+    /// Return key for the specified ID or shared secret.
+    func key(for id: UUID) async -> KeyData?
+    
+    var setupSharedSecret: KeyData { get }
 }

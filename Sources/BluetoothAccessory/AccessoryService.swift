@@ -17,6 +17,8 @@ public protocol AccessoryService: AnyObject {
     var serviceHandle: UInt16 { get }
     
     var characteristics: [AnyManagedCharacteristic] { get async }
+    
+    func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) async -> Bool
 }
 
 public struct AnyManagedCharacteristic: Equatable, Hashable {
@@ -25,15 +27,19 @@ public struct AnyManagedCharacteristic: Equatable, Hashable {
     
     public let value: ManagedCharacteristicValue
     
+    public let format: CharacteristicFormat
+    
     public let properties: BitMaskOptionSet<CharacteristicProperty>
     
     internal init(
         handle: UInt16,
         value: ManagedCharacteristicValue,
+        format: CharacteristicFormat,
         properties: BitMaskOptionSet<CharacteristicProperty>
     ) {
         self.handle = handle
         self.value = value
+        self.format = format
         self.properties = properties
     }
 }
@@ -59,10 +65,15 @@ public struct ManagedCharacteristic <Characteristic: AccessoryCharacteristic> {
         self.valueHandle = valueHandle
     }
     
-    public private(set) var wrappedValue: Characteristic.Value
+    public var wrappedValue: Characteristic.Value
 
     public var projectedValue: AnyManagedCharacteristic {
-        .init(handle: valueHandle, value: .single(wrappedValue.characteristicValue), properties: Characteristic.properties)
+        .init(
+            handle: valueHandle,
+            value: .single(wrappedValue.characteristicValue),
+            format: Characteristic.Value.characteristicFormat,
+            properties: Characteristic.properties
+        )
     }
 }
 
@@ -83,7 +94,12 @@ public struct ManagedWriteOnlyCharacteristic <Characteristic: AccessoryCharacter
     public var wrappedValue: Characteristic.Value?
     
     public var projectedValue: AnyManagedCharacteristic {
-        .init(handle: valueHandle, value: wrappedValue.flatMap { .single($0.characteristicValue) } ?? .none, properties: Characteristic.properties)
+        .init(
+            handle: valueHandle,
+            value: wrappedValue.flatMap { .single($0.characteristicValue) } ?? .none,
+            format: Characteristic.Value.characteristicFormat,
+            properties: Characteristic.properties
+        )
     }
 }
 
@@ -101,9 +117,14 @@ public struct ManagedListCharacteristic <Characteristic: AccessoryCharacteristic
         self.valueHandle = valueHandle
     }
     
-    public private(set) var wrappedValue: [Characteristic.Value]
+    public var wrappedValue: [Characteristic.Value]
     
     public var projectedValue: AnyManagedCharacteristic {
-        .init(handle: valueHandle, value: .list(wrappedValue.map { $0.characteristicValue }), properties: Characteristic.properties)
+        .init(
+            handle: valueHandle,
+            value: .list(wrappedValue.map { $0.characteristicValue }),
+            format: Characteristic.Value.characteristicFormat,
+            properties: Characteristic.properties
+        )
     }
 }

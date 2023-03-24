@@ -73,4 +73,17 @@ public extension AuthenticationService {
             ]
         }
     }
+    
+    func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) async -> Bool {
+        switch (characteristic, newValue) {
+        case ($setup, .single(let newValue)):
+            guard let request = SetupRequest(characteristicValue: newValue) else {
+                return false
+            }
+            self.setup = request
+            return true
+        default:
+            return false
+        }
+    }
 }

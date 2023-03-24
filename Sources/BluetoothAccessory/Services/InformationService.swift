@@ -98,4 +98,8 @@ public extension InformationService {
             ]
         }
     }
+    
+    func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) async -> Bool {
+        return false
+    }
 }
