@@ -121,10 +121,7 @@ internal extension CentralManager {
             let foundCharacteristics = try await discoverCharacteristics([], for: service)
             for characteristic in foundCharacteristics {
                 var characteristicCache = GATTConnection<Self>.CharacteristicCache(characteristic: characteristic, descriptors: [])
-                // FIXME: Fix descriptor discovery on Linux
-                #if os(iOS)
                 characteristicCache.descriptors = try await discoverDescriptors(for: characteristic)
-                #endif
                 serviceCache.characteristics.append(characteristicCache)
             }
             cache.services.append(serviceCache)
@@ -201,6 +198,8 @@ public extension CentralManager {
         key: Credential
     ) async throws -> AsyncThrowingStream<Data, Error> {
         let log = self.log
+        // enable notifications
+        let stream = try await self.notify(for: notifyCharacteristic)
         // authenticate for encrypted read
         try await authenticate(
             characteristic: notifyCharacteristic.uuid,
@@ -209,8 +208,6 @@ public extension CentralManager {
             cryptoHash: cryptoHashCharacteristic,
             key: key
         )
-        // enable notifications
-        let stream = try await self.notify(for: notifyCharacteristic)
         return AsyncThrowingStream(Data.self, bufferingPolicy: .unbounded) { continuation in
             Task.detached {
                 do {
@@ -393,13 +390,14 @@ public extension CentralManager {
     }
     
     /// Read list characteristic
-    func readList<Notification: AccessoryCharacteristic>(
+    func readList<T: AccessoryCharacteristic>(
+        _ type: T.Type,
         characteristic notifyCharacteristic: Characteristic<Peripheral, AttributeID>,
         service: BluetoothUUID,
         cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
         authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
         key: Credential
-    ) async throws -> AsyncThrowingMapSequence<AsyncThrowingStream<Data, Error>, Notification> {
+    ) async throws -> AsyncThrowingMapSequence<AsyncThrowingStream<Data, Error>, T> {
         let stream = try await readList(
             characteristic: notifyCharacteristic,
             service: service,
@@ -408,7 +406,7 @@ public extension CentralManager {
             key: key
         )
         let mapped = stream.map {
-            guard let value = Notification.init(from: $0) else {
+            guard let value = T.init(from: $0) else {
                 throw BluetoothAccessoryError.invalidData($0)
             }
             return value

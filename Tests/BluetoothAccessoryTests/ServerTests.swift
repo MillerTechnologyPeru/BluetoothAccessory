@@ -81,7 +81,7 @@ final class ServerTests: XCTestCase {
             
             // verify setup request reset
             let serverSetupValue = await server.authentication.setup
-            XCTAssertNil(serverSetupValue)
+            XCTAssertNil(serverSetupValue) //authentication.setup = nil // reset value
             let serverSetupDatabaseValue = await peripheral[characteristic: server.authentication.$setup.handle]
             XCTAssertEqual(serverSetupDatabaseValue, Data())
             
@@ -89,9 +89,14 @@ final class ServerTests: XCTestCase {
             try await connection.identify(key: key)
             let lastIdentify = await server.lastIdentify
             XCTAssertNotNil(lastIdentify)
-            
-            //authentication.setup = nil // reset value
+            /*
             //authentication.keys = [.key(ownerKey)]
+            let keysList = try await connection.readKeys(key: key)
+                .reduce(into: [KeysCharacteristic.Item](), { $0.append($1.value) })
+            XCTAssertEqual(keysList.count, 1)
+            XCTAssertEqual(keysList.first?.id, ownerKey.id)
+            //XCTAssertEqual(keysList.first?.name, ownerKey.name)
+             */
         }
         
         withExtendedLifetime(server) { _ in }
@@ -101,6 +106,8 @@ final class ServerTests: XCTestCase {
         await peripheral.stop()
     }
 }
+
+// MARK: - Extensions
 
 extension ServerTests {
     
@@ -131,6 +138,8 @@ extension ServerTests {
         return (peripheral, central, scanData)
     }
 }
+
+// MARK: - Supporting Types
 
 actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessoryServerDelegate {
     
@@ -229,6 +238,7 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             let ownerKey = Key(setup: request)
             self.keys[ownerKey.id] = ownerKey
             self.keySecrets[ownerKey.id] = request.secret
+            log("Setup owner key for \(ownerKey.name)")
             // clear value
             await self.server.update(AuthenticationService.self) {
                 $0.setup = nil

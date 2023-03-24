@@ -131,8 +131,7 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
         delegate?.log("Will write characteristic \(request.uuid.bluetoothAccessoryDescription)")
         // find matching characteristic
         guard let (serviceIndex, characteristic) = self.characteristic(for: request.handle) else {
-            delegate?.log("Cannot write unknown characteristic \(request.uuid.bluetoothAccessoryDescription)")
-            return .writeNotPermitted
+            return nil // could be descriptor write
         }
         guard characteristic.properties.contains(.write) else {
             delegate?.log("Characteristic \(request.uuid.bluetoothAccessoryDescription) is not writable")

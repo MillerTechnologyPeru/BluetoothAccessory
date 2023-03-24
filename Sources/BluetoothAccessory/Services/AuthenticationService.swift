@@ -80,6 +80,12 @@ public extension AuthenticationService {
             }
             self.setup = request
             return true
+        case (_authenticate.valueHandle, .single(let newValue)):
+            guard let request = AuthenticationRequest(characteristicValue: newValue) else {
+                return false
+            }
+            self.authenticate = request
+            return true
         default:
             return false
         }

@@ -84,3 +84,40 @@ extension KeysCharacteristic.Item: CharacteristicTLVCodable {
         }
     }
 }
+
+// MARK: - Central
+
+public extension CentralManager {
+    
+    /// Read the list of keys.
+    func readKeys(
+        characteristic notifyCharacteristic: Characteristic<Peripheral, AttributeID>,
+        service: BluetoothUUID,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
+        key: Credential
+    ) async throws -> AsyncThrowingMapSequence<AsyncThrowingStream<Data, Error>, KeysCharacteristic> {
+        return try await readList(
+            KeysCharacteristic.self,
+            characteristic: notifyCharacteristic,
+            service: service,
+            cryptoHash: cryptoHashCharacteristic,
+            authentication: authenticationCharacteristic,
+            key: key
+        )
+    }
+}
+
+public extension GATTConnection {
+    
+    /// Read the list of keys.
+    func readKeys(key: Credential) async throws -> AsyncThrowingMapSequence<AsyncThrowingStream<Data, Error>, KeysCharacteristic> {
+        return try await self.central.readKeys(
+            characteristic: cache.characteristic(.keys, service: .authentication),
+            service: BluetoothUUID(service: .authentication),
+            cryptoHash: cache.characteristic(.cryptoHash, service: .authentication),
+            authentication: cache.characteristic(.authenticate, service: .authentication),
+            key: key
+        )
+    }
+}
