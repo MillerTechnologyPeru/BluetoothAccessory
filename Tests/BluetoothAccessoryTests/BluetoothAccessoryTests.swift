@@ -26,14 +26,41 @@ final class BluetoothAccessoryTests: XCTestCase {
     
     func testServiceType() {
         
-        XCTAssertEqual(BluetoothUUID(service: .information).description, "00010000-0000-1000-BA00-CDA000000CDA")
-        XCTAssertEqual(BluetoothUUID(service: .authentication).description, "00010001-0000-1000-BA00-CDA000000CDA")
+        let values: [(ServiceType, String)] = [
+            (.information,      "00010000-0000-1000-BA00-CDA000000CDA"),
+            (.authentication,   "00010001-0000-1000-BA00-CDA000000CDA"),
+            (.bridge,           "00010002-0000-1000-BA00-CDA000000CDA"),
+            (.serial,           "00010003-0000-1000-BA00-CDA000000CDA"),
+            (.battery,          "00010064-0000-1000-BA00-CDA000000CDA"),
+            (.inverter,         "00010065-0000-1000-BA00-CDA000000CDA"),
+            (.solarPanel,       "00010066-0000-1000-BA00-CDA000000CDA"),
+            (.lightbulb,        "000100C8-0000-1000-BA00-CDA000000CDA"),
+        ]
+        
+        for (serviceType, uuidString) in values {
+            XCTAssertEqual(BluetoothUUID(service: serviceType), BluetoothUUID(rawValue: uuidString))
+            XCTAssertEqual(BluetoothUUID(service: serviceType).description, uuidString)
+        }
+        
+        XCTAssertNil(ServiceType(uuid: BluetoothUUID()))
     }
     
     func testCharacteristicType() {
         
         XCTAssertEqual(BluetoothUUID(characteristic: .identifier).description, "00020000-0000-1000-BA00-CDA000000CDA")
         XCTAssertEqual(BluetoothUUID(characteristic: .accessoryType).description, "00020001-0000-1000-BA00-CDA000000CDA")
+        
+        let values: [(CharacteristicType, String)] = [
+            (.identifier,       "00020000-0000-1000-BA00-CDA000000CDA"),
+            (.accessoryType,    "00020001-0000-1000-BA00-CDA000000CDA"),
+        ]
+        
+        for (characteristicType, uuidString) in values {
+            XCTAssertEqual(BluetoothUUID(characteristic: characteristicType), BluetoothUUID(rawValue: uuidString))
+            XCTAssertEqual(BluetoothUUID(characteristic: characteristicType).description, uuidString)
+        }
+        
+        XCTAssertNil(CharacteristicType(uuid: BluetoothUUID()))
     }
     
     func testCharacteristicValue() {
