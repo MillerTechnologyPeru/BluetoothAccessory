@@ -141,6 +141,12 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
     
     let setupSharedSecret = BluetoothAccessory.KeyData()
     
+    var cryptoHash: Nonce {
+        get async {
+            await self.authentication.cryptoHash
+        }
+    }
+    
     private var server: BluetoothAccesoryServer<Peripheral>!
     
     nonisolated var information: InformationService {
@@ -220,6 +226,12 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             }
         default:
             return
+        }
+    }
+    
+    func updateCryptoHash() async {
+        await self.server.update(AuthenticationService.self) {
+            $0.cryptoHash = Nonce()
         }
     }
 }

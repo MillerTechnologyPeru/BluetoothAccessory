@@ -180,7 +180,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
             let keyID = encryptedData.authentication.message.id
             let secret: KeyData
             if keyID == .zero, request.uuid == BluetoothUUID(characteristic: .setup) {
-                secret = delegate.setupSharedSecret
+                secret = await delegate.setupSharedSecret
             } else {
                 guard let secretData = await delegate.key(for: keyID) else {
                     delegate.log("Rejected encrypted write for \(request.uuid) with unknown key \(keyID)")
@@ -188,6 +188,13 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
                 }
                 secret = secretData
             }
+            // verify crypto hash
+            let cryptoHash = await delegate.cryptoHash
+            guard encryptedData.authentication.message.nonce == cryptoHash else {
+                delegate.log("Write request for \(request.uuid) authenticated with expired nonce")
+                return .writeNotPermitted
+            }
+            // decrypt
             guard let decryptedData = try? encryptedData.decrypt(using: secret) else {
                 delegate.log("Unable to decrypt write request for \(request.uuid)")
                 return .writeNotPermitted
@@ -225,6 +232,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         }
         willWrite[request.handle] = nil
         // notify delegate
+        await delegate?.updateCryptoHash()
         await delegate?.didWrite(value, for: request.handle)
     }
     
@@ -265,7 +273,11 @@ public protocol BluetoothAccessoryServerDelegate: AnyObject {
     /// Return key for the specified ID or shared secret.
     func key(for id: UUID) async -> KeyData?
     
-    var setupSharedSecret: KeyData { get }
+    var setupSharedSecret: KeyData { get async }
     
     func didWrite(_ characteristicValue: ManagedCharacteristicValue, for handle: UInt16) async
+    
+    var cryptoHash: Nonce { get async }
+    
+    func updateCryptoHash() async
 }
