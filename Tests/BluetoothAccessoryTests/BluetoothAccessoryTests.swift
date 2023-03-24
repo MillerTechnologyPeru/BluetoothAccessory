@@ -8,12 +8,12 @@ final class BluetoothAccessoryTests: XCTestCase {
     
     func testUUID() {
         
-        let baseUUID = "-0000-1000-8000-0091002CCCCC"
+        let baseUUID = "-0000-1000-BA00-CDA000000CDA"
         let uuids: [(UInt32, String)] = [
-            (0x00000000, "00000000-0000-1000-8000-0091002CCCCC"),
-            (0x00000001, "00000001-0000-1000-8000-0091002CCCCC"),
-            (0x00000002, "00000002-0000-1000-8000-0091002CCCCC"),
-            (0xFFFFFFFF, "FFFFFFFF-0000-1000-8000-0091002CCCCC")
+            (0x00000000, "00000000-0000-1000-BA00-CDA000000CDA"),
+            (0x00000001, "00000001-0000-1000-BA00-CDA000000CDA"),
+            (0x00000002, "00000002-0000-1000-BA00-CDA000000CDA"),
+            (0xFFFFFFFF, "FFFFFFFF-0000-1000-BA00-CDA000000CDA")
         ]
         
         for (value, string) in uuids {
@@ -26,14 +26,14 @@ final class BluetoothAccessoryTests: XCTestCase {
     
     func testServiceType() {
         
-        XCTAssertEqual(BluetoothUUID(service: .information).description, "00010000-0000-1000-8000-0091002CCCCC")
-        XCTAssertEqual(BluetoothUUID(service: .authentication).description, "00010001-0000-1000-8000-0091002CCCCC")
+        XCTAssertEqual(BluetoothUUID(service: .information).description, "00010000-0000-1000-BA00-CDA000000CDA")
+        XCTAssertEqual(BluetoothUUID(service: .authentication).description, "00010001-0000-1000-BA00-CDA000000CDA")
     }
     
     func testCharacteristicType() {
         
-        XCTAssertEqual(BluetoothUUID(characteristic: .identifier).description, "00020000-0000-1000-8000-0091002CCCCC")
-        XCTAssertEqual(BluetoothUUID(characteristic: .accessoryType).description, "00020001-0000-1000-8000-0091002CCCCC")
+        XCTAssertEqual(BluetoothUUID(characteristic: .identifier).description, "00020000-0000-1000-BA00-CDA000000CDA")
+        XCTAssertEqual(BluetoothUUID(characteristic: .accessoryType).description, "00020001-0000-1000-BA00-CDA000000CDA")
     }
     
     func testCharacteristicValue() {

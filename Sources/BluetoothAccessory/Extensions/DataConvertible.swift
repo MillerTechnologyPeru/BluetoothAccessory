@@ -106,6 +106,7 @@ internal protocol DataContainer: RandomAccessCollection where Self.Index == Int 
     mutating func append <C: Collection> (contentsOf bytes: C) where C.Element == UInt8
     
     static func += (lhs: inout Self, rhs: UInt8)
+    
     static func += <C: Collection> (lhs: inout Self, rhs: C) where C.Element == UInt8
 }
 

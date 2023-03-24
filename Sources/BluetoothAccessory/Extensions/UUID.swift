@@ -34,7 +34,7 @@ internal extension UInt128 {
     
     init(bluetoothAccessory: UInt32) {
         let bytes = bluetoothAccessory.bigEndian.bytes
-        self.init(bigEndian: .init(bytes: (bytes.0, bytes.1, bytes.2, bytes.3, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x91, 0x00, 0x2C, 0xCC, 0xCC)))
+        self.init(bigEndian: .init(bytes: (bytes.0, bytes.1, bytes.2, bytes.3, 0x00, 0x00, 0x10, 0x00, 0xBA, 0x00, 0xCD, 0xA0, 0x00, 0x00, 0x0C, 0xDA)))
     }
     
     init(bluetoothAccessory: (UInt16, UInt16)) {
