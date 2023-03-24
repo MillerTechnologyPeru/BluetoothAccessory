@@ -215,6 +215,7 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             self.keys[ownerKey.id] = ownerKey
             self.keySecrets[ownerKey.id] = request.secret
             // clear value
+            //self.server.clearValue(for: information.$setup)
             //self.authentication.setup = nil
         default:
             return

@@ -18,7 +18,7 @@ public protocol AccessoryService {
     
     var characteristics: [AnyManagedCharacteristic] { get }
     
-    mutating func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) -> Bool
+    mutating func update(characteristic: UInt16, with newValue: ManagedCharacteristicValue) -> Bool
 }
 
 public struct AnyManagedCharacteristic: Equatable, Hashable {

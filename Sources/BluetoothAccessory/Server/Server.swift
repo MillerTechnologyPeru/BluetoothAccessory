@@ -76,12 +76,33 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         }
     }
     
-    public func setValue<Characteristic, Service>(
+    public func setValue<Characteristic>(
         _ newValue: Characteristic.Value,
-        for characteristic: ManagedCharacteristic<Characteristic>,
-        service: Service
-    ) where Characteristic: AccessoryCharacteristic, Service: AccessoryService {
+        for characteristic: ManagedCharacteristic<Characteristic>
+    ) where Characteristic: AccessoryCharacteristic {
+        // find service
+        guard let (serviceIndex, _) = self.characteristic(for: characteristic.valueHandle) else {
+            fatalError("Invalid handle \(characteristic.valueHandle)")
+        }
+        // set new value
+        guard self.services[serviceIndex].update(characteristic: characteristic.valueHandle, with: .single(newValue.characteristicValue)) else {
+            fatalError("Invalid new value \"\(newValue)\" for \(characteristic.valueHandle)")
+        }
+        // update DB
         
+    }
+    
+    public func clearValue<Characteristic>(
+        for characteristic: ManagedWriteOnlyCharacteristic<Characteristic>
+    ) where Characteristic: AccessoryCharacteristic {
+        // find service
+        guard let (serviceIndex, _) = self.characteristic(for: characteristic.valueHandle) else {
+            fatalError("Invalid handle \(characteristic.valueHandle)")
+        }
+        // set new value
+        guard self.services[serviceIndex].update(characteristic: characteristic.valueHandle, with: .none) else {
+            fatalError("Cannot set nil for \(characteristic.valueHandle)")
+        }
     }
     
     private func setPeripheralCallbacks() {
@@ -121,7 +142,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
     private func willWrite(_ request: GATTWriteRequest<Peripheral.Central>) async -> ATTError? {
         delegate?.log("Will write characteristic \(request.uuid)")
         // find matching characteristic
-        guard let (serviceIndex, characteristic) = await characteristic(for: request.handle) else {
+        guard let (serviceIndex, characteristic) = self.characteristic(for: request.handle) else {
             delegate?.log("Cannot write unknown characteristic \(request.uuid)")
             return .writeNotPermitted
         }
@@ -163,7 +184,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
                 delegate.log("Unable to decode write request for \(request.uuid) as \(characteristic.format)")
                 return .writeNotPermitted
             }
-            guard services[serviceIndex].update(characteristic: characteristic, with: .single(value)) else {
+            guard services[serviceIndex].update(characteristic: request.handle, with: .single(value)) else {
                 delegate.log("Unable to decode write request for \(request.uuid)")
                 return .writeNotPermitted
             }
@@ -175,7 +196,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
                 delegate?.log("Unable to decode write request for \(request.uuid)")
                 return .writeNotPermitted
             }
-            guard services[serviceIndex].update(characteristic: characteristic, with: .single(value)) else {
+            guard services[serviceIndex].update(characteristic: request.handle, with: .single(value)) else {
                 delegate?.log("Unable to decode write request for \(request.uuid)")
                 return .writeNotPermitted
             }
@@ -210,7 +231,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         }
     }
     
-    private func characteristic(for handle: UInt16) async -> (serviceIndex: Int, characteristic: AnyManagedCharacteristic)? {
+    private func characteristic(for handle: UInt16) -> (serviceIndex: Int, characteristic: AnyManagedCharacteristic)? {
         for (serviceIndex, service) in services.enumerated() {
             for characteristic in service.characteristics {
                 guard characteristic.handle == handle else {

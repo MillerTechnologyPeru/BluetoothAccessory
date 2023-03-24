@@ -72,13 +72,16 @@ public extension AuthenticationService {
         ]
     }
     
-    mutating func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) -> Bool {
+    mutating func update(characteristic: UInt16, with newValue: ManagedCharacteristicValue) -> Bool {
         switch (characteristic, newValue) {
-        case ($setup, .single(let newValue)):
+        case (_setup.valueHandle, .single(let newValue)):
             guard let request = SetupRequest(characteristicValue: newValue) else {
                 return false
             }
             self.setup = request
+            return true
+        case (_setup.valueHandle, .none):
+            self.setup = nil
             return true
         default:
             return false

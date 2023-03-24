@@ -97,9 +97,9 @@ public extension InformationService {
         ]
     }
     
-    mutating func update(characteristic: AnyManagedCharacteristic, with newValue: ManagedCharacteristicValue) -> Bool {
-        switch (characteristic, newValue) {
-        case ($identify, .single(.bool(let newValue))):
+    mutating func update(characteristic valueHandle: UInt16, with newValue: ManagedCharacteristicValue) -> Bool {
+        switch (valueHandle, newValue) {
+        case (_identify.valueHandle, .single(.bool(let newValue))):
             self.identify = newValue
             return true
         default:
