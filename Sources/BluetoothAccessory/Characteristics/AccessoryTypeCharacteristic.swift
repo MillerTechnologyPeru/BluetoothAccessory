@@ -21,3 +21,25 @@ public struct AccessoryTypeCharacteristic: Equatable, Hashable, AccessoryCharact
     
     public var value: AccessoryType
 }
+
+// MARK: - Central
+
+public extension CentralManager {
+    
+    /// Read accessory type.
+    func readAccessoryType(
+        characteristic: Characteristic<Peripheral, AttributeID>
+    ) async throws -> AccessoryType {
+        let characteristic = try await read(AccessoryTypeCharacteristic.self, characteristic: characteristic)
+        return characteristic.value
+    }
+}
+
+public extension GATTConnection {
+    
+    /// Read accessory type.
+    func readAccessoryType() async throws -> AccessoryType {
+        let characteristic = try self.cache.characteristic(.accessoryType, service: .information)
+        return try await self.central.readAccessoryType(characteristic: characteristic)
+    }
+}

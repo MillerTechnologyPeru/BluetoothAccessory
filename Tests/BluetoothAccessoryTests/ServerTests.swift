@@ -18,7 +18,12 @@ final class ServerTests: XCTestCase {
         
         let id = UUID()
         let rssi: Int8 = 20
+        let accessoryType = AccessoryType.lightbulb
         let name = "Lightbulb"
+        let manufacturer = "Apple Inc."
+        let model = "iLight1,1"
+        let serialNumber = UUID().uuidString
+        let softwareVersion = "1.0.0"
         let advertisedService = ServiceType.lightbulb
         let (peripheral, central, scanData) = try await testPeripheral()
         
@@ -26,11 +31,11 @@ final class ServerTests: XCTestCase {
             peripheral: peripheral,
             id: id,
             name: name,
-            accessoryType: .lightbulb,
-            manufacturer: "Apple Inc.",
-            model: "iLight1,1",
-            serialNumber: UUID().uuidString,
-            softwareVersion: "1.0.0",
+            accessoryType: accessoryType,
+            manufacturer: manufacturer,
+            model: model,
+            serialNumber: serialNumber,
+            softwareVersion: softwareVersion,
             metadata: []
         )
         
@@ -48,8 +53,8 @@ final class ServerTests: XCTestCase {
         try await central.connection(for: scanData.peripheral) { connection in
             
             // id
-            let idValue = try await connection.readIdentifier()
-            XCTAssertEqual(idValue, id)
+            let idCharacteristic = try await connection.readIdentifier()
+            XCTAssertEqual(idCharacteristic, id)
             
             // name
             let nameCharacteristic = try await central.read(
@@ -59,11 +64,8 @@ final class ServerTests: XCTestCase {
             XCTAssertEqual(nameCharacteristic.value, name)
             
             // accessory type
-            let accessoryTypeCharacteristic = try await central.read(
-                AccessoryTypeCharacteristic.self,
-                characteristic: connection.cache.characteristic(.accessoryType, service: .information)
-            )
-            XCTAssertEqual(accessoryTypeCharacteristic.value, .lightbulb)
+            let accessoryTypeCharacteristic = try await connection.readAccessoryType()
+            XCTAssertEqual(accessoryTypeCharacteristic, .lightbulb)
         }
         
         withExtendedLifetime(server) { _ in }
@@ -73,7 +75,12 @@ final class ServerTests: XCTestCase {
         
         let id = UUID()
         let rssi: Int8 = 20
+        let accessoryType = AccessoryType.lightbulb
         let name = "Lightbulb"
+        let manufacturer = "Apple Inc."
+        let model = "iLight1,1"
+        let serialNumber = UUID().uuidString
+        let softwareVersion = "1.0.0"
         let advertisedService = ServiceType.lightbulb
         let (peripheral, central, scanData) = try await testPeripheral()
         
@@ -81,11 +88,11 @@ final class ServerTests: XCTestCase {
             peripheral: peripheral,
             id: id,
             name: name,
-            accessoryType: .lightbulb,
-            manufacturer: "Apple Inc.",
-            model: "iLight1,1",
-            serialNumber: UUID().uuidString,
-            softwareVersion: "1.0.0",
+            accessoryType: accessoryType,
+            manufacturer: manufacturer,
+            model: model,
+            serialNumber: serialNumber,
+            softwareVersion: softwareVersion,
             metadata: []
         )
         
