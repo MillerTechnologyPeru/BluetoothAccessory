@@ -1,6 +1,7 @@
 import Foundation
 import XCTest
 import Bluetooth
+import GATT
 @testable import BluetoothAccessory
 
 final class BluetoothAccessoryTests: XCTestCase {
@@ -73,5 +74,18 @@ final class BluetoothAccessoryTests: XCTestCase {
             XCTAssertEqual(beacon.minor, AppleBeacon(bluetoothAccessory: beacon, rssi: 0).minor)
             XCTAssertEqual(AccessoryBeacon(beacon: AppleBeacon(bluetoothAccessory: beacon, rssi: 0)), beacon)
         }
+    }
+    
+    func testManufacturerData() {
+        
+        let manufacturerData = AccessoryManufacturerData(
+            id: UUID(),
+            accessoryType: AccessoryType.allCases.randomElement()!,
+            isConfigured: Bool.random()
+        )
+        
+        XCTAssertEqual(AccessoryManufacturerData(manufacturerData: GATT.ManufacturerSpecificData(bluetoothAccessory: manufacturerData)), manufacturerData)
+        XCTAssertNil(AccessoryManufacturerData(manufacturerData: GATT.ManufacturerSpecificData(companyIdentifier: .millerTechnology)))
+        XCTAssertNil(AccessoryManufacturerData(manufacturerData: GATT.ManufacturerSpecificData(companyIdentifier: .apple)))
     }
 }
