@@ -24,7 +24,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
     
     public private(set) var beacon: AccessoryBeacon
     
-    public private(set) var services: [any AccessoryService]
+    public let services: [any AccessoryService]
     
     deinit {
         peripheral.willRead = nil
@@ -48,6 +48,7 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         self.services = services
         self.beacon = .id(id)
         self.setPeripheralCallbacks()
+        await self.updateValues()
         try await self.start()
     }
     
@@ -79,17 +80,33 @@ public actor BluetoothAccesoryServer <Peripheral: AccessoryPeripheralManager>: I
         self.beacon = beacon
     }
     
-    func willRead(_ request: GATTReadRequest<Peripheral.Central>) async -> ATTError? {
+    private func willRead(_ request: GATTReadRequest<Peripheral.Central>) async -> ATTError? {
         
         return nil
     }
     
-    func willWrite(_ request: GATTWriteRequest<Peripheral.Central>) async -> ATTError? {
+    private func willWrite(_ request: GATTWriteRequest<Peripheral.Central>) async -> ATTError? {
         
         return nil
     }
     
-    func didWrite(_ request: GATTWriteConfirmation<Peripheral.Central>) async {
+    private func didWrite(_ request: GATTWriteConfirmation<Peripheral.Central>) async {
         
+    }
+    
+    /// Update unencrypted readable values.
+    private func updateValues() async {
+        for service in services {
+            let characteristics = await service.characteristics
+            for characteristic in characteristics {
+                guard characteristic.properties.contains(.read),
+                    characteristic.properties.contains(.encrypted) == false,
+                    characteristic.properties.contains(.list) == false,
+                    case let .single(value) = characteristic.value
+                    else { continue }
+                // update DB
+                await peripheral.write(value.encode(), forCharacteristic: characteristic.handle)
+            }
+        }
     }
 }

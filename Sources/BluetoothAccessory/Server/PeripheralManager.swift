@@ -11,7 +11,12 @@ import GATT
 
 public protocol AccessoryPeripheralManager: PeripheralManager {
         
-    func advertise(beacon: AccessoryBeacon, rssi: Int8, name: String, service: ServiceType) async throws
+    func advertise(
+        beacon: AccessoryBeacon,
+        rssi: Int8,
+        name: String,
+        service: ServiceType
+    ) async throws
 }
 
 #if canImport(BluetoothHCI)
