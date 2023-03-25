@@ -129,6 +129,8 @@ internal actor TestL2CAPSocket: L2CAPSocket {
         
         await target.receive(data)
         eventContinuation.yield(.write(data.count))
+        
+        try await Task.sleep(nanoseconds: 1_000_000)
     }
     
     /// Reads from the socket.

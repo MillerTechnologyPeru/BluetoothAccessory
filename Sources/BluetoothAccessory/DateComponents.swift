@@ -48,12 +48,10 @@ internal struct DateComponents {
     
     /// Initializes from a `Date`.
     public init(date: Date) {
-        
         self.init(timeIntervalSince1970: date.timeIntervalSince1970)
     }
     
     public var date: Date {
-        
         return Date(timeIntervalSince1970: timeInterval)
     }
     

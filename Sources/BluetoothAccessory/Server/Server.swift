@@ -128,7 +128,7 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
     }
     
     private func willWrite(_ request: GATTWriteRequest<Peripheral.Central>) async -> ATTError? {
-        delegate?.log("Will write characteristic \(request.uuid.bluetoothAccessoryDescription)")
+        delegate?.log("Will write \(request.uuid.bluetoothAccessoryDescription)")
         // find matching characteristic
         guard let (serviceIndex, characteristic) = self.characteristic(for: request.handle) else {
             return nil // could be descriptor write
@@ -198,7 +198,7 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
     }
     
     private func didWrite(_ request: GATTWriteConfirmation<Peripheral.Central>) async {
-        delegate?.log("Did write characteristic \(request.uuid.bluetoothAccessoryDescription)")
+        delegate?.log("Did write \(request.uuid.bluetoothAccessoryDescription)")
         // notify delegate
         await delegate?.updateCryptoHash()
         let authenticationMessage = EncryptedData(data: request.value)?.authentication.message
@@ -215,13 +215,23 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
                 assertionFailure()
                 return
             }
-            await authenticatedRead(characteristic.value, message: authenticationMessage, for: request.central)
+            await authenticatedRead(
+                characteristic.value,
+                message: authenticationMessage,
+                for: request.central,
+                maximumUpdateValueLength: request.maximumUpdateValueLength
+            )
         default:
             return
         }
     }
     
-    private func authenticatedRead(_ request: AuthenticationRequest, message: AuthenticationMessage, for central: Peripheral.Central) async {
+    private func authenticatedRead(
+        _ request: AuthenticationRequest,
+        message: AuthenticationMessage,
+        for central: Peripheral.Central,
+        maximumUpdateValueLength: Int
+    ) async {
         // find the queried characteristic
         guard let (_, characteristic) = self.characteristic(for: request.characteristic, service: request.service) else {
             delegate?.log("Unable to perform authenticated read request for \(request.characteristic.bluetoothAccessoryDescription)")
@@ -242,7 +252,36 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
         }
         if characteristic.properties.contains(.list) {
             // encrypted list read
-            assertionFailure()
+            guard case let .list(list) = characteristic.value else {
+                delegate.log("Invalid value for encrypted read for \(request.characteristic.bluetoothAccessoryDescription)")
+                return
+            }
+            do {
+                for (itemIndex, itemValue) in list.enumerated() {
+                    let isLast = itemIndex == list.count - 1
+                    let encryptedData = try EncryptedData(
+                        encrypt: itemValue.encode(),
+                        using: keyData,
+                        id: message.id,
+                        nonce: request.nonce
+                    )
+                    let notification = EncryptedNotification(
+                        isLast: isLast,
+                        value: encryptedData
+                    )
+                    let chunks = notification.chunks(maximumUpdateValueLength: maximumUpdateValueLength)
+                    for (chunkIndex, chunk) in chunks.enumerated() {
+                        try await peripheral.write(chunk.data, forCharacteristic: characteristic.handle, for: central)
+                        delegate.log("Sent chunk \(chunkIndex + 1) for \(message.id) (\(chunk.data.count) bytes)")
+                        try await Task.sleep(nanoseconds: 10_000_000)
+                    }
+                    delegate.log("Sent\(isLast ? " last" : "") \(itemValue.format) item \(itemIndex + 1) of \(list.count)")
+                }
+            }
+            catch {
+                delegate.log("Unable to execute encrypted read request for \(request.characteristic.bluetoothAccessoryDescription), \(error.localizedDescription)")
+                return
+            }
         } else {
             // encrypted value read
             guard case let .single(value) = characteristic.value else {

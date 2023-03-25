@@ -197,6 +197,9 @@ public extension CentralManager {
         authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
         key: Credential
     ) async throws -> AsyncThrowingStream<Data, Error> {
+        assert(notifyCharacteristic.properties.contains(.notify))
+        assert(cryptoHashCharacteristic.uuid == BluetoothUUID(characteristic: .cryptoHash))
+        assert(authenticationCharacteristic.uuid == BluetoothUUID(characteristic: .authenticate))
         let log = self.log
         // enable notifications
         let stream = try await self.notify(for: notifyCharacteristic)

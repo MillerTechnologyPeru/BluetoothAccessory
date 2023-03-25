@@ -66,6 +66,8 @@ public extension CentralManager {
         cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
         key credentials: Credential
     ) async throws {
+        assert(cryptoHashCharacteristic.uuid == BluetoothUUID(characteristic: .cryptoHash))
+        assert(authenticationCharacteristic.uuid == BluetoothUUID(characteristic: .authenticate))
         try await writeEncrypted(
             AuthenticateCharacteristic(
                 value: AuthenticationRequest(
