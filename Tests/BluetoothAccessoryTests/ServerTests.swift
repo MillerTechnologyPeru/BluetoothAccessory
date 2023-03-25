@@ -68,7 +68,7 @@ final class ServerTests: XCTestCase {
                 using: setupSecret
             )
             
-            try await Task.sleep(nanoseconds: 100_000_000)
+            try await Task.sleep(nanoseconds: 10_000_000)
             
             var serverKeys = await server.keys
             guard let ownerKey = serverKeys[key.id] else {
@@ -93,15 +93,6 @@ final class ServerTests: XCTestCase {
             var lastIdentify = await server.lastIdentify
             XCTAssertNotNil(lastIdentify)
             
-            /*
-            //authentication.keys = [.key(ownerKey)]
-            let keysList = try await connection.readKeys(key: key)
-                .reduce(into: [KeysCharacteristic.Item](), { $0.append($1.value) })
-            XCTAssertEqual(keysList.count, 1)
-            XCTAssertEqual(keysList.first?.id, ownerKey.id)
-            //XCTAssertEqual(keysList.first?.name, ownerKey.name)
-             */
-            
             // create new key
             try await Task.sleep(nanoseconds: 10_000_000)
             let newKey = NewKey(name: "johndoe@mac.com")
@@ -118,6 +109,7 @@ final class ServerTests: XCTestCase {
             XCTAssertNotNil(lastIdentify)
             
             // validate keys
+            try await Task.sleep(nanoseconds: 10_000_000)
             serverKeys = await server.keys
             XCTAssertEqual([ownerKey.id, anytimeKey.id], (serverKeys.map { $0.key }))
             
@@ -138,6 +130,17 @@ final class ServerTests: XCTestCase {
             try await connection.writePowerState(powerState, service: BluetoothUUID(service: .outlet), key: Credential(id: anytimeKey.id, secret: anytimeKeyData))
             serverPowerState = await server.outlet.powerState
             XCTAssertEqual(serverPowerState, powerState)
+            
+            // FIXME: Fix list reading
+            // read keys
+            //authentication.keys = [.key(ownerKey)]
+            try await Task.sleep(nanoseconds: 10_000_000)
+            Task {
+                let keysList = try await connection.readKeys(key: key)
+                    .reduce(into: [KeysCharacteristic.Item](), { $0.append($1.value) })
+                XCTAssertEqual(Set(keysList.map { $0.id }), [ownerKey.id, anytimeKey.id])
+            }
+            try await Task.sleep(nanoseconds: 1_000_000_000)
         }
         
         withExtendedLifetime(server) { _ in }
