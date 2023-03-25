@@ -173,6 +173,8 @@ public extension CentralManager {
         key: Credential
     ) async throws -> Data {
         assert(characteristic.properties.contains(.read), "Characteristic does not support reading")
+        assert(cryptoHashCharacteristic.uuid == BluetoothUUID(characteristic: .cryptoHash))
+        assert(authenticationCharacteristic.uuid == BluetoothUUID(characteristic: .authenticate))
         // authenticate for encrypted read
         try await authenticate(
             characteristic: characteristic.uuid,
