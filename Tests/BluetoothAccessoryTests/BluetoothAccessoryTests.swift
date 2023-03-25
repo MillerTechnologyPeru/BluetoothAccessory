@@ -24,6 +24,13 @@ final class BluetoothAccessoryTests: XCTestCase {
         }
     }
     
+    func testAccessoryType() {
+        
+        for accessory in AccessoryType.allCases {
+            XCTAssertFalse(accessory.description.isEmpty)
+        }
+    }
+    
     func testServiceType() {
         
         let values: [(ServiceType, String)] = [

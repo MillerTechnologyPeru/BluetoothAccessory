@@ -68,6 +68,8 @@ final class ServerTests: XCTestCase {
                 using: setupSecret
             )
             
+            try await Task.sleep(nanoseconds: 100_000_000)
+            
             let serverKeys = await server.keys
             guard let ownerKey = serverKeys[key.id] else {
                 XCTFail("Missing owner key")
@@ -225,8 +227,8 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
         self.keySecrets[id]
     }
     
-    func willRead(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async -> ATTError? {
-        return nil
+    func willRead(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async -> Bool {
+        return true
     }
     
     func didWrite(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async {
