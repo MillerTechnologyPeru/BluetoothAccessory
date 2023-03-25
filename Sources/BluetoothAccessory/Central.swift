@@ -203,8 +203,6 @@ public extension CentralManager {
         assert(cryptoHashCharacteristic.uuid == BluetoothUUID(characteristic: .cryptoHash))
         assert(authenticationCharacteristic.uuid == BluetoothUUID(characteristic: .authenticate))
         let log = self.log
-        // enable notifications
-        let stream = try await self.notify(for: notifyCharacteristic)
         // authenticate for encrypted read
         try await authenticate(
             characteristic: notifyCharacteristic.uuid,
@@ -213,6 +211,8 @@ public extension CentralManager {
             cryptoHash: cryptoHashCharacteristic,
             key: key
         )
+        // enable notifications
+        let stream = try await self.notify(for: notifyCharacteristic)
         return AsyncThrowingStream(Data.self, bufferingPolicy: .unbounded) { continuation in
             Task.detached {
                 do {
