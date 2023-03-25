@@ -225,7 +225,11 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
         self.keySecrets[id]
     }
     
-    func didWrite(_ handle: UInt16) async {
+    func willRead(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async -> ATTError? {
+        return nil
+    }
+    
+    func didWrite(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async {
         
         switch handle {
         case await authentication.$setup.handle:
@@ -253,7 +257,7 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
                 }
             }
         default:
-            return
+            break
         }
     }
     
