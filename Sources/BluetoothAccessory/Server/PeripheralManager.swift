@@ -5,6 +5,7 @@
 //  Created by Alsey Coleman Miller on 3/15/23.
 //
 
+#if canImport(BluetoothGATT)
 import Foundation
 import Bluetooth
 import GATT
@@ -48,5 +49,4 @@ extension GATTPeripheral: AccessoryPeripheralManager {
     }
 }
 #endif
-
-
+#endif

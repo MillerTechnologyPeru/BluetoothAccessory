@@ -5,6 +5,7 @@
 //  Created by Alsey Coleman Miller on 2/28/23.
 //
 
+#if canImport(BluetoothGATT)
 import Foundation
 import Bluetooth
 
@@ -107,3 +108,4 @@ public extension InformationService {
         }
     }
 }
+#endif

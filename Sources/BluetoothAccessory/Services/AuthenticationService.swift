@@ -5,6 +5,7 @@
 //  Created by Alsey Coleman Miller on 3/23/23.
 //
 
+#if canImport(BluetoothGATT)
 import Foundation
 import Bluetooth
 
@@ -103,3 +104,4 @@ public extension AuthenticationService {
         }
     }
 }
+#endif
