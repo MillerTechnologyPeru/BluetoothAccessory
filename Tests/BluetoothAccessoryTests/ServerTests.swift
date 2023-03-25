@@ -70,7 +70,7 @@ final class ServerTests: XCTestCase {
             
             try await Task.sleep(nanoseconds: 100_000_000)
             
-            let serverKeys = await server.keys
+            var serverKeys = await server.keys
             guard let ownerKey = serverKeys[key.id] else {
                 XCTFail("Missing owner key")
                 return
@@ -117,7 +117,27 @@ final class ServerTests: XCTestCase {
             lastIdentify = await server.lastIdentify
             XCTAssertNotNil(lastIdentify)
             
+            // validate keys
+            serverKeys = await server.keys
+            XCTAssertEqual([ownerKey.id, anytimeKey.id], (serverKeys.map { $0.key }))
             
+            // read and write power state
+            var powerState = try await connection.readPowerState(
+                service: BluetoothUUID(service: .outlet),
+                key: key
+            )
+            var serverPowerState = await server.outlet.powerState
+            XCTAssertEqual(serverPowerState, powerState)
+            powerState.toggle()
+            try await Task.sleep(nanoseconds: 10_000_000)
+            try await connection.writePowerState(powerState, service: BluetoothUUID(service: .outlet), key: key)
+            serverPowerState = await server.outlet.powerState
+            XCTAssertEqual(serverPowerState, powerState)
+            try await Task.sleep(nanoseconds: 10_000_000)
+            powerState.toggle()
+            try await connection.writePowerState(powerState, service: BluetoothUUID(service: .outlet), key: Credential(id: anytimeKey.id, secret: anytimeKeyData))
+            serverPowerState = await server.outlet.powerState
+            XCTAssertEqual(serverPowerState, powerState)
         }
         
         withExtendedLifetime(server) { _ in }
@@ -202,6 +222,12 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
         }
     }
     
+    nonisolated var outlet: OutletService {
+        get async {
+            await server[OutletService.self]
+        }
+    }
+    
     init(peripheral: Peripheral) async throws {
         
         let information = try await InformationService(
@@ -220,6 +246,10 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             peripheral: peripheral
         )
         
+        let outlet = try await OutletService(
+            peripheral: peripheral
+        )
+        
         self.server = try await BluetoothAccessoryServer(
             peripheral: peripheral,
             delegate: self,
@@ -229,7 +259,8 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             advertised: advertisedService,
             services: [
                 information,
-                authentication
+                authentication,
+                outlet
             ]
         )
     }
@@ -267,6 +298,15 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
                     $0.identify = false
                 }
             }
+        case await outlet.$powerState.handle:
+            guard let authenticationMessage = authenticationMessage,
+                  let key = self.keys[authenticationMessage.id] else {
+                assertionFailure()
+                return
+            }
+            let powerState = await self.outlet.powerState
+            log("Did turn \(powerState ? "on" : "off") with key \(key.name)")
+            
         case await authentication.$setup.handle:
             //assert(await authentication.$setup.value == characteristicValue)
             guard let request = await authentication.setup else {
