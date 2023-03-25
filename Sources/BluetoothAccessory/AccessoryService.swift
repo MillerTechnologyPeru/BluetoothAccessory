@@ -23,8 +23,10 @@ public protocol AccessoryService {
 
 public struct AnyManagedCharacteristic: Equatable, Hashable {
     
-    public let handle: UInt16
+    public let uuid: BluetoothUUID
     
+    public let handle: UInt16
+        
     public let value: ManagedCharacteristicValue
     
     public let format: CharacteristicFormat
@@ -32,11 +34,13 @@ public struct AnyManagedCharacteristic: Equatable, Hashable {
     public let properties: BitMaskOptionSet<CharacteristicProperty>
     
     internal init(
+        uuid: BluetoothUUID,
         handle: UInt16,
         value: ManagedCharacteristicValue,
         format: CharacteristicFormat,
         properties: BitMaskOptionSet<CharacteristicProperty>
     ) {
+        self.uuid = uuid
         self.handle = handle
         self.value = value
         self.format = format
@@ -69,6 +73,7 @@ public struct ManagedCharacteristic <Characteristic: AccessoryCharacteristic> {
 
     public var projectedValue: AnyManagedCharacteristic {
         .init(
+            uuid: Characteristic.type,
             handle: valueHandle,
             value: .single(wrappedValue.characteristicValue),
             format: Characteristic.Value.characteristicFormat,
@@ -95,6 +100,7 @@ public struct ManagedWriteOnlyCharacteristic <Characteristic: AccessoryCharacter
     
     public var projectedValue: AnyManagedCharacteristic {
         .init(
+            uuid: Characteristic.type,
             handle: valueHandle,
             value: wrappedValue.flatMap { .single($0.characteristicValue) } ?? .none,
             format: Characteristic.Value.characteristicFormat,
@@ -121,6 +127,7 @@ public struct ManagedListCharacteristic <Characteristic: AccessoryCharacteristic
     
     public var projectedValue: AnyManagedCharacteristic {
         .init(
+            uuid: Characteristic.type,
             handle: valueHandle,
             value: .list(wrappedValue.map { $0.characteristicValue }),
             format: Characteristic.Value.characteristicFormat,
