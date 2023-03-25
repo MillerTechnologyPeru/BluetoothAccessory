@@ -37,3 +37,60 @@ public struct ConfirmNewKeyRequest: Equatable, Hashable, Codable {
 }
 
 extension ConfirmNewKeyRequest: CharacteristicTLVCodable { }
+
+// MARK: - Central
+
+public extension CentralManager {
+    
+    /// Confirm a new key for the accessory.
+    func confirmKey(
+        _ request: ConfirmNewKeyRequest,
+        characteristic: Characteristic<Peripheral, AttributeID>,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        key: Credential
+    ) async throws {
+        try await writeEncrypted(
+            ConfirmNewKeyCharacteristic(value: request),
+            for: characteristic,
+            cryptoHash: cryptoHashCharacteristic,
+            key: key
+        )
+    }
+    
+    /// Confirm a new key for the accessory.
+    func confirmKey(
+        _ invitation: NewKey.Invitation,
+        characteristic: Characteristic<Peripheral, AttributeID>,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>
+    ) async throws -> (Key, KeyData) {
+        let keyData = KeyData()
+        let request = ConfirmNewKeyRequest(secret: keyData)
+        let invitationKey = Credential(id: invitation.key.id, secret: invitation.secret)
+        try await confirmKey(request, characteristic: characteristic, cryptoHash: cryptoHashCharacteristic, key: invitationKey)
+        let newKey = invitation.key.confirm()
+        return (newKey, keyData)
+    }
+}
+
+public extension GATTConnection {
+    
+    /// Confirm a new key for the accessory.
+    func confirmKey(
+        _ request: ConfirmNewKeyRequest,
+        key: Credential
+    ) async throws {
+        let characteristic = try self.cache.characteristic(.confirmKey, service: .authentication)
+        let cryptoHash = try self.cache.characteristic(.cryptoHash, service: .authentication)
+        try await self.central.confirmKey(request, characteristic: characteristic, cryptoHash: cryptoHash, key: key)
+    }
+    
+    /// Confirm a new key for the accessory.
+    func confirmKey(
+        _ invitation: NewKey.Invitation
+    ) async throws -> (Key, KeyData) {
+        let characteristic = try self.cache.characteristic(.confirmKey, service: .authentication)
+        let cryptoHash = try self.cache.characteristic(.cryptoHash, service: .authentication)
+        return try await self.central.confirmKey(invitation, characteristic: characteristic, cryptoHash: cryptoHash)
+    }
+}
+

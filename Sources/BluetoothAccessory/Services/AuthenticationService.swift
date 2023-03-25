@@ -86,6 +86,18 @@ public extension AuthenticationService {
             }
             self.authenticate = request
             return true
+        case (_createKey.valueHandle, .single(let newValue)):
+            guard let request = CreateNewKeyRequest(characteristicValue: newValue) else {
+                return false
+            }
+            self.createKey = request
+            return true
+        case (_confirmKey.valueHandle, .single(let newValue)):
+            guard let request = ConfirmNewKeyRequest(characteristicValue: newValue) else {
+                return false
+            }
+            self.confirmKey = request
+            return true
         default:
             return false
         }

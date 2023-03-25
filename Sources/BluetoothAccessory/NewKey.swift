@@ -26,7 +26,7 @@ public struct NewKey: Codable, Equatable, Hashable, Identifiable {
     public let expiration: Date
     
     public init(id: UUID = UUID(),
-                name: String = "",
+                name: String,
                 permission: Permission = .anytime,
                 created: Date = Date(),
                 expiration: Date = Date().addingTimeInterval(60 * 60 * 24)) {
@@ -45,7 +45,7 @@ public extension NewKey {
     struct Invitation: Codable, Equatable, Hashable {
         
         /// Identifier of target device.
-        public let target: UUID
+        public let device: UUID
         
         /// New Key to create.
         public let key: NewKey
@@ -53,9 +53,9 @@ public extension NewKey {
         /// Temporary shared secret to accept the key invitation.
         public let secret: KeyData
         
-        public init(target: UUID, key: NewKey, secret: KeyData) {
+        public init(device: UUID, key: NewKey, secret: KeyData) {
             
-            self.target = target
+            self.device = device
             self.key = key
             self.secret = secret
         }
@@ -65,6 +65,30 @@ public extension NewKey {
 extension NewKey.Invitation: Identifiable {
     
     public var id: String {
-        return target.description + "-" + key.id.description
+        return device.description + "-" + key.id.description
+    }
+}
+
+internal extension Key {
+    
+    init(_ newKey: NewKey) {
+        self.init(
+            id: newKey.id,
+            name: newKey.name,
+            created: newKey.created,
+            permission: newKey.permission
+        )
+    }
+}
+
+public extension NewKey {
+    
+    func confirm() -> Key {
+        Key(
+            id: id,
+            name: name,
+            created: created,
+            permission: permission
+        )
     }
 }

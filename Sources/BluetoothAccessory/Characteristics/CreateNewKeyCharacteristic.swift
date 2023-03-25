@@ -68,3 +68,66 @@ public extension NewKey {
         self.created = created
     }
 }
+
+// MARK: - Central
+
+public extension CentralManager {
+    
+    /// Create a new key for the accessory.
+    func createKey(
+        _ request: CreateNewKeyRequest,
+        characteristic: Characteristic<Peripheral, AttributeID>,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        key: Credential
+    ) async throws {
+        try await writeEncrypted(
+            CreateNewKeyCharacteristic(value: request),
+            for: characteristic,
+            cryptoHash: cryptoHashCharacteristic,
+            key: key
+        )
+    }
+    
+    /// Create a new key for the accessory.
+    func createKey(
+        _ newKey: NewKey,
+        secret: KeyData = KeyData(),
+        device: UUID,
+        characteristic: Characteristic<Peripheral, AttributeID>,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        key: Credential
+    ) async throws -> NewKey.Invitation {
+        let request = CreateNewKeyRequest(key: newKey, secret: secret)
+        try await createKey(request, characteristic: characteristic, cryptoHash: cryptoHashCharacteristic, key: key)
+        return NewKey.Invitation(
+            device: device,
+            key: newKey,
+            secret: secret
+        )
+    }
+}
+
+public extension GATTConnection {
+    
+    /// Create a new key for the accessory.
+    func createKey(
+        _ request: CreateNewKeyRequest,
+        key: Credential
+    ) async throws {
+        let characteristic = try self.cache.characteristic(.createKey, service: .authentication)
+        let cryptoHash = try self.cache.characteristic(.cryptoHash, service: .authentication)
+        try await self.central.createKey(request, characteristic: characteristic, cryptoHash: cryptoHash, key: key)
+    }
+    
+    /// Create a new key for the accessory.
+    func createKey(
+        _ newKey: NewKey,
+        secret: KeyData = KeyData(),
+        device: UUID,
+        key: Credential
+    ) async throws -> NewKey.Invitation {
+        let characteristic = try self.cache.characteristic(.createKey, service: .authentication)
+        let cryptoHash = try self.cache.characteristic(.cryptoHash, service: .authentication)
+        return try await self.central.createKey(newKey, secret: secret, device: device, characteristic: characteristic, cryptoHash: cryptoHash, key: key)
+    }
+}

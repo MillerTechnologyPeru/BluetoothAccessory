@@ -11,7 +11,8 @@ import Bluetooth
 import GATT
 
 /// Test L2CAP socket
-internal actor TestL2CAPSocket: L2CAPSocket {
+@MainActor
+internal final class TestL2CAPSocket: L2CAPSocket {
         
     private actor Cache {
         
@@ -114,8 +115,8 @@ internal actor TestL2CAPSocket: L2CAPSocket {
         let client = await Cache.shared.dequeue(server: address)!
         let newConnection = TestL2CAPSocket(address: client.address, name: "Server connection")
         // connect sockets
-        await newConnection.connect(to: client)
-        await client.connect(to: newConnection)
+        newConnection.connect(to: client)
+        client.connect(to: newConnection)
         return newConnection
     }
     
@@ -127,7 +128,7 @@ internal actor TestL2CAPSocket: L2CAPSocket {
         guard let target = self.target
             else { throw POSIXError(.ECONNRESET) }
         
-        await target.receive(data)
+        target.receive(data)
         eventContinuation.yield(.write(data.count))
         
         try await Task.sleep(nanoseconds: 1_000_000)

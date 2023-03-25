@@ -42,7 +42,7 @@ final class ServerTests: XCTestCase {
         await peripheral.stop()
     }
     
-    func testSetup() async throws {
+    func testAuthenticationService() async throws {
         
         let (peripheral, central, scanData) = try await testPeripheral()
         let server = try await TestServer(peripheral: peripheral)
@@ -89,8 +89,10 @@ final class ServerTests: XCTestCase {
             
             // identify
             try await connection.identify(key: key)
-            let lastIdentify = await server.lastIdentify
+            try await Task.sleep(nanoseconds: 10_000_000)
+            var lastIdentify = await server.lastIdentify
             XCTAssertNotNil(lastIdentify)
+            
             /*
             //authentication.keys = [.key(ownerKey)]
             let keysList = try await connection.readKeys(key: key)
@@ -99,6 +101,23 @@ final class ServerTests: XCTestCase {
             XCTAssertEqual(keysList.first?.id, ownerKey.id)
             //XCTAssertEqual(keysList.first?.name, ownerKey.name)
              */
+            
+            // create new key
+            try await Task.sleep(nanoseconds: 10_000_000)
+            let newKey = NewKey(name: "johndoe@mac.com")
+            let invitation = try await connection.createKey(newKey, device: id, key: key)
+            
+            // confirm key
+            try await Task.sleep(nanoseconds: 10_000_000)
+            let (anytimeKey, anytimeKeyData) = try await connection.confirmKey(invitation)
+            
+            // identify with new key
+            try await connection.identify(key: Credential(id: anytimeKey.id, secret: anytimeKeyData))
+            try await Task.sleep(nanoseconds: 10_000_000)
+            lastIdentify = await server.lastIdentify
+            XCTAssertNotNil(lastIdentify)
+            
+            
         }
         
         withExtendedLifetime(server) { _ in }
@@ -234,6 +253,20 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
     func didWrite(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async {
         
         switch handle {
+        case await information.$identify.handle:
+            if await information.identify {
+                guard let authenticationMessage = authenticationMessage,
+                      let key = self.keys[authenticationMessage.id] else {
+                    assertionFailure()
+                    return
+                }
+                log("Did identify with key \(key.name)")
+                lastIdentify = Date()
+                // clear value
+                await self.server.update(InformationService.self) {
+                    $0.identify = false
+                }
+            }
         case await authentication.$setup.handle:
             //assert(await authentication.$setup.value == characteristicValue)
             guard let request = await authentication.setup else {
@@ -248,15 +281,41 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             // clear value
             await self.server.update(AuthenticationService.self) {
                 $0.setup = nil
+                $0.keys = [.key(ownerKey)]
             }
-        case await information.$identify.handle:
-            if await information.identify {
-                log("Did identify")
-                lastIdentify = Date()
-                // clear value
-                await self.server.update(InformationService.self) {
-                    $0.identify = false
-                }
+        
+        case await authentication.$createKey.handle:
+            guard let request = await authentication.createKey else {
+                assertionFailure()
+                return
+            }
+            // create a new key
+            let newKey = NewKey(request: request)
+            let secret = request.secret
+            self.newKeys[newKey.id] = newKey
+            self.keySecrets[newKey.id] = secret
+            // update db
+            await self.server.update(AuthenticationService.self) {
+                $0.createKey = nil
+                $0.keys.append(.newKey(newKey))
+            }
+        case await authentication.$confirmKey.handle:
+            guard let request = await authentication.confirmKey,
+                  let authenticationMessage = authenticationMessage,
+                  let newKey = self.newKeys[authenticationMessage.id] else {
+                assertionFailure()
+                return
+            }
+            // confirm key
+            let key = newKey.confirm()
+            self.newKeys[authenticationMessage.id] = nil
+            self.keySecrets[authenticationMessage.id] = request.secret
+            self.keys[newKey.id] = key
+            // update db
+            await self.server.update(AuthenticationService.self) {
+                $0.createKey = nil
+                $0.keys.removeAll(where: { $0.id == newKey.id })
+                $0.keys.append(.key(key))
             }
         default:
             break

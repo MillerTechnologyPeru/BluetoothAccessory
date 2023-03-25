@@ -123,8 +123,8 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
     }
         
     private func willRead(_ request: GATTReadRequest<Peripheral.Central>) async -> ATTError? {
-        delegate?.log("Will read characteristic \(request.uuid.bluetoothAccessoryDescription)")
-        return (await delegate?.willRead(request.handle, authentication: nil) ?? true) ? nil : .readNotPermitted
+        delegate?.log("Will read \(request.uuid.bluetoothAccessoryDescription)")
+        return await (delegate?.willRead(request.handle, authentication: nil) ?? true) ? nil : .readNotPermitted
     }
     
     private func willWrite(_ request: GATTWriteRequest<Peripheral.Central>) async -> ATTError? {
