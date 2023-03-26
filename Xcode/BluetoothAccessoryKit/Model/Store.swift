@@ -87,6 +87,7 @@ public final class AccessoryStore: ObservableObject {
         }
         let filterDuplicates = true //preferences.filterDuplicates
         self.peripherals.removeAll(keepingCapacity: true)
+        self.beaconPeripherals.removeAll(keepingCapacity: true)
         stopScanning()
         isScanning = true
         let scanStream = central.scan(
