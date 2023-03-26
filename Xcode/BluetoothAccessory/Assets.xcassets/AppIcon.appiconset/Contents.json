@@ -7,60 +7,67 @@
       "size" : "1024x1024"
     },
     {
+      "filename" : "BluetoothAccessoryAppIconMac@16.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "16x16"
     },
     {
+      "filename" : "BluetoothAccessoryAppIconMac@32 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "16x16"
     },
     {
+      "filename" : "BluetoothAccessoryAppIconMac@32.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "32x32"
     },
     {
+      "filename" : "BluetoothAccessoryAppIconMac@64.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "32x32"
     },
     {
+      "filename" : "BluetoothAccessoryAppIconMac@128.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "128x128"
     },
     {
+      "filename" : "BluetoothAccessoryAppIconMac@256 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "128x128"
     },
     {
+      "filename" : "BluetoothAccessoryAppIconMac@256.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "256x256"
     },
     {
-      "filename" : "BluetoothAccessoryAppIcon 1.png",
+      "filename" : "BluetoothAccessoryAppIconMac 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "256x256"
     },
     {
-      "filename" : "BluetoothAccessoryAppIcon.png",
+      "filename" : "BluetoothAccessoryAppIconMac.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "512x512"
     },
     {
-      "filename" : "BluetoothAccessoryAppIcon@2x 1.png",
+      "filename" : "BluetoothAccessoryAppIconMac@2x.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"
     },
     {
-      "filename" : "BluetoothAccessoryAppIcon@2x 2.png",
+      "filename" : "BluetoothAccessoryAppIconMac@2x 1.png",
       "idiom" : "universal",
       "platform" : "watchos",
       "size" : "1024x1024"
