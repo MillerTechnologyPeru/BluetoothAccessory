@@ -9,7 +9,7 @@ import Foundation
 import Bluetooth
 import GATT
 
-/// Accessory battery level value.
+/// Accessory Battery Level Characteristic
 public struct BatteryLevelCharacteristic: Equatable, Hashable, AccessoryCharacteristic {
     
     public static var type: BluetoothUUID { BluetoothUUID(characteristic: .batteryLevel) }
