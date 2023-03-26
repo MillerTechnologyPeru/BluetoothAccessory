@@ -13,7 +13,7 @@ public struct BatteryLevelCharacteristic: Equatable, Hashable, AccessoryCharacte
         
     public static var type: BluetoothUUID { BluetoothUUID(characteristic: .batteryLevel) }
     
-    public static var properties: BitMaskOptionSet<CharacteristicProperty> { [.read] } // TODO: Notifications
+    public static var properties: BitMaskOptionSet<CharacteristicProperty> { [.read, .encrypted] } // TODO: Notifications
     
     public init(value: UInt8 = 100) {
         assert(value <= 100)
