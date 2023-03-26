@@ -8,7 +8,7 @@
 import Foundation
 import Bluetooth
 
-public extension UUID {
+internal extension UUID {
     
     init(bluetoothAccessory: UInt32) {
         self.init(UInt128(bluetoothAccessory: bluetoothAccessory))
@@ -19,7 +19,7 @@ public extension UUID {
     }
 }
 
-public extension BluetoothUUID {
+internal extension BluetoothUUID {
     
     init(accessory: UInt32) {
         self = .bit128(.init(bluetoothAccessory: accessory))
