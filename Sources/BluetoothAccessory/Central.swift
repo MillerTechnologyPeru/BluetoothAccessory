@@ -43,7 +43,7 @@ public extension CentralManager {
 
 public struct GATTConnection <Central: CentralManager> {
     
-    internal unowned let central: Central
+    public unowned let central: Central
     
     public let peripheral: Central.Peripheral
     
