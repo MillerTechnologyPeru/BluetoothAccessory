@@ -32,11 +32,13 @@ public final class AccessoryStore: ObservableObject {
     @Published
     public private(set) var peripherals = [UUID: AccessoryPeripheral<NativeCentral.Peripheral>]()
     
-    //#if canImport(BluetoothGAP)
+    #if canImport(BluetoothGAP)
     /// Accessory Beacons discovered via CoreBluetooth
     @Published
     public private(set) var beaconPeripherals = [NativeCentral.Peripheral: AccessoryBeacon]()
-    //#endif
+    #else
+    public var beaconPeripherals: [NativeCentral.Peripheral: AccessoryBeacon] { [:] }
+    #endif
     
     /// Scanned accessory manufacturer data.
     @Published

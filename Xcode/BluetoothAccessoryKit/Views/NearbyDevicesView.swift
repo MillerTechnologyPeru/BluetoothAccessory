@@ -28,19 +28,32 @@ public struct NearbyDevicesView: View {
 
 extension NearbyDevicesView {
     
+    struct NearbyAccessory: Equatable, Hashable, Identifiable {
+        
+        let peripheral: NativePeripheral
+        
+        var id: NativePeripheral.ID {
+            return peripheral.id
+        }
+        
+        let manufacturerData: AccessoryManufacturerData?
+        
+        let scanResponse: AccessoryScanResponse
+        
+        let beacon: AccessoryBeacon?
+    }
+    
     enum ScanState {
         case bluetoothUnavailable
         case scanning
         case stopScan
     }
     
-    typealias Item = AccessoryPeripheral<NativePeripheral>
-    
-    var items: [Item] {
-        store.peripherals
+    var items: [NearbyAccessory] {
+        store.scanResponses
             .lazy
             .sorted(by: { $0.value.name < $1.value.name })
-            .map { $0.value }
+            .map { NearbyAccessory(peripheral: $0.key, manufacturerData: store.manufacturerData[$0.key], scanResponse: $0.value, beacon: store.beaconPeripherals[$0.key]) }
     }
     
     var title: LocalizedStringKey {
@@ -50,7 +63,7 @@ extension NearbyDevicesView {
     var list: some View {
         List {
             ForEach(items) {
-                ItemRow(item: $0, manufacturerData: store.manufacturerData[$0.peripheral])
+                ItemRow(item: $0)
             }
         }
     }
@@ -131,21 +144,19 @@ internal extension NearbyDevicesView {
     
     struct ItemRow: View {
         
-        let item: NearbyDevicesView.Item
-        
-        let manufacturerData: AccessoryManufacturerData?
+        let item: NearbyDevicesView.NearbyAccessory
         
         var body: some View {
-            VStack {
-                Text(verbatim: item.name)
+            VStack(alignment: .leading) {
+                Text(verbatim: item.scanResponse.name)
                     .font(.title3)
-                Text(verbatim: item.id.description)
-                Text("Service \("\(item.service)")")
-                if let manufacturerData = manufacturerData {
-                    Text("Type \(manufacturerData.accessoryType.description)")
-                    if manufacturerData.isConfigured {
-                        Text("Configured")
-                    } else {
+                if let id = item.manufacturerData?.id ?? item.beacon?.uuid {
+                    Text(verbatim: id.description)
+                }
+                Text("Service: \("\(item.scanResponse.service)")")
+                if let manufacturerData = item.manufacturerData {
+                    Text("Type: \(manufacturerData.accessoryType.description)")
+                    if manufacturerData.isConfigured == false {
                         Text("Ready for Setup")
                     }
                 }
