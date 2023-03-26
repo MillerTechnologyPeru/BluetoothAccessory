@@ -33,7 +33,7 @@ public struct BatteryService: AccessoryService {
         chargingState: ChargingState = .notCharging
     ) async throws {
         let (serviceHandle, valueHandles) = try await peripheral.add(
-            service: OutletService.self,
+            service: BatteryService.self,
             with: [
                 StatusLowBatteryCharacteristic.self,
                 BatteryLevelCharacteristic.self,
