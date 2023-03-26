@@ -31,19 +31,23 @@ public enum ServiceType: UInt16, CaseIterable {
     case `switch`
     case lock
     case outlet
-    case valve
     case label
     
-    // Air
+    // Climate
     case thermostat                 = 300
-    case fan
-    case airPurifier
-    case humidifierDehumidifier
     case heaterCooler
+    case fan
+    
+    // Air
+    case airPurifier                = 400
+    case humidifierDehumidifier
+    
+    // Water
+    case valve                      = 500
     case irrigationSystem
     
     // Sensor
-    case motionSensor               = 400
+    case motionSensor               = 600
     case occupancySensor
     case temperatureSensor
     case humiditySensor
@@ -55,7 +59,7 @@ public enum ServiceType: UInt16, CaseIterable {
     case airQualitySensor
     
     // Security
-    case camera                     = 500
+    case camera                     = 700
     case securitySystem
 }
 
