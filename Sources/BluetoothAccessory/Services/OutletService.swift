@@ -9,7 +9,7 @@
 import Foundation
 import Bluetooth
 
-/// Accessory Information Service
+/// Accessory Outlet Service
 public struct OutletService: AccessoryService {
         
     public static var type: BluetoothUUID { BluetoothUUID(service: .outlet) }

@@ -21,6 +21,11 @@ public protocol AccessoryService {
     mutating func update(characteristic: UInt16, with newValue: ManagedCharacteristicValue) -> Bool
 }
 
+public extension AccessoryService {
+    
+    mutating func update(characteristic: UInt16, with newValue: ManagedCharacteristicValue) -> Bool { false }
+}
+
 public struct AnyManagedCharacteristic: Equatable, Hashable {
     
     public let uuid: BluetoothUUID
