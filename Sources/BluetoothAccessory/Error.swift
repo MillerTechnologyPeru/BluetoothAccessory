@@ -11,6 +11,9 @@ import Bluetooth
 /// Bluetooth Accessory Error
 public enum BluetoothAccessoryError: Error {
     
+    /// Bluetooth is not available on this device.
+    case bluetoothUnavailable
+    
     /// No service with UUID found.
     case serviceNotFound(BluetoothUUID)
     

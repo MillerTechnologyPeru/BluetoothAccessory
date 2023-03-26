@@ -55,7 +55,7 @@ public final class AccessoryStore: ObservableObject {
     
     // MARK: - Initialization
     
-    public static let shared = Store()
+    public static let shared = AccessoryStore()
     
     private init() {
         central.log = { [unowned self] in self.log("📲 Central: " + $0) }
@@ -183,6 +183,7 @@ public final class AccessoryStore: ObservableObject {
     }
     
     public func log(_ message: String) {
+        // TODO: Logs
         print(message)
     }
 }
