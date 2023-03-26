@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "AppIcon-1024.png",
+      "filename" : "BluetoothAppIcon@2x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -47,18 +47,19 @@
       "size" : "256x256"
     },
     {
+      "filename" : "BluetoothAppIcon.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "512x512"
     },
     {
-      "filename" : "AppIcon-1024.png",
+      "filename" : "BluetoothAppIcon@2x 2.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"
     },
     {
-      "filename" : "AppIcon-1024.png",
+      "filename" : "BluetoothAppIcon@2x 1.png",
       "idiom" : "universal",
       "platform" : "watchos",
       "size" : "1024x1024"
