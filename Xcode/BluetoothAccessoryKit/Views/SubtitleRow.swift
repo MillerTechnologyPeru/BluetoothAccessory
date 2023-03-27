@@ -27,7 +27,7 @@ internal struct SubtitleRow: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: nil) {
+        VStack(alignment: .leading, spacing: 5) {
             title
             if let subtitle = subtitle {
                 subtitle
