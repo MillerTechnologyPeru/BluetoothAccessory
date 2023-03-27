@@ -9,6 +9,7 @@ import Foundation
 import Bluetooth
 import GATT
 import DarwinGATT
+import BluetoothAccessory
 
 public extension AccessoryManager {
     
@@ -119,15 +120,56 @@ public extension AccessoryManager {
         scanStream = nil
         isScanning = false
     }
+    
+    /// Discovery all services characteristics. Metadata for each characteristic must be provided via
+    func discoverCharacteristics(for peripheral: Peripheral) async throws {
+        let characteristicTypes = self.characteristicTypes
+        let discoveredCharacteristics = try await central.connection(for: peripheral) { connection in
+            // TODO: Fetch custom metadata
+            let customMetadata = [BluetoothUUID: CharacteristicMetadata]()
+            var discoveredCharacteristics = [Characteristic: (service: BluetoothUUID, metadata: CharacteristicMetadata)]()
+            // iterate each service
+            for service in connection.cache.services {
+                let serviceUUID = service.service.uuid
+                for characteristicCache in service.characteristics {
+                    let uuid = characteristicCache.characteristic.uuid
+                    /// attempt to fetch metadata for defined characteristic
+                    guard let metadata = characteristicTypes[uuid].flatMap({ CharacteristicMetadata(characteristic: $0) }) ?? customMetadata[uuid] else {
+                        continue
+                    }
+                    // cache
+                    discoveredCharacteristics[characteristicCache.characteristic] = (serviceUUID, metadata)
+                }
+            }
+            return discoveredCharacteristics
+        }
+        // set new discovered characteristics for the specified peripheral with previous values
+        var newValue = [Characteristic: CharacteristicCache]()
+        newValue.reserveCapacity(discoveredCharacteristics.count)
+        for (characteristic, (service, metadata)) in discoveredCharacteristics {
+            assert(characteristic.peripheral == peripheral)
+            newValue[characteristic] = CharacteristicCache(
+                service: service,
+                metadata: metadata,
+                value: self.characteristics[characteristic.peripheral, default: [:]][characteristic]?.value
+            )
+        }
+        // set new value
+        self.characteristics[peripheral] = newValue
+    }
 }
 
 // MARK: - Internal Methods
 
 internal extension AccessoryManager {
     
-    func loadBluetooth() {
+    func loadBluetooth() -> Central {
+        let central = NativeCentral()
         central.log = { [unowned self] in self.log("📲 Central: " + $0) }
-        observeBluetoothState()
+        Task {
+            observeBluetoothState()
+        }
+        return central
     }
 }
 
