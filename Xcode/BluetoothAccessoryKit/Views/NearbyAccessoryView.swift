@@ -62,24 +62,8 @@ internal extension NearbyAccessoryView {
         let key: Key?
         
         var body: some View {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading) {
-                    if let accessoryType = manufacturerData?.accessoryType {
-                        Text("Type: \(accessoryType.description)")
-                    }
-                    Text("Service: \("\(scanResponse.service)")")
-                    #if DEBUG
-                    Text("Peripheral: \(peripheral.description)")
-                    #endif
-                    if let id = accessoryID {
-                        Text("ID: \(id)")
-                    }
-                    if let isConfigured = manufacturerData?.isConfigured {
-                        Text("Configured: \(isConfigured.description)")
-                    }
-                    Spacer()
-                }
-                Spacer()
+            List {
+                advertisementSection
             }
             .padding(20)
             .navigationTitle(Text(verbatim: title))
@@ -95,5 +79,39 @@ internal extension NearbyAccessoryView.StateView {
     
     var accessoryID: UUID? {
         manufacturerData?.id ?? beacon?.uuid
+    }
+    
+    var advertisementSection: some View {
+        Section {
+            if let accessoryType = manufacturerData?.accessoryType {
+                SubtitleRow(
+                    title: Text("Type"),
+                    subtitle: Text(verbatim: accessoryType.description)
+                )
+            }
+            SubtitleRow(
+                title: Text("Service"),
+                subtitle: Text(verbatim: "\(scanResponse.service)")
+            )
+            #if DEBUG
+            SubtitleRow(
+                title: Text("Peripheral"),
+                subtitle: Text(verbatim: "\(peripheral.description)")
+            )
+            #endif
+            /*
+            if let id = accessoryID {
+                SubtitleRow(
+                    title: Text("Identifier"),
+                    subtitle: Text(verbatim: id)
+                )
+            }
+            if let isConfigured = manufacturerData?.isConfigured {
+                SubtitleRow(
+                    title: Text("Configured"),
+                    subtitle: Text(verbatim: isConfigured.description)
+                )
+            }*/
+        }
     }
 }

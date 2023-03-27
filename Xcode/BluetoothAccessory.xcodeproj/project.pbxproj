@@ -38,6 +38,7 @@
 		6EFCFFE829D12ECA004B6DE8 /* AccessoryPeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFE729D12ECA004B6DE8 /* AccessoryPeripheral.swift */; };
 		6EFCFFEA29D12EDB004B6DE8 /* ScanDataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFE929D12EDB004B6DE8 /* ScanDataCache.swift */; };
 		6EFCFFEC29D134FB004B6DE8 /* NearbyAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFEB29D134FB004B6DE8 /* NearbyAccessoryView.swift */; };
+		6EFCFFEE29D142EC004B6DE8 /* SubtitleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFED29D142EC004B6DE8 /* SubtitleRow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -92,6 +93,7 @@
 		6EFCFFE729D12ECA004B6DE8 /* AccessoryPeripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryPeripheral.swift; sourceTree = "<group>"; };
 		6EFCFFE929D12EDB004B6DE8 /* ScanDataCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDataCache.swift; sourceTree = "<group>"; };
 		6EFCFFEB29D134FB004B6DE8 /* NearbyAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyAccessoryView.swift; sourceTree = "<group>"; };
+		6EFCFFED29D142EC004B6DE8 /* SubtitleRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtitleRow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -221,6 +223,7 @@
 			children = (
 				6EFCFFD129D07A33004B6DE8 /* NearbyDevicesView.swift */,
 				6EFCFFEB29D134FB004B6DE8 /* NearbyAccessoryView.swift */,
+				6EFCFFED29D142EC004B6DE8 /* SubtitleRow.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -372,6 +375,7 @@
 				6EFCFFDD29D116FB004B6DE8 /* iBeacon.swift in Sources */,
 				6E2C9BBB29CF5C47002F1B28 /* BluetoothAccessoryKit.swift in Sources */,
 				6EFCFFE029D12E79004B6DE8 /* BluetoothStore.swift in Sources */,
+				6EFCFFEE29D142EC004B6DE8 /* SubtitleRow.swift in Sources */,
 				6EFCFFE629D12EBE004B6DE8 /* AccessoryInformation.swift in Sources */,
 				6EFCFFC729D05E24004B6DE8 /* Store.swift in Sources */,
 				6EFCFFD229D07A33004B6DE8 /* NearbyDevicesView.swift in Sources */,
