@@ -37,4 +37,10 @@ public enum BluetoothAccessoryError: Error {
     
     /// Could not encrypt value.
     case encryptionError(Error)
+    
+    /// Metadata is required for the specied characteristic.
+    case metadataRequired(BluetoothUUID)
+    
+    /// A key is needed to authenticate the request.
+    case authenticationRequired(BluetoothUUID)
 }
