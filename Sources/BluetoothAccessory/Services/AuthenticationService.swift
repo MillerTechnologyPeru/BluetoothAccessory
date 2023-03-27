@@ -34,6 +34,9 @@ public struct AuthenticationService: AccessoryService {
     @ManagedWriteOnlyCharacteristic<ConfirmNewKeyCharacteristic>
     public var confirmKey: ConfirmNewKeyRequest?
     
+    @ManagedWriteOnlyCharacteristic<RemoveKeyCharacteristic>
+    public var removeKey: RemoveKeyRequest?
+    
     @ManagedListCharacteristic<KeysCharacteristic>
     public var keys: [KeysCharacteristic.Item]
     
@@ -53,6 +56,7 @@ public struct AuthenticationService: AccessoryService {
                 AuthenticateCharacteristic.self,
                 CreateNewKeyCharacteristic.self,
                 ConfirmNewKeyCharacteristic.self,
+                RemoveKeyCharacteristic.self,
                 KeysCharacteristic.self
             ]
         )
@@ -63,7 +67,8 @@ public struct AuthenticationService: AccessoryService {
         _authenticate = .init(valueHandle: valueHandles[3])
         _createKey = .init(valueHandle: valueHandles[4])
         _confirmKey = .init(valueHandle: valueHandles[5])
-        _keys = .init(wrappedValue: keys, valueHandle: valueHandles[6])
+        _removeKey = .init(valueHandle: valueHandles[6])
+        _keys = .init(wrappedValue: keys, valueHandle: valueHandles[7])
     }
 }
 
@@ -72,10 +77,12 @@ public extension AuthenticationService {
     var characteristics: [AnyManagedCharacteristic] {
         [
             $cryptoHash,
+            $isConfigured,
             $setup,
             $authenticate,
             $createKey,
             $confirmKey,
+            $removeKey,
             $keys
         ]
     }
@@ -105,6 +112,12 @@ public extension AuthenticationService {
                 return false
             }
             self.confirmKey = request
+            return true
+        case (_removeKey.valueHandle, .single(let newValue)):
+            guard let request = RemoveKeyCharacteristic(characteristicValue: newValue) else {
+                return false
+            }
+            self.removeKey = request
             return true
         default:
             return false
