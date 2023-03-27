@@ -43,18 +43,39 @@ public extension CentralManager {
     
     /// Read battery charging state.
     func readChargingState(
-        characteristic: Characteristic<Peripheral, AttributeID>
+        characteristic: Characteristic<Peripheral, AttributeID>,
+        service: BluetoothUUID,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
+        key: Credential
     ) async throws -> ChargingState {
-        let characteristic = try await read(ChargingStateCharacteristic.self, characteristic: characteristic)
-        return characteristic.value
+        return try await readEncryped(
+            ChargingStateCharacteristic.self,
+            characteristic: characteristic,
+            service: service,
+            cryptoHash: cryptoHashCharacteristic,
+            authentication: authenticationCharacteristic,
+            key: key
+        ).value
     }
 }
 
 public extension GATTConnection {
     
     /// Read battery charging state.
-    func readChargingState() async throws -> ChargingState {
-        let characteristic = try self.cache.characteristic(.chargingState, service: .battery)
-        return try await self.central.readChargingState(characteristic: characteristic)
+    func readChargingState(
+        service: BluetoothUUID = BluetoothUUID(service: .battery),
+        key: Credential
+    ) async throws -> ChargingState {
+        let characteristic = try self.cache.characteristic(BluetoothUUID(characteristic: .chargingState), service: service)
+        let cryptoHash = try self.cache.characteristic(.cryptoHash, service: .authentication)
+        let authentication = try self.cache.characteristic(.authenticate, service: .authentication)
+        return try await self.central.readChargingState(
+            characteristic: characteristic,
+            service: service,
+            cryptoHash: cryptoHash,
+            authentication: authentication,
+            key: key
+        )
     }
 }

@@ -31,18 +31,39 @@ public extension CentralManager {
     
     /// Read Battery Charging Current value.
     func readBatteryChargingCurrent(
-        characteristic: Characteristic<Peripheral, AttributeID>
+        characteristic: Characteristic<Peripheral, AttributeID>,
+        service: BluetoothUUID,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
+        key: Credential
     ) async throws -> UInt8 {
-        let characteristic = try await read(BatteryChargingCurrentCharacteristic.self, characteristic: characteristic)
-        return characteristic.value
+        return try await readEncryped(
+            BatteryChargingCurrentCharacteristic.self,
+            characteristic: characteristic,
+            service: service,
+            cryptoHash: cryptoHashCharacteristic,
+            authentication: authenticationCharacteristic,
+            key: key
+        ).value
     }
 }
 
 public extension GATTConnection {
     
     /// Read Battery Charging Current value.
-    func readBatteryChargingCurrent() async throws -> UInt8 {
-        let characteristic = try self.cache.characteristic(.batteryChargingCurrent, service: .battery)
-        return try await self.central.readBatteryChargingCurrent(characteristic: characteristic)
+    func readBatteryChargingCurrent(
+        service: BluetoothUUID = BluetoothUUID(service: .battery),
+        key: Credential
+    ) async throws -> UInt8 {
+        let characteristic = try self.cache.characteristic(BluetoothUUID(characteristic: .batteryChargingCurrent), service: service)
+        let cryptoHash = try self.cache.characteristic(.cryptoHash, service: .authentication)
+        let authentication = try self.cache.characteristic(.authenticate, service: .authentication)
+        return try await self.central.readBatteryChargingCurrent(
+            characteristic: characteristic,
+            service: service,
+            cryptoHash: cryptoHash,
+            authentication: authentication,
+            key: key
+        )
     }
 }

@@ -31,18 +31,39 @@ public extension CentralManager {
     
     /// Read battery voltage.
     func readBatteryVoltage(
-        characteristic: Characteristic<Peripheral, AttributeID>
+        characteristic: Characteristic<Peripheral, AttributeID>,
+        service: BluetoothUUID,
+        cryptoHash cryptoHashCharacteristic: Characteristic<Peripheral, AttributeID>,
+        authentication authenticationCharacteristic: Characteristic<Peripheral, AttributeID>,
+        key: Credential
     ) async throws -> Float {
-        let characteristic = try await read(BatteryVoltageCharacteristic.self, characteristic: characteristic)
-        return characteristic.value
+        return try await readEncryped(
+            BatteryVoltageCharacteristic.self,
+            characteristic: characteristic,
+            service: service,
+            cryptoHash: cryptoHashCharacteristic,
+            authentication: authenticationCharacteristic,
+            key: key
+        ).value
     }
 }
 
 public extension GATTConnection {
     
     /// Read battery voltage.
-    func readBatteryVoltage() async throws -> Float {
-        let characteristic = try self.cache.characteristic(.batteryVoltage, service: .battery)
-        return try await self.central.readBatteryVoltage(characteristic: characteristic)
+    func readBatteryVoltage(
+        service: BluetoothUUID = BluetoothUUID(service: .battery),
+        key: Credential
+    ) async throws -> Float {
+        let characteristic = try self.cache.characteristic(BluetoothUUID(characteristic: .batteryVoltage), service: service)
+        let cryptoHash = try self.cache.characteristic(.cryptoHash, service: .authentication)
+        let authentication = try self.cache.characteristic(.authenticate, service: .authentication)
+        return try await self.central.readBatteryVoltage(
+            characteristic: characteristic,
+            service: service,
+            cryptoHash: cryptoHash,
+            authentication: authentication,
+            key: key
+        )
     }
 }
