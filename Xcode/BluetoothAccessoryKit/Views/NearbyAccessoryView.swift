@@ -38,16 +38,7 @@ public struct NearbyAccessoryView: View {
             key: accessoryID.flatMap { store.keys[$0] },
             characteristics: store.characteristics[peripheral] ?? [:]
         )
-        .task {
-            do {
-                try await store.discoverCharacteristics(for: peripheral)
-                // read all characteristics
-                
-            }
-            catch {
-                
-            }
-        }
+        .task { await reload() }
     }
 }
 
@@ -55,6 +46,35 @@ internal extension NearbyAccessoryView {
     
     var accessoryID: UUID? {
         store[manufacturerData: peripheral]?.id ?? store[beacon: peripheral]?.uuid
+    }
+    
+    func reload() async {
+        do {
+            try await store.central.connection(for: peripheral) { connection in
+                // discover characteristics
+                try await store.discoverCharacteristics(connection: connection)
+                // read identifier
+                let id = try await store.identifier(connection: connection)
+                // read all characteristics
+                let key = accessoryID.flatMap { store.keys[$0] }
+                for (characteristic, cache) in (store.characteristics[peripheral] ?? [:]).sorted(by: { $0.key.id < $1.key.id }) {
+                    // filter
+                    let isEncrypted = cache.metadata.properties.contains(.encrypted)
+                    let canRead = cache.metadata.properties.contains(.read) // must be readable
+                        && !cache.metadata.properties.contains(.list) // will not read lists
+                        && (!isEncrypted || key != nil) // must have key if encrypted
+                    guard canRead else { continue }
+                    let _ = try await store.read(
+                        characteristic: characteristic,
+                        connection: connection
+                    )
+                    
+                }
+            }
+        }
+        catch {
+            
+        }
     }
 }
 
@@ -85,7 +105,7 @@ internal extension NearbyAccessoryView {
                         ForEach(service.characteristics) { characteristic in
                             SubtitleRow(
                                 title: Text(verbatim: characteristic.cache.metadata.name),
-                                subtitle: Text(verbatim: "\(characteristic.cache.metadata.format)")
+                                subtitle: characteristic.cache.value.flatMap { Text(verbatim: "\($0)") } // TODO: Format value
                             )
                         }
                     }

@@ -7,5 +7,12 @@
 
 import Foundation
 import KeychainAccess
+import BluetoothAccessory
 
-
+public extension AccessoryManager {
+    
+    func secret(for key: UUID) throws -> KeyData {
+        // TODO
+        fatalError()
+    }
+}

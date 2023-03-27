@@ -121,33 +121,49 @@ public extension AccessoryManager {
         isScanning = false
     }
     
+    /// Load cached identifier or read from device.
+    func identifier(
+        connection: GATTConnection<Central>
+    ) async throws -> UUID {
+        // load cached
+        if let uuid = self.accessoryPeripherals.first(where: { $0.value.peripheral == connection.peripheral })?.key {
+            return uuid
+        }
+        // read identifier
+        let id = try await connection.readIdentifier()
+        // cache new value
+        if let scanResponse = self.scanResponses[connection.peripheral] {
+            self.accessoryPeripherals[id] = .init(peripheral: connection.peripheral, id: id, name: scanResponse.name, service: scanResponse.service)
+        }
+        return id
+    }
+    
     /// Discovery all services characteristics. Metadata for each characteristic must be provided via
-    func discoverCharacteristics(for peripheral: Peripheral) async throws {
+    func discoverCharacteristics(
+        connection: GATTConnection<Central>
+    ) async throws {
         let characteristicTypes = self.characteristicTypes
-        let discoveredCharacteristics = try await central.connection(for: peripheral) { connection in
-            // TODO: Fetch custom metadata
-            let customMetadata = [BluetoothUUID: CharacteristicMetadata]()
-            var discoveredCharacteristics = [Characteristic: (service: BluetoothUUID, metadata: CharacteristicMetadata)]()
-            // iterate each service
-            for service in connection.cache.services {
-                let serviceUUID = service.service.uuid
-                for characteristicCache in service.characteristics {
-                    let uuid = characteristicCache.characteristic.uuid
-                    /// attempt to fetch metadata for defined characteristic
-                    guard let metadata = characteristicTypes[uuid].flatMap({ CharacteristicMetadata(characteristic: $0) }) ?? customMetadata[uuid] else {
-                        continue
-                    }
-                    // cache
-                    discoveredCharacteristics[characteristicCache.characteristic] = (serviceUUID, metadata)
+        // TODO: Fetch custom metadata
+        let customMetadata = [BluetoothUUID: CharacteristicMetadata]()
+        var discoveredCharacteristics = [Characteristic: (service: BluetoothUUID, metadata: CharacteristicMetadata)]()
+        // iterate each service
+        for service in connection.cache.services {
+            let serviceUUID = service.service.uuid
+            for characteristicCache in service.characteristics {
+                let uuid = characteristicCache.characteristic.uuid
+                /// attempt to fetch metadata for defined characteristic
+                guard let metadata = characteristicTypes[uuid].flatMap({ CharacteristicMetadata(characteristic: $0) }) ?? customMetadata[uuid] else {
+                    continue
                 }
+                // cache
+                discoveredCharacteristics[characteristicCache.characteristic] = (serviceUUID, metadata)
             }
-            return discoveredCharacteristics
         }
         // set new discovered characteristics for the specified peripheral with previous values
         var newValue = [Characteristic: CharacteristicCache]()
         newValue.reserveCapacity(discoveredCharacteristics.count)
         for (characteristic, (service, metadata)) in discoveredCharacteristics {
-            assert(characteristic.peripheral == peripheral)
+            assert(characteristic.peripheral == connection.peripheral)
             newValue[characteristic] = CharacteristicCache(
                 service: service,
                 metadata: metadata,
@@ -155,7 +171,57 @@ public extension AccessoryManager {
             )
         }
         // set new value
-        self.characteristics[peripheral] = newValue
+        self.characteristics[connection.peripheral] = newValue
+    }
+    
+    func read(
+        characteristic: Characteristic,
+        connection: GATTConnection<Central>
+    ) async throws -> CharacteristicValue {
+        assert(characteristic.peripheral == connection.peripheral)
+        guard let cache = self.characteristics[characteristic.peripheral]?[characteristic] else {
+            throw BluetoothAccessoryError.metadataRequired(characteristic.uuid)
+        }
+        assert(cache.metadata.type == characteristic.uuid)
+        // must be readable
+        guard cache.metadata.properties.contains(.read) else {
+            assertionFailure()
+            throw CocoaError(.featureUnsupported)
+        }
+        // must be single value
+        guard cache.metadata.properties.contains(.list) == false else {
+            assertionFailure()
+            throw CocoaError(.featureUnsupported)
+        }
+        let newValue: CharacteristicValue
+        if cache.metadata.properties.contains(.encrypted) {
+            let id = try await identifier(connection: connection)
+            guard let key = self.keys[id] else {
+                throw BluetoothAccessoryError.authenticationRequired(characteristic.uuid)
+            }
+            // TODO: validate key permission
+            let keyData = try secret(for: key.id)
+            let credential = Credential(
+                id: key.id,
+                secret: keyData
+            )
+            newValue = try await central.readEncryped(
+                characteristic: characteristic,
+                service: cache.service,
+                cryptoHash: connection.cache.characteristic(.cryptoHash, service: .authentication),
+                authentication: connection.cache.characteristic(.authenticate, service: .authentication),
+                key: credential,
+                format: cache.metadata.format
+            )
+        } else {
+            newValue = try await central.read(
+                characteristic: characteristic,
+                format: cache.metadata.format
+            )
+        }
+        // update cache
+        self.characteristics[characteristic.peripheral, default: [:]][characteristic, default: cache].value = .single(newValue)
+        return newValue
     }
 }
 
