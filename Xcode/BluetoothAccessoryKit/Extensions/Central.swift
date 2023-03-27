@@ -59,7 +59,8 @@ public extension NativeCentral {
         
         var powerOnWait = 0
         while await self.state != state {
-            
+            let newState = await self.state
+            guard newState != state else { return }
             // inform user after 3 seconds
             if powerOnWait == warning {
                 NSLog("Waiting for CoreBluetooth to be ready, please turn on Bluetooth")
@@ -68,7 +69,7 @@ public extension NativeCentral {
             try await Task.sleep(nanoseconds: 1_000_000_000)
             powerOnWait += 1
             guard powerOnWait < timeout
-                else { throw BluetoothAccessoryError.bluetoothUnavailable }
+                else { throw DarwinCentralError.invalidState(newState) }
         }
     }
 }
