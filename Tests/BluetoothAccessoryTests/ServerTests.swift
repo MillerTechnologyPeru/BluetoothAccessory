@@ -149,6 +149,48 @@ final class ServerTests: XCTestCase {
         await central.disconnectAll()
         await peripheral.stop()
     }
+    
+    func testBatteryService() async throws {
+        
+        let (peripheral, central, scanData) = try await testPeripheral()
+        let server = try await TestServer(peripheral: peripheral)
+        
+        let credential = Credential(id: UUID(), secret: KeyData())
+        let ownerKey = Key(
+            id: credential.id,
+            name: "colemancda@icloud.com",
+            created: Date(),
+            permission: .owner
+        )
+        await server.add(key: ownerKey, secret: credential.secret)
+        
+        try await central.connection(for: scanData.peripheral) { connection in
+            
+            // id
+            let id = try await connection.readIdentifier()
+            XCTAssertEqual(id, server.id)
+            
+            // read battery service
+            let statusLowBattery = try await connection.readStatusLowBattery(key: credential)
+            let serverStatusLowBattery = await server.battery.statusLowBattery
+            XCTAssertEqual(statusLowBattery, serverStatusLowBattery)
+            
+            let batteryLevel = try await connection.readBatteryLevel(key: credential)
+            let serverBatteryLevel = await server.battery.batteryLevel
+            XCTAssertEqual(batteryLevel, serverBatteryLevel)
+            
+            let chargingState = try await connection.readChargingState(key: credential)
+            let serverChargingState = await server.battery.chargingState
+            XCTAssertEqual(chargingState, serverChargingState)
+        }
+        
+        withExtendedLifetime(server) { _ in }
+        
+        // cleanup
+        await central.disconnectAll()
+        await peripheral.stop()
+    }
+    
 }
 
 // MARK: - Extensions
@@ -213,24 +255,6 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
     
     private var server: BluetoothAccessoryServer<Peripheral>!
     
-    nonisolated var information: InformationService {
-        get async {
-            await server[InformationService.self]
-        }
-    }
-    
-    nonisolated var authentication: AuthenticationService {
-        get async {
-            await server[AuthenticationService.self]
-        }
-    }
-    
-    nonisolated var outlet: OutletService {
-        get async {
-            await server[OutletService.self]
-        }
-    }
-    
     init(peripheral: Peripheral) async throws {
         
         let information = try await InformationService(
@@ -245,13 +269,9 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             metadata: []
         )
         
-        let authentication = try await AuthenticationService(
-            peripheral: peripheral
-        )
-        
-        let outlet = try await OutletService(
-            peripheral: peripheral
-        )
+        let authentication = try await AuthenticationService(peripheral: peripheral)
+        let outlet = try await OutletService(peripheral: peripheral)
+        let battery = try await BatteryService(peripheral: peripheral)
         
         self.server = try await BluetoothAccessoryServer(
             peripheral: peripheral,
@@ -263,7 +283,8 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             services: [
                 information,
                 authentication,
-                outlet
+                outlet,
+                battery
             ]
         )
     }
@@ -278,6 +299,11 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
     
     func key(for id: UUID) -> KeyData? {
         self.keySecrets[id]
+    }
+    
+    func add(key: Key, secret: KeyData) {
+        self.keys[key.id] = key
+        self.keySecrets[key.id] = secret
     }
     
     func willRead(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async -> Bool {
@@ -368,6 +394,33 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
     func updateCryptoHash() async {
         await self.server.update(AuthenticationService.self) {
             $0.cryptoHash = Nonce()
+        }
+    }
+}
+
+extension TestServer {
+    
+    nonisolated var information: InformationService {
+        get async {
+            await server[InformationService.self]
+        }
+    }
+    
+    nonisolated var authentication: AuthenticationService {
+        get async {
+            await server[AuthenticationService.self]
+        }
+    }
+    
+    nonisolated var outlet: OutletService {
+        get async {
+            await server[OutletService.self]
+        }
+    }
+    
+    nonisolated var battery: BatteryService {
+        get async {
+            await server[BatteryService.self]
         }
     }
 }
