@@ -48,19 +48,25 @@ public final class AccessoryManager: ObservableObject {
     @Published
     public internal(set) var keys = [UUID: Key]()
     
-    internal lazy var central = Central()
+    @Published
+    public internal(set) var characteristics = [Peripheral: [Characteristic: CharacteristicCache]]()
+    
+    internal lazy var central = loadBluetooth()
     
     internal var scanStream: AsyncCentralScan<Central>?
     
     // Cached Service UUID for lookup
     internal lazy var serviceTypes = loadServiceTypes()
     
+    // Cached Characteristic UUID for lookup
+    internal lazy var characteristicTypes = loadCharacteristicTypes()
+    
     // MARK: - Initialization
     
     public static let shared = AccessoryManager()
     
     private init() {
-        loadBluetooth()
+        
     }
 }
 
@@ -77,5 +83,16 @@ private extension AccessoryManager {
         }
         assert(serviceTypes.count == ServiceType.allCases.count)
         return serviceTypes
+    }
+    
+    func loadCharacteristicTypes() -> [BluetoothUUID: CharacteristicType] {
+        var characteristicTypes = [BluetoothUUID: CharacteristicType]()
+        characteristicTypes.reserveCapacity(CharacteristicType.allCases.count)
+        for characteristic in CharacteristicType.allCases {
+            let uuid = BluetoothUUID(characteristic: characteristic)
+            characteristicTypes[uuid] = characteristic
+        }
+        assert(characteristicTypes.count == CharacteristicType.allCases.count)
+        return characteristicTypes
     }
 }
