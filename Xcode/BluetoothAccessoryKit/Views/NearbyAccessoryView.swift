@@ -82,7 +82,7 @@ internal extension NearbyAccessoryView.StateView {
     }
     
     var advertisementSection: some View {
-        Section {
+        Section("Advertisement") {
             if let accessoryType = manufacturerData?.accessoryType {
                 SubtitleRow(
                     title: Text("Type"),
@@ -99,11 +99,10 @@ internal extension NearbyAccessoryView.StateView {
                 subtitle: Text(verbatim: "\(peripheral.description)")
             )
             #endif
-            /*
             if let id = accessoryID {
                 SubtitleRow(
                     title: Text("Identifier"),
-                    subtitle: Text(verbatim: id)
+                    subtitle: Text(verbatim: id.description)
                 )
             }
             if let isConfigured = manufacturerData?.isConfigured {
@@ -111,7 +110,7 @@ internal extension NearbyAccessoryView.StateView {
                     title: Text("Configured"),
                     subtitle: Text(verbatim: isConfigured.description)
                 )
-            }*/
+            }
         }
     }
 }
