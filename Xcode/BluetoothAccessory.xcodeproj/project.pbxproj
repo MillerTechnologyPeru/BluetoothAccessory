@@ -194,7 +194,6 @@
 				6EFCFFD729D116FB004B6DE8 /* iBeacon.swift */,
 				6EFCFFD529D116FB004B6DE8 /* Integer.swift */,
 				6EFCFFD629D116FB004B6DE8 /* UUID.swift */,
-				6EFCFFCB29D05F23004B6DE8 /* Central.swift */,
 				6EFCFFCC29D05F23004B6DE8 /* Task.swift */,
 			);
 			path = Extensions;
@@ -203,6 +202,7 @@
 		6EFCFFCF29D061B3004B6DE8 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				6EFCFFCB29D05F23004B6DE8 /* Central.swift */,
 				6EFCFFC629D05E24004B6DE8 /* Store.swift */,
 				6EFCFFE929D12EDB004B6DE8 /* ScanDataCache.swift */,
 				6EFCFFE729D12ECA004B6DE8 /* AccessoryPeripheral.swift */,
