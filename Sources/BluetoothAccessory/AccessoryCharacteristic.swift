@@ -39,6 +39,13 @@ public extension AccessoryCharacteristic {
     static var format: CharacteristicFormat { Value.characteristicFormat }
 }
 
+extension AccessoryCharacteristic where Self.Value: CustomStringConvertible {
+    
+    public var description: String {
+        value.description
+    }
+}
+
 public extension AccessoryCharacteristic {
     
     init?(from data: Data) {

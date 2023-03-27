@@ -9,7 +9,7 @@ import Foundation
 import Bluetooth
 import GATT
 
-public struct AccessoryTypeCharacteristic: Equatable, Hashable, AccessoryCharacteristic {
+public struct AccessoryTypeCharacteristic: Equatable, Hashable, AccessoryCharacteristic, CustomStringConvertible {
     
     public static var type: BluetoothUUID { BluetoothUUID(characteristic: .accessoryType) }
     
