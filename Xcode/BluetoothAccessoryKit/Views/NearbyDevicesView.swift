@@ -53,7 +53,14 @@ extension NearbyDevicesView {
         store.scanResponses
             .lazy
             .sorted(by: { $0.value.name < $1.value.name })
-            .map { NearbyAccessory(peripheral: $0.key, manufacturerData: store.manufacturerData[$0.key], scanResponse: $0.value, beacon: store.beaconPeripherals[$0.key]) }
+            .map {
+                NearbyAccessory(
+                    peripheral: $0.key,
+                    manufacturerData: store[manufacturerData: $0.key],
+                    scanResponse: $0.value,
+                    beacon: store[beacon: $0.key]
+                )
+            }
     }
     
     var title: LocalizedStringKey {

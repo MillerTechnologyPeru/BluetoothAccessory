@@ -20,6 +20,22 @@ import BluetoothAccessory
 @MainActor
 public final class AccessoryStore: ObservableObject {
     
+    public typealias Central = NativeCentral
+    
+    public typealias Peripheral = Central.Peripheral
+    
+    public typealias ScanData = GATT.ScanData<Central.Peripheral, Central.Advertisement>
+    
+    public typealias Service = GATT.Service<Central.Peripheral, Central.AttributeID>
+    
+    public typealias Characteristic = GATT.Characteristic<Central.Peripheral, Central.AttributeID>
+    
+    public typealias Descriptor = GATT.Descriptor<Central.Peripheral, Central.AttributeID>
+    
+    public typealias ScanDataCache = BluetoothAccessoryKit.ScanDataCache<Central.Peripheral, Central.Advertisement>
+    
+    public typealias AccessoryPeripheral = BluetoothAccessoryKit.AccessoryPeripheral<Central.Peripheral>
+    
     // MARK: - Properties
     
     @Published
@@ -28,32 +44,41 @@ public final class AccessoryStore: ObservableObject {
     @Published
     public private(set) var isScanning = false
     
-    /// Discovered accessories.
+    /// Discovered accessories with advertised identifiers.
     @Published
-    public private(set) var peripherals = [UUID: AccessoryPeripheral<NativeCentral.Peripheral>]()
+    public private(set) var accessoryPeripherals = [UUID: AccessoryPeripheral]()
     
-    #if canImport(BluetoothGAP)
-    /// Accessory Beacons discovered via CoreBluetooth
+    /// Discovered accessory scan responses.
     @Published
-    public private(set) var beaconPeripherals = [NativeCentral.Peripheral: AccessoryBeacon]()
-    #else
-    public var beaconPeripherals: [NativeCentral.Peripheral: AccessoryBeacon] { [:] }
-    #endif
+    public private(set) var scanResponses = [Peripheral: AccessoryScanResponse]()
     
-    /// Scanned accessory manufacturer data.
+    /// All discovered devices.
     @Published
-    public private(set) var manufacturerData = [NativeCentral.Peripheral: AccessoryManufacturerData]()
+    public private(set) var scanResults = [Peripheral: ScanDataCache]()
     
+    /// Currently connected devices.
     @Published
-    public private(set) var scanResponses = [NativeCentral.Peripheral: AccessoryScanResponse]()
+    public private(set) var connected = Set<Peripheral>()
     
     /// Keys of paired devices.
     @Published
     public private(set) var keys = [UUID: Key]()
     
-    lazy var central = NativeCentral()
+    internal lazy var central = Central()
     
-    private var scanStream: AsyncCentralScan<NativeCentral>?
+    private var scanStream: AsyncCentralScan<Central>?
+    
+    // Cached Service UUID for lookup
+    internal lazy var serviceTypes: [BluetoothUUID: ServiceType] = {
+        var serviceTypes = [BluetoothUUID: ServiceType]()
+        serviceTypes.reserveCapacity(ServiceType.allCases.count)
+        for service in ServiceType.allCases {
+            let uuid = BluetoothUUID(service: service)
+            serviceTypes[uuid] = service
+        }
+        assert(serviceTypes.count == ServiceType.allCases.count)
+        return serviceTypes
+    }()
     
     // MARK: - Initialization
     
@@ -62,6 +87,33 @@ public final class AccessoryStore: ObservableObject {
     private init() {
         central.log = { [unowned self] in self.log("📲 Central: " + $0) }
         observeBluetoothState()
+    }
+    
+    // MARK: - Subscript
+    
+    /// Bluetooth ``Peripheral`` for the Accessory with the specified ID.
+    public subscript (peripheral id: UUID) -> Peripheral? {
+        accessoryPeripherals[id]?.peripheral
+    }
+    
+    /// Service Type for the specified ``BluetoothUUID``
+    internal subscript (service uuid: BluetoothUUID) -> ServiceType? {
+        serviceTypes[uuid]
+    }
+    
+    /// Get the discovered accessory with advertised identifiers for the specified peripheral.
+    public subscript (accessory peripheral: Peripheral) -> AccessoryPeripheral? {
+        accessoryPeripherals.values.first(where: { $0.peripheral == peripheral })
+    }
+    
+    /// Get the discovered beacon for the specified peripheral.
+    public subscript (beacon peripheral: Peripheral) -> AccessoryBeacon? {
+        scanResults[peripheral]?.beacon.flatMap { AccessoryBeacon(beacon: $0) }
+    }
+    
+    /// Get the discovered manufacturer data for the specified peripheral.
+    public subscript (manufacturerData peripheral: Peripheral) -> AccessoryManufacturerData? {
+        scanResults[peripheral]?.manufacturerData.flatMap { AccessoryManufacturerData(manufacturerData: $0) }
     }
     
     // MARK: - Methods
@@ -80,29 +132,39 @@ public final class AccessoryStore: ObservableObject {
         }
     }
     
-    public func scan(duration: TimeInterval? = nil) async throws {
+    public func scan(
+        duration: TimeInterval? = nil,
+        services: [ServiceType] = []
+    ) async throws {
         let bluetoothState = await central.state
         guard bluetoothState == .poweredOn else {
             throw DarwinCentralError.invalidState(bluetoothState)
         }
         let filterDuplicates = true //preferences.filterDuplicates
-        self.peripherals.removeAll(keepingCapacity: true)
-        self.beaconPeripherals.removeAll(keepingCapacity: true)
+        self.accessoryPeripherals.removeAll(keepingCapacity: true)
+        self.scanResults.removeAll(keepingCapacity: true)
         stopScanning()
         isScanning = true
         let scanStream = central.scan(
-            with: [],
+            with: Set(services.lazy.map { BluetoothUUID(service: $0) }),
             filterDuplicates: filterDuplicates
         )
         self.scanStream = scanStream
         let task = Task { [unowned self] in
-            defer { Task { await MainActor.run { self.isScanning = false } } }
-            for try await scanData in scanStream {
-                guard found(scanData) else { continue }
+            do {
+                for try await scanData in scanStream {
+                    guard await found(scanData) else { continue }
+                }
+                self.isScanning = false
+            }
+            catch {
+                self.isScanning = false
+                throw error
             }
         }
+        // wait for duration or continue in background
         if let duration = duration {
-            precondition(duration > 0.001)
+            assert(duration > 0.001)
             try await Task.sleep(timeInterval: duration)
             scanStream.stop()
             try await task.value // throw errors
@@ -124,64 +186,64 @@ public final class AccessoryStore: ObservableObject {
         isScanning = false
     }
     
-    private func found(_ scanData: ScanData<NativeCentral.Peripheral, NativeCentral.Advertisement>) -> Bool {
-        
-        // parse manufacturer data
-        if let manufacturerData = scanData.advertisementData.manufacturerData,
-           let accessoryManufacturerData = AccessoryManufacturerData(manufacturerData: manufacturerData) {
-            let oldValue = self.manufacturerData[scanData.peripheral]
-            if oldValue != accessoryManufacturerData {
-                self.manufacturerData[scanData.peripheral] = accessoryManufacturerData
-            }
-        }
+    private func found(_ scanData: ScanData) async -> Bool {
         
         // parse scan response
         if let name = scanData.advertisementData.localName,
-           let service = scanData.advertisementData.serviceUUIDs?.compactMap({ ServiceType(uuid: $0) }).first {
-            let oldValue = self.scanResponses[scanData.peripheral]
-            let newValue = AccessoryScanResponse(
+           let services = scanData.advertisementData.serviceUUIDs?.compactMap({ self[service: $0] }),
+           let service = services.first {
+            // cache
+            let scanResponse = AccessoryScanResponse(
                 name: name,
                 service: service
             )
-            if oldValue != newValue {
-                self.scanResponses[scanData.peripheral] = newValue
-            }
+            scanResponses[scanData.peripheral] = scanResponse
         }
         
-        
-        // parse iBeacon
-        #if canImport(BluetoothGAP)
-        // has been previously scanned
-        let isAccessory = self.manufacturerData[scanData.peripheral] != nil
-            || self.scanResponses[scanData.peripheral] != nil
-            || self.beaconPeripherals[scanData.peripheral] != nil
-        
-        if isAccessory,
-           let manufacturerData = scanData.advertisementData.manufacturerData,
-           let beacon = AppleBeacon(manufacturerData: manufacturerData),
-           let accessoryBeacon = AccessoryBeacon(beacon: beacon) {
-            let oldValue = self.beaconPeripherals[scanData.peripheral]
-            if oldValue != accessoryBeacon {
-                self.beaconPeripherals[scanData.peripheral] = accessoryBeacon
+        // aggregate scan data
+        assert(Thread.isMainThread)
+        let oldCacheValue = scanResults[scanData.peripheral]
+        // cache discovered peripheral in background
+        let cache = await Task.detached { [weak central] in
+            assert(Thread.isMainThread == false)
+            var cache = oldCacheValue ?? ScanDataCache(scanData: scanData)
+            cache += scanData
+            #if canImport(CoreBluetooth)
+            cache.name = try? await central?.name(for: scanData.peripheral)
+            for serviceUUID in scanData.advertisementData.overflowServiceUUIDs ?? [] {
+                cache.overflowServiceUUIDs.insert(serviceUUID)
             }
+            #endif
+            return cache
+        }.value
+        scanResults[scanData.peripheral] = cache
+        assert(Thread.isMainThread)
+        
+        // optimization
+        guard let name = cache.advertisedName, cache.serviceUUIDs.isEmpty else {
+            return false
         }
-        #endif
         
-        // accessory requires advertisement and scan response
-        guard let scanResponse = self.scanResponses[scanData.peripheral],
-              let id = self.manufacturerData[scanData.peripheral]?.id ?? self.beaconPeripherals[scanData.peripheral]?.uuid else { return false }
+        // parse accessory aggregated advertisement data
+        let services = cache.serviceUUIDs.compactMap { self[service: $0] }
+        guard let service = services.first else {
+            return false
+        }
         
-        let peripheral = AccessoryPeripheral(
+        // cache identified accessory
+        let manufacturerData = cache.manufacturerData.flatMap { AccessoryManufacturerData(manufacturerData: $0) }
+        let accessoryBeacon = cache.beacon.flatMap { AccessoryBeacon(beacon: $0) }
+        guard let id = manufacturerData?.id ?? accessoryBeacon?.uuid
+            else { return false }
+        
+        let accessory = AccessoryPeripheral(
             peripheral: scanData.peripheral,
             id: id,
-            name: scanResponse.name,
-            service: scanResponse.service
+            name: name,
+            service: service
         )
-        
-        let oldValue = self.peripherals[id]
-        if oldValue != peripheral {
-            self.peripherals[id] = peripheral
-        }
+        assert(Thread.isMainThread)
+        accessoryPeripherals[id] = accessory
         return true
     }
     
@@ -231,4 +293,71 @@ public struct AccessoryInformation: Equatable, Hashable, Codable, Identifiable {
     
     /// Accessory name
     public var name: String
+}
+
+
+// MARK: - Supporting Types
+
+public struct ScanDataCache <Peripheral: Peer, Advertisement: AdvertisementData>: Equatable, Hashable {
+    
+    public internal(set) var scanData: GATT.ScanData<Peripheral, Advertisement>
+    
+    /// GAP or advertised name
+    public internal(set) var name: String?
+    
+    /// Advertised name
+    public internal(set) var advertisedName: String?
+    
+    public internal(set) var manufacturerData: GATT.ManufacturerSpecificData?
+    
+    /// This value is available if the broadcaster (peripheral) provides its Tx power level in its advertising packet.
+    /// Using the RSSI value and the Tx power level, it is possible to calculate path loss.
+    public internal(set) var txPowerLevel: Double?
+    
+    /// Service-specific advertisement data.
+    public internal(set) var serviceData = [BluetoothUUID: Data]()
+    
+    /// An array of service UUIDs
+    public internal(set) var serviceUUIDs = Set<BluetoothUUID>()
+    
+    /// An array of one or more ``BluetoothUUID``, representing Service UUIDs.
+    public internal(set) var solicitedServiceUUIDs = Set<BluetoothUUID>()
+    
+    /// An array of one or more ``BluetoothUUID``, representing Service UUIDs that were found in the “overflow” area of the advertisement data.
+    public internal(set) var overflowServiceUUIDs = Set<BluetoothUUID>()
+    
+    /// Advertised iBeacon
+    public internal(set) var beacon: AppleBeacon?
+    
+    internal init(scanData: GATT.ScanData<Peripheral, Advertisement>) {
+        self.scanData = scanData
+        self += scanData
+    }
+    
+    internal static func += (cache: inout ScanDataCache, scanData: GATT.ScanData<Peripheral, Advertisement>) {
+        cache.scanData = scanData
+        cache.advertisedName = scanData.advertisementData.localName
+        if cache.name == nil {
+            cache.name = scanData.advertisementData.localName
+        }
+        cache.txPowerLevel = scanData.advertisementData.txPowerLevel
+        if let beacon = scanData.advertisementData.beacon {
+            cache.beacon = beacon
+        } else {
+            cache.manufacturerData = scanData.advertisementData.manufacturerData
+        }
+        for serviceUUID in scanData.advertisementData.serviceUUIDs ?? [] {
+            cache.serviceUUIDs.insert(serviceUUID)
+        }
+        for (serviceUUID, serviceData) in scanData.advertisementData.serviceData ?? [:] {
+            cache.serviceData[serviceUUID] = serviceData
+        }
+    }
+}
+
+extension ScanDataCache: Identifiable {
+    
+    public var id: Peripheral.ID {
+        scanData.id
+    }
 }
