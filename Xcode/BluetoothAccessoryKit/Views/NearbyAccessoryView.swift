@@ -55,8 +55,9 @@ internal extension NearbyAccessoryView {
                 try await store.discoverCharacteristics(connection: connection)
                 // read identifier
                 let id = try await store.identifier(connection: connection)
-                // read all characteristics
-                let key = accessoryID.flatMap { store.keys[$0] }
+                // read all non-list characteristics
+                let keys = self.store.keys
+                let key = keys[id]
                 for (characteristic, cache) in (store.characteristics[peripheral] ?? [:]).sorted(by: { $0.key.id < $1.key.id }) {
                     // filter
                     let isEncrypted = cache.metadata.properties.contains(.encrypted)
@@ -68,7 +69,6 @@ internal extension NearbyAccessoryView {
                         characteristic: characteristic,
                         connection: connection
                     )
-                    
                 }
             }
         }
@@ -103,9 +103,9 @@ internal extension NearbyAccessoryView {
                 ForEach(services) { service in
                     Section(service.name) {
                         ForEach(service.characteristics) { characteristic in
-                            SubtitleRow(
-                                title: Text(verbatim: characteristic.cache.metadata.name),
-                                subtitle: characteristic.cache.value.flatMap { Text(verbatim: "\($0)") } // TODO: Format value
+                            AccessoryCharacteristicRow(
+                                characteristic: characteristic.characteristic,
+                                cache: characteristic.cache
                             )
                         }
                     }
