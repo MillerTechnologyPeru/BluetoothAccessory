@@ -13,39 +13,11 @@ import DarwinGATT
 import BluetoothAccessory
 
 #if targetEnvironment(simulator)
-
 public typealias NativeCentral = MockCentral
 public typealias NativePeripheral = MockCentral.Peripheral
-
-public extension NativeCentral {
-    
-    private struct Cache {
-        static let central = MockCentral()
-    }
-    
-    static var shared: NativeCentral {
-        return Cache.central
-    }
-}
-
 #else
-
 public typealias NativeCentral = DarwinCentral
 public typealias NativePeripheral = DarwinCentral.Peripheral
-
-public extension NativeCentral {
-    
-    private struct Cache {
-        static let central = DarwinCentral(
-            options: .init(showPowerAlert: true)
-        )
-    }
-    
-    static var shared: NativeCentral {
-        return Cache.central
-    }
-}
-
 #endif
 
 public extension NativeCentral {
@@ -58,18 +30,17 @@ public extension NativeCentral {
     ) async throws {
         
         var powerOnWait = 0
-        while await self.state != state {
-            let newState = await self.state
-            guard newState != state else { return }
+        var currentState = await self.state
+        while currentState != state {
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            powerOnWait += 1
             // inform user after 3 seconds
             if powerOnWait == warning {
                 NSLog("Waiting for CoreBluetooth to be ready, please turn on Bluetooth")
             }
-            
-            try await Task.sleep(nanoseconds: 1_000_000_000)
-            powerOnWait += 1
             guard powerOnWait < timeout
-                else { throw DarwinCentralError.invalidState(newState) }
+                else { throw DarwinCentralError.invalidState(currentState) }
+            currentState = await self.state // update value for next loop
         }
     }
 }
