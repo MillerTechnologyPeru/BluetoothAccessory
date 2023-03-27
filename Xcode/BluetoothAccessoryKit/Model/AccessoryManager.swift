@@ -70,29 +70,3 @@ public final class AccessoryManager: ObservableObject {
     }
 }
 
-// MARK: - Private Methods
-
-private extension AccessoryManager {
-    
-    func loadServiceTypes() -> [BluetoothUUID: ServiceType] {
-        var serviceTypes = [BluetoothUUID: ServiceType]()
-        serviceTypes.reserveCapacity(ServiceType.allCases.count)
-        for service in ServiceType.allCases {
-            let uuid = BluetoothUUID(service: service)
-            serviceTypes[uuid] = service
-        }
-        assert(serviceTypes.count == ServiceType.allCases.count)
-        return serviceTypes
-    }
-    
-    func loadCharacteristicTypes() -> [BluetoothUUID: CharacteristicType] {
-        var characteristicTypes = [BluetoothUUID: CharacteristicType]()
-        characteristicTypes.reserveCapacity(CharacteristicType.allCases.count)
-        for characteristic in CharacteristicType.allCases {
-            let uuid = BluetoothUUID(characteristic: characteristic)
-            characteristicTypes[uuid] = characteristic
-        }
-        assert(characteristicTypes.count == CharacteristicType.allCases.count)
-        return characteristicTypes
-    }
-}
