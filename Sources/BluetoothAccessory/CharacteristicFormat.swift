@@ -30,7 +30,7 @@ public enum CharacteristicFormat: UInt8, Codable, CaseIterable {
 }
 
 /// Characteristic Value
-public enum CharacteristicValue: Equatable, Hashable {
+public enum CharacteristicValue: Equatable, Hashable, Codable {
     
     case tlv8(Data)
     case string(String)
