@@ -30,6 +30,8 @@ public struct CharacteristicMetadata: Equatable, Hashable, Codable {
     
     public let type: BluetoothUUID
     
+    public let name: String
+    
     public let properties: BitMaskOptionSet<CharacteristicProperty>
     
     public let format: CharacteristicFormat
@@ -38,11 +40,13 @@ public struct CharacteristicMetadata: Equatable, Hashable, Codable {
     
     public init(
         type: BluetoothUUID,
+        name: String,
         properties: BitMaskOptionSet<CharacteristicProperty>,
         format: CharacteristicFormat,
         unit: CharacteristicUnit? = nil
     ) {
         self.type = type
+        self.name = name
         self.properties = properties
         self.format = format
         self.unit = unit
@@ -63,6 +67,7 @@ public extension CharacteristicMetadata {
     init<T: AccessoryCharacteristic>(characteristic: T.Type) {
         self.init(
             type: characteristic.type,
+            name: characteristic.name,
             properties: characteristic.properties,
             format: characteristic.Value.characteristicFormat,
             unit: characteristic.unit
@@ -76,6 +81,7 @@ public extension CharacteristicMetadata {
         let accessoryType = characteristic.accessoryType
         self.init(
             type: accessoryType.type,
+            name: characteristic.description,
             properties: accessoryType.properties,
             format: accessoryType.format,
             unit: accessoryType.unit
