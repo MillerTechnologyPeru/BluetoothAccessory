@@ -35,8 +35,19 @@ public struct NearbyAccessoryView: View {
             scanResponse: scanResponse,
             manufacturerData: store[manufacturerData: peripheral],
             beacon: store[beacon: peripheral],
-            key: accessoryID.flatMap { store.keys[$0] }
+            key: accessoryID.flatMap { store.keys[$0] },
+            characteristics: store.characteristics[peripheral] ?? [:]
         )
+        .task {
+            do {
+                try await store.discoverCharacteristics(for: peripheral)
+                // read all characteristics
+                
+            }
+            catch {
+                
+            }
+        }
     }
 }
 
@@ -51,6 +62,9 @@ internal extension NearbyAccessoryView {
     
     struct StateView: View {
         
+        @EnvironmentObject
+        var store: AccessoryManager
+        
         let peripheral: AccessoryManager.Peripheral
         
         let scanResponse: AccessoryScanResponse
@@ -61,11 +75,22 @@ internal extension NearbyAccessoryView {
         
         let key: Key?
         
+        let characteristics: [AccessoryManager.Characteristic: CharacteristicCache]
+        
         var body: some View {
             List {
                 advertisementSection
+                ForEach(services) { service in
+                    Section(service.name) {
+                        ForEach(service.characteristics) { characteristic in
+                            SubtitleRow(
+                                title: Text(verbatim: characteristic.cache.metadata.name),
+                                subtitle: Text(verbatim: "\(characteristic.cache.metadata.format)")
+                            )
+                        }
+                    }
+                }
             }
-            .padding(20)
             .navigationTitle(Text(verbatim: title))
         }
     }
@@ -112,5 +137,57 @@ internal extension NearbyAccessoryView.StateView {
                 )
             }
         }
+    }
+    
+    var services: [ServiceItem] {
+        characteristicsByService.map { (service, characteristics) in
+            ServiceItem(
+                id: service,
+                name: store.serviceTypes[service]?.description ?? service.description,
+                characteristics: characteristics.sorted(by: { $0.cache.metadata.name < $1.cache.metadata.name })
+            )
+        }
+        .sorted(by: { $0.name < $1.name })
+        .sorted(by: { $0.id == BluetoothUUID(service: scanResponse.service) && $1.id != BluetoothUUID(service: scanResponse.service) })
+        .sorted(by: { $0.id == BluetoothUUID(service: .information) && $1.id != BluetoothUUID(service: .information) })
+    }
+    
+    var characteristicsByService: [BluetoothUUID: [CharacteristicItem]] {
+        let blacklist: Set<BluetoothUUID> = [
+            BluetoothUUID(characteristic: .authenticate),
+            BluetoothUUID(characteristic: .cryptoHash)
+        ]
+        var characteristicsByService = [BluetoothUUID: [CharacteristicItem]]()
+        for (characteristic, cache) in self.characteristics {
+            guard blacklist.contains(characteristic.uuid) == false else {
+                continue
+            }
+            let characteristicItem = CharacteristicItem(characteristic: characteristic, cache: cache)
+            characteristicsByService[cache.service, default: []].append(characteristicItem)
+        }
+        return characteristicsByService
+    }
+}
+
+internal extension NearbyAccessoryView.StateView {
+    
+    struct ServiceItem: Identifiable {
+        
+        let id: BluetoothUUID
+        
+        let name: String
+        
+        var characteristics: [CharacteristicItem]
+    }
+    
+    struct CharacteristicItem: Identifiable {
+        
+        var id: BluetoothUUID {
+            characteristic.uuid
+        }
+        
+        let characteristic: AccessoryManager.Characteristic
+        
+        let cache: CharacteristicCache
     }
 }
