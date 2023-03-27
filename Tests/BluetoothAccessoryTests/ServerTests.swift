@@ -61,12 +61,21 @@ final class ServerTests: XCTestCase {
             // id
             let id = try await connection.readIdentifier()
             XCTAssertEqual(id, server.id)
-            
+                        
+            // configuration status
+            var isConfigured = try await connection.readConfiguredState()
+            XCTAssertFalse(isConfigured)
+                        
             // write setup characteristic
             try await connection.setup(
                 setupRequest,
                 using: setupSecret
             )
+            
+            try await Task.sleep(nanoseconds: 10_000_000)
+            
+            isConfigured = try await connection.readConfiguredState()
+            XCTAssert(isConfigured)
             
             try await Task.sleep(nanoseconds: 10_000_000)
             
@@ -111,7 +120,7 @@ final class ServerTests: XCTestCase {
             // validate keys
             try await Task.sleep(nanoseconds: 10_000_000)
             serverKeys = await server.keys
-            XCTAssertEqual([ownerKey.id, anytimeKey.id], (serverKeys.map { $0.key }))
+            XCTAssertEqual(Set([ownerKey.id, anytimeKey.id]), Set(serverKeys.map { $0.key }))
             
             // read and write power state
             var powerState = try await connection.readPowerState(
@@ -169,6 +178,9 @@ final class ServerTests: XCTestCase {
             // id
             let id = try await connection.readIdentifier()
             XCTAssertEqual(id, server.id)
+            
+            let isConfigured = try await connection.readConfiguredState()
+            XCTAssert(isConfigured)
             
             // read battery service
             let statusLowBattery = try await connection.readStatusLowBattery(key: credential)
@@ -301,9 +313,12 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
         self.keySecrets[id]
     }
     
-    func add(key: Key, secret: KeyData) {
+    func add(key: Key, secret: KeyData) async {
         self.keys[key.id] = key
         self.keySecrets[key.id] = secret
+        await self.server.update(AuthenticationService.self) {
+            $0.isConfigured = true
+        }
     }
     
     func willRead(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async -> Bool {
@@ -344,8 +359,7 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             }
             // create new key
             let ownerKey = Key(setup: request)
-            self.keys[ownerKey.id] = ownerKey
-            self.keySecrets[ownerKey.id] = request.secret
+            await self.add(key: ownerKey, secret: request.secret)
             log("Setup owner key for \(ownerKey.name)")
             // clear value
             await self.server.update(AuthenticationService.self) {
@@ -378,8 +392,7 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             // confirm key
             let key = newKey.confirm()
             self.newKeys[authenticationMessage.id] = nil
-            self.keySecrets[authenticationMessage.id] = request.secret
-            self.keys[newKey.id] = key
+            await add(key: key, secret: request.secret)
             // update db
             await self.server.update(AuthenticationService.self) {
                 $0.createKey = nil
