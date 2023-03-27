@@ -19,6 +19,9 @@ public struct AuthenticationService: AccessoryService {
     @ManagedCharacteristic<CryptoHashCharacteristic>
     public var cryptoHash: Nonce
     
+    @ManagedCharacteristic<ConfigurationStateCharacteristic>
+    public var isConfigured: Bool
+    
     @ManagedWriteOnlyCharacteristic<SetupCharacteristic>
     public var setup: SetupRequest?
     
@@ -37,12 +40,15 @@ public struct AuthenticationService: AccessoryService {
     public init<Peripheral: AccessoryPeripheralManager>(
         peripheral: Peripheral,
         cryptoHash: Nonce = Nonce(),
+        isConfigured: Bool = false,
         keys: [KeysCharacteristic.Item] = []
     ) async throws {
         let (serviceHandle, valueHandles) = try await peripheral.add(
             service: AuthenticationService.self,
             with: [
                 CryptoHashCharacteristic.self,
+                ConfigurationStateCharacteristic.self,
+                ConfigurationStateCharacteristic.self,
                 SetupCharacteristic.self,
                 AuthenticateCharacteristic.self,
                 CreateNewKeyCharacteristic.self,
@@ -52,11 +58,12 @@ public struct AuthenticationService: AccessoryService {
         )
         self.serviceHandle = serviceHandle
         _cryptoHash = .init(wrappedValue: cryptoHash, valueHandle: valueHandles[0])
-        _setup = .init(valueHandle: valueHandles[1])
-        _authenticate = .init(valueHandle: valueHandles[2])
-        _createKey = .init(valueHandle: valueHandles[3])
-        _confirmKey = .init(valueHandle: valueHandles[4])
-        _keys = .init(wrappedValue: keys, valueHandle: valueHandles[5])
+        _isConfigured = .init(wrappedValue: isConfigured, valueHandle: valueHandles[1])
+        _setup = .init(valueHandle: valueHandles[2])
+        _authenticate = .init(valueHandle: valueHandles[3])
+        _createKey = .init(valueHandle: valueHandles[4])
+        _confirmKey = .init(valueHandle: valueHandles[5])
+        _keys = .init(wrappedValue: keys, valueHandle: valueHandles[6])
     }
 }
 
