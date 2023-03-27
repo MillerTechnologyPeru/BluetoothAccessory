@@ -86,3 +86,83 @@ public extension ServiceType {
         self = value
     }
 }
+
+// MARK: - CustomStringConvertible
+
+extension ServiceType: CustomStringConvertible {
+    
+    public var description: String {
+        switch self {
+        case .information:
+            return "Information"
+        case .authentication:
+            return "Authentication"
+        case .bridge:
+            return "Bridge"
+        case .serial:
+            return "Serial"
+        case .firmwareUpdate:
+            return "Firmware Update"
+        case .wiFiTransport:
+            return "Wi-Fi Transport"
+        case .threadTransport:
+            return "Thread Transport"
+        case .loRaTransport:
+            return "LoRa Transport"
+        case .battery:
+            return "Battery"
+        case .inverter:
+            return "Inverter"
+        case .solarPanel:
+            return "Solar Panel"
+        case .lightbulb:
+            return "Lightbulb"
+        case .switch:
+            return "Switch"
+        case .lock:
+            return "Lock"
+        case .outlet:
+            return "Outlet"
+        case .label:
+            return "Label"
+        case .thermostat:
+            return "Thermostat"
+        case .heaterCooler:
+            return "Heater/Cooler"
+        case .fan:
+            return "Fan"
+        case .airPurifier:
+            return "Air Purifier"
+        case .humidifierDehumidifier:
+            return "Humidifier/Dehumidifier"
+        case .valve:
+            return "Valve"
+        case .irrigationSystem:
+            return "Irrigation System"
+        case .motionSensor:
+            return "Motion Sensor"
+        case .occupancySensor:
+            return "Occupancy Sensor"
+        case .temperatureSensor:
+            return "Temperature Sensor"
+        case .humiditySensor:
+            return "Humidity Sensor"
+        case .smokeSensor:
+            return "Smoke Sensor"
+        case .lightSensor:
+            return "Light Sensor"
+        case .leakSensor:
+            return "Leak Sensor"
+        case .carbonDioxideSensor:
+            return "Carbon Dioxide Sensor"
+        case .carbonMonoxideSensor:
+            return "Carbon Monoxide Sensor"
+        case .airQualitySensor:
+            return "Air Quality Sensor"
+        case .camera:
+            return "Camera"
+        case .securitySystem:
+            return "Security System"
+        }
+    }
+}
