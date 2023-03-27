@@ -28,6 +28,9 @@ internal extension AccessoryCharacteristicRow {
     
     struct StateView: View {
         
+        @EnvironmentObject
+        var store: AccessoryManager
+        
         let characteristic: AccessoryManager.Characteristic
         
         let cache: CharacteristicCache
@@ -48,9 +51,24 @@ internal extension AccessoryCharacteristicRow.StateView {
         case .none:
             return nil
         case let .single(value):
-            return Text(verbatim: value.description)
+            return Text(verbatim: customValueDescription(for: value) ?? value.description)
         case let .list(items):
-            return Text("\(items.count) \("\(cache.metadata.format)") values")
+            return Text("\(items.count) values")
+        }
+    }
+    
+    func customValueDescription(for value: CharacteristicValue) -> String? {
+        guard let characteristicType = store.characteristicTypes[cache.metadata.type] else {
+            return nil
+        }
+        switch characteristicType {
+        case .accessoryType:
+            guard let value = AccessoryType.init(characteristicValue: value) else {
+                return nil
+            }
+            return value.description
+        default:
+            return nil
         }
     }
 }
