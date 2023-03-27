@@ -131,4 +131,11 @@ final class BluetoothAccessoryTests: XCTestCase {
         XCTAssertNil(AccessoryManufacturerData(manufacturerData: GATT.ManufacturerSpecificData(companyIdentifier: .millerTechnology)))
         XCTAssertNil(AccessoryManufacturerData(manufacturerData: GATT.ManufacturerSpecificData(companyIdentifier: .apple)))
     }
+    
+    func testDefinedCharacteristic() {
+        for type in CharacteristicType.allCases {
+            guard AccessoryCharacteristicCache.characteristicsByType[type] != nil else { continue }
+            XCTAssertEqual(type.accessoryType.type, BluetoothUUID(characteristic: type))
+        }
+    }
 }
