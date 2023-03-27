@@ -133,9 +133,15 @@ final class BluetoothAccessoryTests: XCTestCase {
     }
     
     func testDefinedCharacteristic() {
+        
         for type in CharacteristicType.allCases {
             guard AccessoryCharacteristicCache.characteristicsByType[type] != nil else { continue }
             XCTAssertEqual(type.accessoryType.type, BluetoothUUID(characteristic: type))
         }
+    }
+    
+    func testCharacteristicMetadata() {
+        XCTAssertEqual(CharacteristicMetadata(characteristic: .identifier), CharacteristicMetadata(characteristic: IdentifierCharacteristic.self))
+        XCTAssertEqual(CharacteristicMetadata(characteristic: CharacteristicType.accessoryType), AccessoryTypeCharacteristic.metadata)
     }
 }

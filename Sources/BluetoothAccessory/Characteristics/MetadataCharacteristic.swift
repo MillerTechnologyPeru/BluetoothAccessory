@@ -58,10 +58,9 @@ extension CharacteristicMetadata: Identifiable {
 
 extension CharacteristicMetadata: CharacteristicTLVCodable { }
 
-/*
 public extension CharacteristicMetadata {
     
-    init(characteristic: any AccessoryCharacteristic.Type) {
+    init<T: AccessoryCharacteristic>(characteristic: T.Type) {
         self.init(
             type: characteristic.type,
             properties: characteristic.properties,
@@ -70,4 +69,23 @@ public extension CharacteristicMetadata {
         )
     }
 }
-*/
+
+public extension CharacteristicMetadata {
+    
+    init(characteristic: CharacteristicType) {
+        let accessoryType = characteristic.accessoryType
+        self.init(
+            type: accessoryType.type,
+            properties: accessoryType.properties,
+            format: accessoryType.format,
+            unit: accessoryType.unit
+        )
+    }
+}
+
+public extension AccessoryCharacteristic {
+    
+    static var metadata: CharacteristicMetadata {
+        .init(characteristic: self)
+    }
+}

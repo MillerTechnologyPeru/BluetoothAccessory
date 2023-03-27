@@ -35,6 +35,8 @@ public extension AccessoryCharacteristic {
     static var name: String { CharacteristicType(uuid: self.type)?.description ?? self.type.description }
     
     static var unit: CharacteristicUnit? { nil }
+    
+    static var format: CharacteristicFormat { Value.characteristicFormat }
 }
 
 public extension AccessoryCharacteristic {

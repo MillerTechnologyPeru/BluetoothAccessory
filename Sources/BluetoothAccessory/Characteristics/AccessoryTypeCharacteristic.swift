@@ -22,6 +22,11 @@ public struct AccessoryTypeCharacteristic: Equatable, Hashable, AccessoryCharact
     public var value: AccessoryType
 }
 
+public extension AccessoryTypeCharacteristic {
+    
+    static var accessoryType: AccessoryTypeCharacteristic.Type { AccessoryTypeCharacteristic.self }
+}
+
 // MARK: - Central
 
 public extension CentralManager {
