@@ -114,7 +114,7 @@ public extension AuthenticationService {
             self.confirmKey = request
             return true
         case (_removeKey.valueHandle, .single(let newValue)):
-            guard let request = RemoveKeyCharacteristic(characteristicValue: newValue) else {
+            guard let request = RemoveKeyRequest(characteristicValue: newValue) else {
                 return false
             }
             self.removeKey = request
