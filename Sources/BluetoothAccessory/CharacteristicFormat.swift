@@ -91,6 +91,48 @@ public extension CharacteristicValue {
     }
 }
 
+// MARK: - CustomStringConvertible
+
+extension CharacteristicValue: CustomStringConvertible {
+    
+    public var description: String {
+        switch self {
+        case .tlv8(let data):
+            return "0x" + data.toHexadecimal()
+        case .string(let string):
+            return string
+        case .data(let data):
+            return "0x" + data.toHexadecimal()
+        case .date(let date):
+            return date.description
+        case .uuid(let uuid):
+            return uuid.description
+        case .bool(let bool):
+            return bool.description
+        case .int8(let value):
+            return value.description
+        case .int16(let value):
+            return value.description
+        case .int32(let value):
+            return value.description
+        case .int64(let value):
+            return value.description
+        case .uint8(let value):
+            return value.description
+        case .uint16(let value):
+            return value.description
+        case .uint32(let value):
+            return value.description
+        case .uint64(let value):
+            return value.description
+        case .float(let float):
+            return float.description
+        case .double(let double):
+            return double.description
+        }
+    }
+}
+
 // MARK: - CharacteristicCodable
 
 public protocol CharacteristicCodable {
