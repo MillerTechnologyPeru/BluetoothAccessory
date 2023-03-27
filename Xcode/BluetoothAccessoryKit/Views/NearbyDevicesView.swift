@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import Bluetooth
 import GATT
+import DarwinGATT
 import BluetoothAccessory
 
 public struct NearbyDevicesView: View {
@@ -85,7 +86,7 @@ extension NearbyDevicesView {
             scanTask?.cancel()
             scanTask = Task {
                 // start scanning after delay
-                try? await store.central.wait(for: .poweredOn)
+                try? await store.wait(for: .poweredOn)
                 if store.isScanning == false {
                     toggleScan()
                 }

@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import Bluetooth
+import GATT
+import DarwinGATT
 
 public extension AccessoryStore {
     
@@ -40,6 +43,28 @@ public extension AccessoryStore {
 // MARK: - Methods
 
 public extension AccessoryStore {
+    
+    /// Wait for CoreBluetooth to be ready.
+    func wait(
+        for state: DarwinBluetoothState,
+        warning: Int = 3,
+        timeout: Int = 10
+    ) async throws {
+        
+        var powerOnWait = 0
+        var currentState = await central.state
+        while currentState != state {
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            powerOnWait += 1
+            // inform user after 3 seconds
+            if powerOnWait == warning {
+                log("Waiting for CoreBluetooth to be ready, please turn on Bluetooth")
+            }
+            guard powerOnWait < timeout
+                else { throw DarwinCentralError.invalidState(currentState) }
+            currentState = await central.state // update value for next loop
+        }
+    }
         
     func scan(
         duration: TimeInterval? = nil,
