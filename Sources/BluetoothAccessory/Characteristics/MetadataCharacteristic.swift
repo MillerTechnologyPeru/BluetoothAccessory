@@ -49,7 +49,15 @@ public struct CharacteristicMetadata: Equatable, Hashable, Codable {
     }
 }
 
+extension CharacteristicMetadata: Identifiable {
+    
+    public var id: BluetoothUUID {
+        type
+    }
+}
+
 extension CharacteristicMetadata: CharacteristicTLVCodable { }
+
 /*
 public extension CharacteristicMetadata {
     
