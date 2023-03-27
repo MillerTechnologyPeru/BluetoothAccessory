@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension AccessoryStore {
+public extension AccessoryManager {
     
     func log(_ message: String) {
         // TODO: Logs

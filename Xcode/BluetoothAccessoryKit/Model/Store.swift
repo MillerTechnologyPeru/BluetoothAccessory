@@ -18,7 +18,7 @@ import DarwinGATT
 import BluetoothAccessory
 
 @MainActor
-public final class AccessoryStore: ObservableObject {
+public final class AccessoryManager: ObservableObject {
     
     // MARK: - Properties
     
@@ -57,7 +57,7 @@ public final class AccessoryStore: ObservableObject {
     
     // MARK: - Initialization
     
-    public static let shared = AccessoryStore()
+    public static let shared = AccessoryManager()
     
     private init() {
         loadBluetooth()
@@ -66,7 +66,7 @@ public final class AccessoryStore: ObservableObject {
 
 // MARK: - Private Methods
 
-private extension AccessoryStore {
+private extension AccessoryManager {
     
     func loadServiceTypes() -> [BluetoothUUID: ServiceType] {
         var serviceTypes = [BluetoothUUID: ServiceType]()

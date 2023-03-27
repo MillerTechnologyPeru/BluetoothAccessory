@@ -15,7 +15,7 @@ import BluetoothAccessory
 public struct NearbyDevicesView: View {
     
     @EnvironmentObject
-    var store: AccessoryStore
+    var store: AccessoryManager
     
     @State
     private var scanTask: Task<Void, Never>?
@@ -70,8 +70,15 @@ extension NearbyDevicesView {
     
     var list: some View {
         List {
-            ForEach(items) {
-                ItemRow(item: $0)
+            ForEach(items) { (item) in
+                NavigationLink(destination: {
+                    NearbyAccessoryView(
+                        peripheral: item.peripheral,
+                        scanResponse: item.scanResponse
+                    )
+                }, label: {
+                    ItemRow(item: item)
+                })
             }
         }
     }

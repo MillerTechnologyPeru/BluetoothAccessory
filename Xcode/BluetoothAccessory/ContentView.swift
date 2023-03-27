@@ -11,7 +11,7 @@ import BluetoothAccessoryKit
 struct ContentView: View {
     
     @EnvironmentObject
-    var store: AccessoryStore
+    var store: AccessoryManager
     
     var body: some View {
         NavigationView {

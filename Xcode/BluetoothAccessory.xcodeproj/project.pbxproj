@@ -37,6 +37,7 @@
 		6EFCFFE629D12EBE004B6DE8 /* AccessoryInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFE529D12EBE004B6DE8 /* AccessoryInformation.swift */; };
 		6EFCFFE829D12ECA004B6DE8 /* AccessoryPeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFE729D12ECA004B6DE8 /* AccessoryPeripheral.swift */; };
 		6EFCFFEA29D12EDB004B6DE8 /* ScanDataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFE929D12EDB004B6DE8 /* ScanDataCache.swift */; };
+		6EFCFFEC29D134FB004B6DE8 /* NearbyAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFEB29D134FB004B6DE8 /* NearbyAccessoryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,6 +91,7 @@
 		6EFCFFE529D12EBE004B6DE8 /* AccessoryInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryInformation.swift; sourceTree = "<group>"; };
 		6EFCFFE729D12ECA004B6DE8 /* AccessoryPeripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryPeripheral.swift; sourceTree = "<group>"; };
 		6EFCFFE929D12EDB004B6DE8 /* ScanDataCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDataCache.swift; sourceTree = "<group>"; };
+		6EFCFFEB29D134FB004B6DE8 /* NearbyAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyAccessoryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -218,6 +220,7 @@
 			isa = PBXGroup;
 			children = (
 				6EFCFFD129D07A33004B6DE8 /* NearbyDevicesView.swift */,
+				6EFCFFEB29D134FB004B6DE8 /* NearbyAccessoryView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -359,6 +362,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6EFCFFEC29D134FB004B6DE8 /* NearbyAccessoryView.swift in Sources */,
 				6EFCFFE229D12EA4004B6DE8 /* LogStore.swift in Sources */,
 				6EFCFFEA29D12EDB004B6DE8 /* ScanDataCache.swift in Sources */,
 				6EFCFFDC29D116FB004B6DE8 /* UUID.swift in Sources */,

@@ -10,7 +10,7 @@ import Bluetooth
 import GATT
 import DarwinGATT
 
-public extension AccessoryStore {
+public extension AccessoryManager {
     
     // MARK: - Subscript
     
@@ -42,7 +42,7 @@ public extension AccessoryStore {
 
 // MARK: - Methods
 
-public extension AccessoryStore {
+public extension AccessoryManager {
     
     /// Wait for CoreBluetooth to be ready.
     func wait(
@@ -123,7 +123,7 @@ public extension AccessoryStore {
 
 // MARK: - Internal Methods
 
-internal extension AccessoryStore {
+internal extension AccessoryManager {
     
     func loadBluetooth() {
         central.log = { [unowned self] in self.log("📲 Central: " + $0) }
@@ -131,7 +131,7 @@ internal extension AccessoryStore {
     }
 }
 
-private extension AccessoryStore {
+private extension AccessoryManager {
     
     func observeBluetoothState() {
         // observe state
@@ -211,7 +211,7 @@ private extension AccessoryStore {
 
 // MARK: - Typealias
 
-public extension AccessoryStore {
+public extension AccessoryManager {
     
     typealias Central = NativeCentral
     
