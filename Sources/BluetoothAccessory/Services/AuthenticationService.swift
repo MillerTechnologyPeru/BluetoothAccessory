@@ -51,7 +51,6 @@ public struct AuthenticationService: AccessoryService {
             with: [
                 CryptoHashCharacteristic.self,
                 ConfigurationStateCharacteristic.self,
-                ConfigurationStateCharacteristic.self,
                 SetupCharacteristic.self,
                 AuthenticateCharacteristic.self,
                 CreateNewKeyCharacteristic.self,
