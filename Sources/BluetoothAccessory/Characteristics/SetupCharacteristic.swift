@@ -52,11 +52,11 @@ extension SetupRequest: CharacteristicTLVCodable { }
 public extension Key {
     
     /// Initialize a new owner key from a setup request.
-    init(setup: SetupRequest) {
+    init(setup: SetupRequest, created: Date = Date()) {
         self.init(
             id: setup.id,
             name: setup.name,
-            created: Date().removingMiliseconds,
+            created: created.removingMiliseconds,
             permission: .owner
         )
     }

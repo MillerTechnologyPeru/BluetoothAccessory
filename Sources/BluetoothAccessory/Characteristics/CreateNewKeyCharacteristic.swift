@@ -65,7 +65,7 @@ public extension NewKey {
         self.name = request.name
         self.permission = request.permission
         self.expiration = request.expiration
-        self.created = created
+        self.created = created.removingMiliseconds
     }
 }
 
