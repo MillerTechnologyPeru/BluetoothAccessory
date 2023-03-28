@@ -330,8 +330,8 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
     }
     
     
-    func willWrite(_ handle: UInt16, authentication: BluetoothAccessory.AuthenticationMessage?) async {
-        
+    func willWrite(_ handle: UInt16, authentication: BluetoothAccessory.AuthenticationMessage?) async -> Bool {
+        return true
     }
     
     func didWrite(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async {

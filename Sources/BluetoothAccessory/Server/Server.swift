@@ -173,6 +173,11 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
                 delegate.log("Unable to decode write request for \(request.uuid.bluetoothAccessoryDescription) as \(characteristic.format)")
                 return .writeNotPermitted
             }
+            // validate first
+            guard await delegate.willWrite(request.handle, authentication: encryptedData.authentication.message) else {
+                return .writeNotPermitted
+            }
+            // update managed characteristic value
             guard services[serviceIndex].update(characteristic: request.handle, with: .single(value)) else {
                 delegate.log("Unable to decode write request for \(request.uuid.bluetoothAccessoryDescription)")
                 return .writeNotPermitted
@@ -182,6 +187,10 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
             // simple write
             guard let value = CharacteristicValue(from: request.newValue, format: characteristic.format) else {
                 delegate?.log("Unable to decode write request for \(request.uuid.bluetoothAccessoryDescription)")
+                return .writeNotPermitted
+            }
+            // validate first
+            guard await delegate?.willWrite(request.handle, authentication: nil) ?? true else {
                 return .writeNotPermitted
             }
             guard services[serviceIndex].update(characteristic: request.handle, with: .single(value)) else {
@@ -194,19 +203,32 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
     
     private func didWrite(_ request: GATTWriteConfirmation<Peripheral.Central>) async {
         delegate?.log("Did write \(request.uuid.bluetoothAccessoryDescription)")
-        // notify delegate
+        // refresh crypto token
         await delegate?.updateCryptoHash()
-        let authenticationMessage = EncryptedData(data: request.value)?.authentication.message
+        // find matching characteristic
+        guard let (serviceIndex, characteristic) = self.characteristic(for: request.handle) else {
+            return  // could be descriptor write
+        }
+        guard characteristic.properties.contains(.write) else {
+            assertionFailure("Characteristic \(request.uuid.bluetoothAccessoryDescription) is not writable")
+            return
+        }
+        let authenticationMessage: AuthenticationMessage?
+        if characteristic.properties.contains(.encrypted) {
+            authenticationMessage = EncryptedData(data: request.value)?.authentication.message
+        } else {
+            authenticationMessage = nil
+        }
+        // inform delegate
         await delegate?.didWrite(request.handle, authentication: authenticationMessage)
         // handle special characteristics
         switch request.uuid {
         case BluetoothUUID(characteristic: .authenticate):
             // TODO: Optimize
             guard let authenticationMessage = authenticationMessage,
-                let (serviceIndex, characteristic) = self.characteristic(for: request.handle),
                 type(of: self.services[serviceIndex]).type == BluetoothUUID(service: .authentication),
                 case .single(let value) = characteristic.value,
-                let characteristic = AuthenticateCharacteristic(from: value.encode()) else {
+                let characteristic = AuthenticateCharacteristic(characteristicValue: value) else {
                 assertionFailure()
                 return
             }
@@ -386,7 +408,7 @@ public protocol BluetoothAccessoryServerDelegate: AnyObject {
     
     func willRead(_ handle: UInt16, authentication: AuthenticationMessage?) async -> Bool
     
-    func willWrite(_ handle: UInt16, authentication: AuthenticationMessage?) async
+    func willWrite(_ handle: UInt16, authentication: AuthenticationMessage?) async -> Bool
     
     func didWrite(_ handle: UInt16, authentication: AuthenticationMessage?) async
     
