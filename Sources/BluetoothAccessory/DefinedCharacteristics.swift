@@ -28,21 +28,26 @@ public extension CharacteristicType {
 internal struct AccessoryCharacteristicCache {
     
     static let characteristicsByType: [CharacteristicType: any AccessoryCharacteristic.Type] = {
-        // map values to characteristic
-        var mapped = [CharacteristicType: any AccessoryCharacteristic.Type]()
-        for characteristic in defined {
+        var characteristicsCache = [CharacteristicType: any AccessoryCharacteristic.Type]()
+        
+        func append<T: AccessoryCharacteristic>(_ characteristic: T.Type) {
             guard let type = CharacteristicType(uuid: characteristic.type) else {
                 assertionFailure()
-                continue
+                return
             }
-            mapped[type] = characteristic
+            characteristicsCache[type] = characteristic
         }
-        return mapped
-    }()
-    
-    static let defined: [any AccessoryCharacteristic.Type] = {
-        var characteristics = [any AccessoryCharacteristic.Type]()
-        characteristics += [
+        func append(_ characteristics: any AccessoryCharacteristic.Type ...) {
+            for characteristic in characteristics {
+                guard let type = CharacteristicType(uuid: characteristic.type) else {
+                    assertionFailure()
+                    return
+                }
+                characteristicsCache[type] = characteristic
+            }
+        }
+        // Information
+        append(
             IdentifierCharacteristic.self,
             NameCharacteristic.self,
             AccessoryTypeCharacteristic.self,
@@ -53,27 +58,32 @@ internal struct AccessoryCharacteristicCache {
             SoftwareVersionCharacteristic.self,
             MetadataCharacteristic.self,
             HardwareVersionCharacteristic.self
-        ]
-        characteristics += [
+        )
+        
+        // Authorization
+        append(
             CryptoHashCharacteristic.self,
+            ConfigurationStateCharacteristic.self,
             SetupCharacteristic.self,
             AuthenticateCharacteristic.self,
             CreateNewKeyCharacteristic.self,
             ConfirmNewKeyCharacteristic.self,
             KeysCharacteristic.self,
-            RemoveKeyCharacteristic.self,
-            
-        ]
-        characteristics += [
+            RemoveKeyCharacteristic.self
+        )
+        
+        // Battery
+        append(
             StatusLowBatteryCharacteristic.self,
             BatteryLevelCharacteristic.self,
             ChargingStateCharacteristic.self,
             BatteryVoltageCharacteristic.self,
             BatteryChargingCurrentCharacteristic.self
-        ]
-        characteristics += [
-            PowerStateCharacteristic.self
-        ]
-        return characteristics
+        )
+        
+        // Outlet
+        append(PowerStateCharacteristic.self)
+        
+        return characteristicsCache
     }()
 }
