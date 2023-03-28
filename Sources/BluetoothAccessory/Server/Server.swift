@@ -154,15 +154,9 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
                 return .writeNotPermitted
             }
             let keyID = encryptedData.authentication.message.id
-            let secret: KeyData
-            if keyID == .zero, request.uuid == BluetoothUUID(characteristic: .setup) {
-                secret = await delegate.setupSharedSecret
-            } else {
-                guard let secretData = await delegate.key(for: keyID) else {
-                    delegate.log("Rejected encrypted write for \(request.uuid.bluetoothAccessoryDescription) with unknown key \(keyID)")
-                    return .writeNotPermitted
-                }
-                secret = secretData
+            guard let secretData = await delegate.key(for: keyID) else {
+                delegate.log("Rejected encrypted write for \(request.uuid.bluetoothAccessoryDescription) with unknown key \(keyID)")
+                return .writeNotPermitted
             }
             // verify crypto hash
             let cryptoHash = await delegate.cryptoHash
@@ -171,7 +165,7 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
                 return .writeNotPermitted
             }
             // decrypt
-            guard let decryptedData = try? encryptedData.decrypt(using: secret) else {
+            guard let decryptedData = try? encryptedData.decrypt(using: secretData) else {
                 delegate.log("Unable to decrypt write request for \(request.uuid.bluetoothAccessoryDescription)")
                 return .writeNotPermitted
             }
@@ -391,13 +385,13 @@ public protocol BluetoothAccessoryServerDelegate: AnyObject {
     func didAdvertise(beacon: AccessoryBeacon)
     
     func willRead(_ handle: UInt16, authentication: AuthenticationMessage?) async -> Bool
-
+    
+    func willWrite(_ handle: UInt16, authentication: AuthenticationMessage?) async
+    
     func didWrite(_ handle: UInt16, authentication: AuthenticationMessage?) async
     
-    /// Return key for the specified ID or shared secret.
+    /// Return shared secret for the specified key ID.
     func key(for id: UUID) async -> KeyData?
-    
-    var setupSharedSecret: KeyData { get async }
     
     var cryptoHash: Nonce { get async }
     

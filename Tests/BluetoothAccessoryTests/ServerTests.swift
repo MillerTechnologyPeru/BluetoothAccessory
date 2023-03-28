@@ -310,7 +310,11 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
     }
     
     func key(for id: UUID) -> KeyData? {
-        self.keySecrets[id]
+        if id == Key.setup {
+            return setupSharedSecret
+        } else {
+            return keySecrets[id]
+        }
     }
     
     func add(key: Key, secret: KeyData) async {
@@ -323,6 +327,11 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
     
     func willRead(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async -> Bool {
         return true
+    }
+    
+    
+    func willWrite(_ handle: UInt16, authentication: BluetoothAccessory.AuthenticationMessage?) async {
+        
     }
     
     func didWrite(_ handle: UInt16, authentication authenticationMessage: AuthenticationMessage?) async {
