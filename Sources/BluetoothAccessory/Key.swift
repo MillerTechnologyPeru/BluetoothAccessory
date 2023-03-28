@@ -36,6 +36,12 @@ public struct Key: Identifiable, Codable, Equatable, Hashable {
     }
 }
 
+public extension Key {
+    
+    /// Setup Key
+    static var setup: UUID { .zero }
+}
+
 // MARK: - Supporting Types
 
 public enum KeyType: UInt8, CaseIterable {
