@@ -48,16 +48,26 @@ extension AccessoryCharacteristic where Self.Value: CustomStringConvertible {
 
 public extension AccessoryCharacteristic {
     
-    init?(from data: Data) {
-        guard let characteristicValue = CharacteristicValue(from: data, format: Value.characteristicFormat),
-              let value = Value(characteristicValue: characteristicValue) else {
+    init?(characteristicValue: CharacteristicValue) {
+        guard let value = Value(characteristicValue: characteristicValue) else {
             return nil
         }
         self.init(value: value)
     }
     
+    var characteristicValue: CharacteristicValue {
+        value.characteristicValue
+    }
+    
+    init?(from data: Data) {
+        guard let characteristicValue = CharacteristicValue(from: data, format: Value.characteristicFormat) else {
+            return nil
+        }
+        self.init(characteristicValue: characteristicValue)
+    }
+    
     func encode() -> Data {
-        value.characteristicValue.encode()
+        characteristicValue.encode()
     }
 }
 
