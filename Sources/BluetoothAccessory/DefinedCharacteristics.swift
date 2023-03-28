@@ -15,7 +15,7 @@ public extension AccessoryCharacteristic {
     }
 }
 
-public extension CharacteristicType {
+internal extension CharacteristicType {
     
     var accessoryType: any AccessoryCharacteristic.Type {
         guard let characteristicType = AccessoryCharacteristicCache.characteristicsByType[self] else {

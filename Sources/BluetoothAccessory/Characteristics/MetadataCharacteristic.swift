@@ -64,7 +64,7 @@ extension CharacteristicMetadata: CharacteristicTLVCodable { }
 
 public extension CharacteristicMetadata {
     
-    init<T: AccessoryCharacteristic>(characteristic: T.Type) {
+    init<T: AccessoryCharacteristic>(from characteristic: T.Type) {
         self.init(
             type: characteristic.type,
             name: characteristic.name,
@@ -77,7 +77,7 @@ public extension CharacteristicMetadata {
 
 public extension CharacteristicMetadata {
     
-    init(characteristic: CharacteristicType) {
+    init(type characteristic: CharacteristicType) {
         let accessoryType = characteristic.accessoryType
         self.init(
             type: accessoryType.type,
@@ -92,6 +92,6 @@ public extension CharacteristicMetadata {
 public extension AccessoryCharacteristic {
     
     static var metadata: CharacteristicMetadata {
-        .init(characteristic: self)
+        .init(from: self)
     }
 }

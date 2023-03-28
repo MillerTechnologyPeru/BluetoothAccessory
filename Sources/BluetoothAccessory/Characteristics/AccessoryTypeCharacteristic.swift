@@ -22,7 +22,7 @@ public struct AccessoryTypeCharacteristic: Equatable, Hashable, AccessoryCharact
     public var value: AccessoryType
 }
 
-public extension AccessoryTypeCharacteristic {
+public extension AccessoryCharacteristic where Self == AccessoryTypeCharacteristic {
     
     static var accessoryType: AccessoryTypeCharacteristic.Type { AccessoryTypeCharacteristic.self }
 }
