@@ -32,7 +32,11 @@ extension BluetoothAccessoryApp {
                 showPowerAlert: true,
                 restoreIdentifier: "com.colemancda.BluetoothAccessory.CBCentralManager"
             ),
-            cloud: "iCloud.com.colemancda.BluetoothAccessory"
+            cloud: "iCloud.com.colemancda.BluetoothAccessory",
+            keychain: AccessoryManager.Configuration.Keychain(
+                group: "4W79SG34MW.com.colemancda.BluetoothAccessory",
+                service: "com.colemancda.BluetoothAccessory"
+            )
         )
     }
 }

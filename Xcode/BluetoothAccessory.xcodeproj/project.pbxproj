@@ -37,6 +37,10 @@
 		6E71637829D4B03E0042565D /* AccessoryManagerCloudKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637729D4B03E0042565D /* AccessoryManagerCloudKit.swift */; };
 		6E71637A29D4B0560042565D /* AccessoryManagerCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637929D4B0560042565D /* AccessoryManagerCoreData.swift */; };
 		6E71637C29D4C7250042565D /* CloudKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637B29D4C7250042565D /* CloudKit.swift */; };
+		6E71637E29D4D12E0042565D /* AccessoryManagerFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637D29D4D12E0042565D /* AccessoryManagerFileManager.swift */; };
+		6E71638029D4D2140042565D /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637F29D4D2140042565D /* FileManager.swift */; };
+		6E71638229D4D3CE0042565D /* AccessoryCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71638129D4D3CE0042565D /* AccessoryCache.swift */; };
+		6E71638629D4E13E0042565D /* JSONFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71638529D4E13E0042565D /* JSONFile.swift */; };
 		6EFCFFC729D05E24004B6DE8 /* AccessoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFC629D05E24004B6DE8 /* AccessoryManager.swift */; };
 		6EFCFFCD29D05F23004B6DE8 /* Central.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFCB29D05F23004B6DE8 /* Central.swift */; };
 		6EFCFFCE29D05F23004B6DE8 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFCC29D05F23004B6DE8 /* Task.swift */; };
@@ -108,6 +112,10 @@
 		6E71637729D4B03E0042565D /* AccessoryManagerCloudKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryManagerCloudKit.swift; sourceTree = "<group>"; };
 		6E71637929D4B0560042565D /* AccessoryManagerCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryManagerCoreData.swift; sourceTree = "<group>"; };
 		6E71637B29D4C7250042565D /* CloudKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKit.swift; sourceTree = "<group>"; };
+		6E71637D29D4D12E0042565D /* AccessoryManagerFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryManagerFileManager.swift; sourceTree = "<group>"; };
+		6E71637F29D4D2140042565D /* FileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
+		6E71638129D4D3CE0042565D /* AccessoryCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryCache.swift; sourceTree = "<group>"; };
+		6E71638529D4E13E0042565D /* JSONFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONFile.swift; sourceTree = "<group>"; };
 		6EFCFFC629D05E24004B6DE8 /* AccessoryManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccessoryManager.swift; sourceTree = "<group>"; };
 		6EFCFFCB29D05F23004B6DE8 /* Central.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Central.swift; sourceTree = "<group>"; };
 		6EFCFFCC29D05F23004B6DE8 /* Task.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
@@ -234,6 +242,7 @@
 				6EFCFFCC29D05F23004B6DE8 /* Task.swift */,
 				6E71636529D4100A0042565D /* Permission.swift */,
 				6E71636929D411DB0042565D /* Error.swift */,
+				6E71637F29D4D2140042565D /* FileManager.swift */,
 				6E71635929D392A50042565D /* EnvironmentValues.swift */,
 				6E71637B29D4C7250042565D /* CloudKit.swift */,
 			);
@@ -244,13 +253,16 @@
 			isa = PBXGroup;
 			children = (
 				6E71637329D428D40042565D /* NewKeyDocument.swift */,
+				6E71638129D4D3CE0042565D /* AccessoryCache.swift */,
 				6E71636729D410B20042565D /* Preferences.swift */,
 				6E71636329D40FF10042565D /* BeaconController.swift */,
 				6E71636129D40FDD0042565D /* NetworkMonitor.swift */,
 				6EFCFFE529D12EBE004B6DE8 /* AccessoryInformation.swift */,
 				6EFCFFC629D05E24004B6DE8 /* AccessoryManager.swift */,
+				6E71637D29D4D12E0042565D /* AccessoryManagerFileManager.swift */,
 				6E71637929D4B0560042565D /* AccessoryManagerCoreData.swift */,
 				6E71637729D4B03E0042565D /* AccessoryManagerCloudKit.swift */,
+				6E71638529D4E13E0042565D /* JSONFile.swift */,
 				6EFCFFDF29D12E79004B6DE8 /* AccessoryManagerBluetooth.swift */,
 				6EFCFFE329D12EAD004B6DE8 /* AccessoryManagerKeychain.swift */,
 				6EFCFFE129D12EA4004B6DE8 /* AccessoryManagerLog.swift */,
@@ -415,6 +427,7 @@
 			files = (
 				6EFCFFEC29D134FB004B6DE8 /* NearbyAccessoryView.swift in Sources */,
 				6E71636229D40FDD0042565D /* NetworkMonitor.swift in Sources */,
+				6E71637E29D4D12E0042565D /* AccessoryManagerFileManager.swift in Sources */,
 				6EFCFFE229D12EA4004B6DE8 /* AccessoryManagerLog.swift in Sources */,
 				6EFCFFEA29D12EDB004B6DE8 /* ScanDataCache.swift in Sources */,
 				6E71637C29D4C7250042565D /* CloudKit.swift in Sources */,
@@ -431,11 +444,14 @@
 				6E71636A29D411DB0042565D /* Error.swift in Sources */,
 				6EFCFFE029D12E79004B6DE8 /* AccessoryManagerBluetooth.swift in Sources */,
 				6E71637429D428D40042565D /* NewKeyDocument.swift in Sources */,
+				6E71638029D4D2140042565D /* FileManager.swift in Sources */,
 				6EFCFFEE29D142EC004B6DE8 /* SubtitleRow.swift in Sources */,
+				6E71638229D4D3CE0042565D /* AccessoryCache.swift in Sources */,
 				6EFCFFE629D12EBE004B6DE8 /* AccessoryInformation.swift in Sources */,
 				6EFCFFC729D05E24004B6DE8 /* AccessoryManager.swift in Sources */,
 				6EFCFFD229D07A33004B6DE8 /* NearbyDevicesView.swift in Sources */,
 				6E71636829D410B20042565D /* Preferences.swift in Sources */,
+				6E71638629D4E13E0042565D /* JSONFile.swift in Sources */,
 				6EFCFFCD29D05F23004B6DE8 /* Central.swift in Sources */,
 				6EFCFFE829D12ECA004B6DE8 /* AccessoryPeripheral.swift in Sources */,
 				6E71635A29D392A50042565D /* EnvironmentValues.swift in Sources */,
