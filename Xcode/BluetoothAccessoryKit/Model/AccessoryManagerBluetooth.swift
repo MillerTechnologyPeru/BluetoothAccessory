@@ -78,7 +78,7 @@ public extension AccessoryManager {
     
     func scan(
         duration: TimeInterval? = nil,
-        services: [ServiceType] = []
+        services: [ServiceType] = ServiceType.allCases
     ) async throws {
         let bluetoothState = await central.state
         guard bluetoothState == .poweredOn else {
@@ -134,12 +134,21 @@ public extension AccessoryManager {
         for peripheral: Peripheral,
         _ connection: (GATTConnection<Central>) async throws -> (T)
     ) async throws -> T {
+        let bluetoothState = await central.state
+        guard bluetoothState == .poweredOn else {
+            throw DarwinCentralError.invalidState(bluetoothState)
+        }
         await updatePeripherals()
         while let isConnected = peripherals[peripheral], isConnected {
             // wait for previous connection to finish
             try await Task.sleep(timeInterval: 1.0)
             await updatePeripherals()
         }
+        // force stop scanning
+        if isScanning {
+            stopScanning()
+        }
+        // open connection
         return try await central.connection(
             for: peripheral,
             connection
@@ -177,9 +186,10 @@ public extension AccessoryManager {
         return id
     }
     
-    /// Discovery all services characteristics. Metadata for each characteristic must be provided via
+    /// Discovery all services characteristics. Metadata for each characteristic must be provided.
     func discoverCharacteristics(
-        connection: GATTConnection<Central>
+        connection: GATTConnection<Central>,
+        custom: Bool = true
     ) async throws {
         // TODO: Fetch custom metadata
         let customMetadata = [BluetoothUUID: CharacteristicMetadata]()
@@ -198,7 +208,7 @@ public extension AccessoryManager {
             }
         }
         // read identifier
-        let id = try await connection.readIdentifier()
+        let id = try await identifier(connection: connection)
         // set new discovered characteristics for the specified peripheral with previous values
         var newValue = [Characteristic: CharacteristicCache]()
         newValue.reserveCapacity(discoveredCharacteristics.count)
