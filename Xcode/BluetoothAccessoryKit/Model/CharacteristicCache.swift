@@ -39,3 +39,21 @@ public extension CharacteristicCache {
         case list([CharacteristicValue])
     }
 }
+
+// MARK: - ExpressibleByBooleanLiteral
+
+extension CharacteristicCache.Value: ExpressibleByBooleanLiteral {
+    
+    public init(booleanLiteral value: Bool) {
+        self = .single(.bool(value))
+    }
+}
+
+// MARK: - ExpressibleByStringLiteral
+
+extension CharacteristicCache.Value: ExpressibleByStringLiteral {
+    
+    public init(stringLiteral value: String) {
+        self = .single(.string(value))
+    }
+}
