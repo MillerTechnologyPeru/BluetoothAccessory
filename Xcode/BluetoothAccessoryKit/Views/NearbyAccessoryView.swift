@@ -75,12 +75,8 @@ internal extension NearbyAccessoryView {
         store.peripherals[peripheral] ?? false
     }
     
-    var showActivity: Bool {
-        isReloading
-    }
-    
     var leftBarButtonItem: some View {
-        if isReloading {
+        if isReloading, canShowActivityIndicator {
             #if os(iOS)
             return AnyView(
                 ProgressView()
@@ -118,15 +114,28 @@ internal extension NearbyAccessoryView {
             BluetoothUUID(characteristic: .metadata),
         ]
         let characteristics = store.characteristics[peripheral] ?? [:]
+        
         // hide setup if configured
         let isConfigured = characteristics.values.first(where: { $0.service == BluetoothUUID(service: .authentication) && $0.metadata.type == BluetoothUUID(characteristic: .isConfigured) })?.value == true
-        
         if isConfigured {
             blacklist.insert(BluetoothUUID(characteristic: .setup)) // hide setup
         }
-        // hide creating or removing key if not admin
+        
+        // hide admin key characteristics if not admin
+        if let id = self.cachedID, let key = store.keys[id], key.permission.isAdministrator {
+            // 
+        } else {
+            blacklist.insert(BluetoothUUID(characteristic: .createKey))
+            blacklist.insert(BluetoothUUID(characteristic: .removeKey))
+            blacklist.insert(BluetoothUUID(characteristic: .keys))
+        }
         
         // hide confirm key if already have key or not setup
+        if isConfigured == false {
+            blacklist.insert(BluetoothUUID(characteristic: .confirmKey))
+        } else if let id = self.cachedID, let _ = store.keys[id] {
+            blacklist.insert(BluetoothUUID(characteristic: .confirmKey))
+        }
         
         return blacklist
     }
