@@ -59,8 +59,5 @@ public final class AccessoryManager: ObservableObject {
     
     public static let shared = AccessoryManager()
     
-    private init() {
-        
-    }
+    private init() { }
 }
-

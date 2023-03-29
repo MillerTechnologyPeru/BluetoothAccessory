@@ -61,7 +61,7 @@ public extension AccessoryManager {
             currentState = await central.state // update value for next loop
         }
     }
-        
+    
     func scan(
         duration: TimeInterval? = nil,
         services: [ServiceType] = []
@@ -125,7 +125,11 @@ public extension AccessoryManager {
             return uuid
         }
         // read identifier
-        let id = try await connection.readIdentifier()
+        let id = try await read(
+            IdentifierCharacteristic.self,
+            service: BluetoothUUID(service: .information),
+            connection: connection
+        ).value // read and cache value
         // cache new value
         if let scanResponse = self.scanResponses[connection.peripheral] {
             self.accessoryPeripherals[id] = .init(peripheral: connection.peripheral, id: id, name: scanResponse.name, service: scanResponse.service)
@@ -166,6 +170,19 @@ public extension AccessoryManager {
         }
         // set new value
         self.characteristics[connection.peripheral] = newValue
+    }
+    
+    func read<T: AccessoryCharacteristic>(
+        _ characteristic: T.Type,
+        service: BluetoothUUID,
+        connection: GATTConnection<Central>
+    ) async throws -> T {
+        let characteristic = try connection.cache.characteristic(T.type, service: service)
+        let value = try await read(characteristic: characteristic, connection: connection)
+        guard let characteristicValue = T.init(characteristicValue: value) else {
+            throw BluetoothAccessoryError.invalidCharacteristicValue(T.type)
+        }
+        return characteristicValue
     }
     
     func read(
