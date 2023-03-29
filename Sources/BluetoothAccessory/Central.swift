@@ -108,7 +108,7 @@ public extension GATTConnection.Cache {
     }
 }
 
-internal extension CentralManager {
+public extension CentralManager {
     
     /// Fetch all characteristics for all services.
     func cacheServices(
