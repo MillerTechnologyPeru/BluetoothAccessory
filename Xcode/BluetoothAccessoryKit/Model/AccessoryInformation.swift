@@ -14,15 +14,24 @@ public struct AccessoryInformation: Equatable, Hashable, Codable, Identifiable {
     /// Accessory identifier
     public let id: UUID
     
+    /// Accessory name
+    public var name: String
+    
     /// Key for the paired accessory
     public let key: Key
-    
-    /// Accessory advertised service
-    public let service: ServiceType
     
     /// Accessory type
     public let accessory: AccessoryType
     
-    /// Accessory name
-    public var name: String
+    /// Accessory advertised service
+    public var service: ServiceType
+    
+    /// Manufacturer Name
+    public var manufacturer: String
+    
+    public var serialNumber: String
+    
+    public var model: String
+    
+    public var softwareVersion: String
 }
