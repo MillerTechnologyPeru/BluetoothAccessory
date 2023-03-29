@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import CloudKit
+import KeychainAccess
+
 import Bluetooth
 #if canImport(BluetoothGATT)
 import BluetoothGATT
@@ -21,6 +24,8 @@ import BluetoothAccessory
 public final class AccessoryManager: ObservableObject {
     
     // MARK: - Properties
+    
+    public let configuration: Configuration
     
     @Published
     public internal(set) var state: DarwinBluetoothState = .unknown
@@ -50,16 +55,48 @@ public final class AccessoryManager: ObservableObject {
     @Published
     public internal(set) var characteristics = [Peripheral: [Characteristic: CharacteristicCache]]()
     
-    internal lazy var central = loadBluetooth()
+    internal lazy var central = loadBluetooth(options: configuration.central)
     
     internal var scanStream: AsyncCentralScan<Central>?
     
+    internal lazy var cloudContainer = loadCloudContainer(identifier: configuration.cloud)
+    
+    #if os(iOS)
+    internal lazy var keyValueStore: NSUbiquitousKeyValueStore = .default
+    #endif
+    
+    internal var keyValueStoreObserver: NSObjectProtocol?
+    
     // MARK: - Initialization
     
-    public static let shared = AccessoryManager()
+    deinit {
+        // stop observing
+        if let observer = keyValueStoreObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
     
-    private init() {
-        observeBluetoothState()
-        observePeripherals()
+    public init(
+        configuration: Configuration
+    ) {
+        self.configuration = configuration
+    }
+}
+
+// MARK: - Supporting Types
+
+public extension AccessoryManager {
+    
+    /// Configuration
+    struct Configuration {
+        
+        public var central: NativeCentral.Options
+        
+        public var cloud: String?
+        
+        public init(central: NativeCentral.Options, cloud: String? = nil) {
+            self.central = central
+            self.cloud = cloud
+        }
     }
 }

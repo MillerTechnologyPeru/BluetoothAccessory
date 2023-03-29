@@ -10,10 +10,29 @@ import BluetoothAccessoryKit
 
 @main
 struct BluetoothAccessoryApp: App {
+    
+    @StateObject
+    var accessoryManager = AccessoryManager(
+        configuration: Self.configuration
+    )
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(AccessoryManager.shared)
+                .environmentObject(accessoryManager)
         }
+    }
+}
+
+extension BluetoothAccessoryApp {
+    
+    static var configuration: AccessoryManager.Configuration {
+        AccessoryManager.Configuration(
+            central: NativeCentral.Options(
+                showPowerAlert: true,
+                restoreIdentifier: "com.colemancda.BluetoothAccessory.CBCentralManager"
+            ),
+            cloud: "iCloud.com.colemancda.BluetoothAccessory"
+        )
     }
 }

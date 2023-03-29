@@ -278,9 +278,13 @@ public extension AccessoryManager {
 
 internal extension AccessoryManager {
     
-    func loadBluetooth() -> Central {
-        let central = NativeCentral()
+    func loadBluetooth(options: NativeCentral.Options) -> Central {
+        let central = NativeCentral(options: options)
         central.log = { [unowned self] in self.log("📲 Central: " + $0) }
+        Task {
+            observeBluetoothState()
+            observePeripherals()
+        }
         return central
     }
     
