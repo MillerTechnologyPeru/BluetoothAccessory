@@ -16,3 +16,28 @@ public extension AccessoryManager {
         fatalError()
     }
 }
+
+internal extension AccessoryManager {
+    
+    func loadKeychain() -> Keychain {
+        return Keychain(
+            service: configuration.keychain.service,
+            accessGroup: configuration.keychain.group
+        )
+    }
+}
+
+public extension AccessoryManager.Configuration {
+    
+    struct Keychain: Equatable, Hashable {
+        
+        public var group: String
+        
+        public var service: String
+        
+        public init(group: String, service: String) {
+            self.group = group
+            self.service = service
+        }
+    }
+}
