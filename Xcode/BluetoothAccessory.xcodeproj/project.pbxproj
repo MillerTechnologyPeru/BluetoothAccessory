@@ -33,6 +33,10 @@
 		6E71637029D41C1A0042565D /* SetupCharacteristicRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71636F29D41C1A0042565D /* SetupCharacteristicRow.swift */; };
 		6E71637229D420860042565D /* SetupAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637129D420860042565D /* SetupAccessoryView.swift */; };
 		6E71637429D428D40042565D /* NewKeyDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637329D428D40042565D /* NewKeyDocument.swift */; };
+		6E71637629D453450042565D /* AccessoryManagerContacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637529D453450042565D /* AccessoryManagerContacts.swift */; };
+		6E71637829D4B03E0042565D /* AccessoryManagerCloudKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637729D4B03E0042565D /* AccessoryManagerCloudKit.swift */; };
+		6E71637A29D4B0560042565D /* AccessoryManagerCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637929D4B0560042565D /* AccessoryManagerCoreData.swift */; };
+		6E71637C29D4C7250042565D /* CloudKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71637B29D4C7250042565D /* CloudKit.swift */; };
 		6EFCFFC729D05E24004B6DE8 /* AccessoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFC629D05E24004B6DE8 /* AccessoryManager.swift */; };
 		6EFCFFCD29D05F23004B6DE8 /* Central.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFCB29D05F23004B6DE8 /* Central.swift */; };
 		6EFCFFCE29D05F23004B6DE8 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFCC29D05F23004B6DE8 /* Task.swift */; };
@@ -100,6 +104,10 @@
 		6E71636F29D41C1A0042565D /* SetupCharacteristicRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupCharacteristicRow.swift; sourceTree = "<group>"; };
 		6E71637129D420860042565D /* SetupAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupAccessoryView.swift; sourceTree = "<group>"; };
 		6E71637329D428D40042565D /* NewKeyDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewKeyDocument.swift; sourceTree = "<group>"; };
+		6E71637529D453450042565D /* AccessoryManagerContacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryManagerContacts.swift; sourceTree = "<group>"; };
+		6E71637729D4B03E0042565D /* AccessoryManagerCloudKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryManagerCloudKit.swift; sourceTree = "<group>"; };
+		6E71637929D4B0560042565D /* AccessoryManagerCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryManagerCoreData.swift; sourceTree = "<group>"; };
+		6E71637B29D4C7250042565D /* CloudKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKit.swift; sourceTree = "<group>"; };
 		6EFCFFC629D05E24004B6DE8 /* AccessoryManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccessoryManager.swift; sourceTree = "<group>"; };
 		6EFCFFCB29D05F23004B6DE8 /* Central.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Central.swift; sourceTree = "<group>"; };
 		6EFCFFCC29D05F23004B6DE8 /* Task.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
@@ -227,6 +235,7 @@
 				6E71636529D4100A0042565D /* Permission.swift */,
 				6E71636929D411DB0042565D /* Error.swift */,
 				6E71635929D392A50042565D /* EnvironmentValues.swift */,
+				6E71637B29D4C7250042565D /* CloudKit.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -240,9 +249,12 @@
 				6E71636129D40FDD0042565D /* NetworkMonitor.swift */,
 				6EFCFFE529D12EBE004B6DE8 /* AccessoryInformation.swift */,
 				6EFCFFC629D05E24004B6DE8 /* AccessoryManager.swift */,
+				6E71637929D4B0560042565D /* AccessoryManagerCoreData.swift */,
+				6E71637729D4B03E0042565D /* AccessoryManagerCloudKit.swift */,
 				6EFCFFDF29D12E79004B6DE8 /* AccessoryManagerBluetooth.swift */,
 				6EFCFFE329D12EAD004B6DE8 /* AccessoryManagerKeychain.swift */,
 				6EFCFFE129D12EA4004B6DE8 /* AccessoryManagerLog.swift */,
+				6E71637529D453450042565D /* AccessoryManagerContacts.swift */,
 				6EFCFFE729D12ECA004B6DE8 /* AccessoryPeripheral.swift */,
 				6EFCFFCB29D05F23004B6DE8 /* Central.swift */,
 				6E63874129D1679400E1BD42 /* CharacteristicCache.swift */,
@@ -405,7 +417,9 @@
 				6E71636229D40FDD0042565D /* NetworkMonitor.swift in Sources */,
 				6EFCFFE229D12EA4004B6DE8 /* AccessoryManagerLog.swift in Sources */,
 				6EFCFFEA29D12EDB004B6DE8 /* ScanDataCache.swift in Sources */,
+				6E71637C29D4C7250042565D /* CloudKit.swift in Sources */,
 				6EFCFFDC29D116FB004B6DE8 /* UUID.swift in Sources */,
+				6E71637A29D4B0560042565D /* AccessoryManagerCoreData.swift in Sources */,
 				6EFCFFCE29D05F23004B6DE8 /* Task.swift in Sources */,
 				6E71636629D4100A0042565D /* Permission.swift in Sources */,
 				6E71636429D40FF10042565D /* BeaconController.swift in Sources */,
@@ -428,10 +442,12 @@
 				6EFCFFE429D12EAD004B6DE8 /* AccessoryManagerKeychain.swift in Sources */,
 				6E63874629D19C1200E1BD42 /* AccessoryCharacteristicRow.swift in Sources */,
 				6E63874229D1679400E1BD42 /* CharacteristicCache.swift in Sources */,
+				6E71637829D4B03E0042565D /* AccessoryManagerCloudKit.swift in Sources */,
 				6EFCFFDB29D116FB004B6DE8 /* Integer.swift in Sources */,
 				6EFCFFDA29D116FB004B6DE8 /* Hexadecimal.swift in Sources */,
 				6E71636029D3961F0042565D /* BluetoothUUID.swift in Sources */,
 				6E71637229D420860042565D /* SetupAccessoryView.swift in Sources */,
+				6E71637629D453450042565D /* AccessoryManagerContacts.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
