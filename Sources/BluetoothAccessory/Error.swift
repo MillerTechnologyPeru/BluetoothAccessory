@@ -24,7 +24,7 @@ public enum BluetoothAccessoryError: Error {
     case invalidCharacteristicValue(BluetoothUUID)
     
     /// Not a compatible peripheral
-    case incompatiblePeripheral(Error?)
+    case incompatiblePeripheral
     
     /// Invalid data.
     case invalidData(Data?)
@@ -43,4 +43,25 @@ public enum BluetoothAccessoryError: Error {
     
     /// A key is needed to authenticate the request.
     case authenticationRequired(BluetoothUUID)
+        
+    /// The specified accessory is not in range.
+    case notInRange(UUID)
+    
+    /// No key for the specified accessory.
+    case noKey(UUID)
+    
+    /// Must be an administrator for the specified accessory.
+    case notAdmin(UUID)
+    
+    /// Invalid QR code.
+    case invalidQRCode
+    
+    /// Invalid new key file.
+    case invalidNewKeyFile
+    
+    /// You already have a key for this accessory.
+    case existingKey(UUID)
+    
+    /// New key expired.
+    case newKeyExpired
 }
