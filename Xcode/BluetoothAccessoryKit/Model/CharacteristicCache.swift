@@ -12,10 +12,16 @@ import BluetoothAccessory
 /// Cache of discovered characteristics
 public struct CharacteristicCache: Equatable, Hashable, Codable {
     
+    /// Accessory identifier
+    public let accessory: UUID
+    
+    /// Characteristic service
     public let service: BluetoothUUID
     
+    /// Characteristic metadata
     public let metadata: CharacteristicMetadata
     
+    /// Characteristic cached value
     public var value: Value?
 }
 
@@ -24,7 +30,7 @@ public struct CharacteristicCache: Equatable, Hashable, Codable {
 extension CharacteristicCache: Identifiable {
     
     public var id: String {
-        service.description + "/" + metadata.type.description
+        accessory.description + "/" + service.description + "/" + metadata.type.description
     }
 }
 
