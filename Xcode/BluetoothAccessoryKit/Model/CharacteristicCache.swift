@@ -23,6 +23,9 @@ public struct CharacteristicCache: Equatable, Hashable, Codable {
     
     /// Characteristic cached value
     public var value: Value?
+    
+    /// Date characteristic was last read or written.
+    public var updated: Date
 }
 
 // MARK: - Identifiable

@@ -155,11 +155,16 @@ public extension AccessoryManager {
             return uuid
         }
         // read identifier
-        let id = try await read(
-            IdentifierCharacteristic.self,
+        let id = try await connection.readIdentifier()
+        // cache read value
+        let idCharacteristic = try connection.cache.characteristic(BluetoothUUID(characteristic: .identifier), service: BluetoothUUID(service: .information))
+        self.characteristics[connection.peripheral, default: [:]][idCharacteristic] = CharacteristicCache(
+            accessory: id,
             service: BluetoothUUID(service: .information),
-            connection: connection
-        ).value // read and cache value
+            metadata: CharacteristicMetadata(type: .identifier),
+            value: .single(.uuid(id)),
+            updated: Date()
+        )
         // cache new value
         if let scanResponse = self.scanResponses[connection.peripheral] {
             self.accessoryPeripherals[id] = .init(
@@ -203,7 +208,8 @@ public extension AccessoryManager {
                 accessory: id,
                 service: service,
                 metadata: metadata,
-                value: self.characteristics[characteristic.peripheral, default: [:]][characteristic]?.value
+                value: self.characteristics[characteristic.peripheral, default: [:]][characteristic]?.value,
+                updated: Date()
             )
         }
         // set new value
