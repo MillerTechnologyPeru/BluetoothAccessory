@@ -26,15 +26,26 @@ internal extension AccessoryCharacteristicRow {
         let characteristic: CharacteristicCache
         
         var body: some View {
-            SubtitleRow(
-                title: Text(verbatim: characteristic.metadata.name),
-                subtitle: subtitle
-            )
+            content
         }
     }
 }
 
 internal extension AccessoryCharacteristicRow.StateView {
+    
+    var content: some View {
+        switch BluetoothUUID.accessoryCharacteristicType[characteristic.metadata.type] {
+        case .setup:
+            return AnyView(AccessoryCharacteristicRow.Setup(accessory: characteristic.accessory))
+        default:
+            return AnyView(
+                SubtitleRow(
+                    title: Text(verbatim: characteristic.metadata.name),
+                    subtitle: subtitle
+                )
+            )
+        }
+    }
     
     var subtitle: Text? {
         switch characteristic.value {

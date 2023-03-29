@@ -178,12 +178,15 @@ public extension AccessoryManager {
                 discoveredCharacteristics[characteristicCache.characteristic] = (serviceUUID, metadata)
             }
         }
+        // read identifier
+        let id = try await connection.readIdentifier()
         // set new discovered characteristics for the specified peripheral with previous values
         var newValue = [Characteristic: CharacteristicCache]()
         newValue.reserveCapacity(discoveredCharacteristics.count)
         for (characteristic, (service, metadata)) in discoveredCharacteristics {
             assert(characteristic.peripheral == connection.peripheral)
             newValue[characteristic] = CharacteristicCache(
+                accessory: id,
                 service: service,
                 metadata: metadata,
                 value: self.characteristics[characteristic.peripheral, default: [:]][characteristic]?.value

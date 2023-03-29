@@ -123,7 +123,7 @@ internal extension NearbyAccessoryView {
         
         // hide admin key characteristics if not admin
         if let id = self.cachedID, let key = store.keys[id], key.permission.isAdministrator {
-            // 
+            //
         } else {
             blacklist.insert(BluetoothUUID(characteristic: .createKey))
             blacklist.insert(BluetoothUUID(characteristic: .removeKey))
@@ -268,7 +268,7 @@ internal extension NearbyAccessoryView.StateView {
         }
         .sorted(by: { $0.name < $1.name })
         .sorted(by: { $0.id == BluetoothUUID(service: scanResponse.service) && $1.id != BluetoothUUID(service: scanResponse.service) })
-        .sorted(by: { $0.id == BluetoothUUID(service: .information) && $1.id != BluetoothUUID(service: .information) })
+        .sorted(by: { $0.id != BluetoothUUID(service: .information) && $1.id == BluetoothUUID(service: .information) })
     }
     
     var characteristicsByService: [BluetoothUUID: [CharacteristicItem]] {
