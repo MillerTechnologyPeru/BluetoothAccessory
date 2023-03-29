@@ -20,11 +20,6 @@ public extension AccessoryManager {
         accessoryPeripherals[id]?.peripheral
     }
     
-    /// Service Type for the specified ``BluetoothUUID``
-    internal subscript (service uuid: BluetoothUUID) -> ServiceType? {
-        serviceTypes[uuid]
-    }
-    
     /// Get the discovered accessory with advertised identifiers for the specified peripheral.
     subscript (accessory peripheral: Peripheral) -> AccessoryPeripheral? {
         accessoryPeripherals.values.first(where: { $0.peripheral == peripheral })
@@ -142,7 +137,6 @@ public extension AccessoryManager {
     func discoverCharacteristics(
         connection: GATTConnection<Central>
     ) async throws {
-        let characteristicTypes = self.characteristicTypes
         // TODO: Fetch custom metadata
         let customMetadata = [BluetoothUUID: CharacteristicMetadata]()
         var discoveredCharacteristics = [Characteristic: (service: BluetoothUUID, metadata: CharacteristicMetadata)]()
@@ -152,7 +146,7 @@ public extension AccessoryManager {
             for characteristicCache in service.characteristics {
                 let uuid = characteristicCache.characteristic.uuid
                 /// attempt to fetch metadata for defined characteristic
-                guard let metadata = characteristicTypes[uuid].flatMap({ CharacteristicMetadata(characteristic: $0) }) ?? customMetadata[uuid] else {
+                guard let metadata = BluetoothUUID.accessoryCharacteristicType[uuid].flatMap({ CharacteristicMetadata(type: $0) }) ?? customMetadata[uuid] else {
                     continue
                 }
                 // cache
@@ -259,7 +253,7 @@ private extension AccessoryManager {
         
         // parse scan response
         if let name = scanData.advertisementData.localName,
-           let services = scanData.advertisementData.serviceUUIDs?.compactMap({ self[service: $0] }),
+           let services = scanData.advertisementData.serviceUUIDs?.compactMap({ BluetoothUUID.accessoryServiceTypes[$0] }),
            let service = services.first {
             // cache
             let scanResponse = AccessoryScanResponse(
@@ -294,7 +288,7 @@ private extension AccessoryManager {
         }
         
         // parse accessory aggregated advertisement data
-        let services = cache.serviceUUIDs.compactMap { self[service: $0] }
+        let services = cache.serviceUUIDs.compactMap { BluetoothUUID.accessoryServiceTypes[$0] }
         guard let service = services.first else {
             return false
         }

@@ -55,12 +55,6 @@ public final class AccessoryManager: ObservableObject {
     
     internal var scanStream: AsyncCentralScan<Central>?
     
-    // Cached Service UUID for lookup
-    internal lazy var serviceTypes = loadServiceTypes()
-    
-    // Cached Characteristic UUID for lookup
-    internal lazy var characteristicTypes = loadCharacteristicTypes()
-    
     // MARK: - Initialization
     
     public static let shared = AccessoryManager()

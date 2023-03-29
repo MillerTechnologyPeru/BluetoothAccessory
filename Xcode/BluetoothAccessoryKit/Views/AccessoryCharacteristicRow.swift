@@ -11,33 +11,23 @@ import Bluetooth
 import BluetoothAccessory
 
 public struct AccessoryCharacteristicRow: View {
-    
-    @EnvironmentObject
-    var store: AccessoryManager
-    
-    let characteristic: AccessoryManager.Characteristic
-    
-    let cache: CharacteristicCache
+        
+    let characteristic: CharacteristicCache
     
     public var body: some View {
-        StateView(characteristic: characteristic, cache: cache)
+        StateView(characteristic: characteristic)
     }
 }
 
 internal extension AccessoryCharacteristicRow {
     
     struct StateView: View {
-        
-        @EnvironmentObject
-        var store: AccessoryManager
-        
-        let characteristic: AccessoryManager.Characteristic
-        
-        let cache: CharacteristicCache
+                
+        let characteristic: CharacteristicCache
         
         var body: some View {
             SubtitleRow(
-                title: Text(verbatim: cache.metadata.name),
+                title: Text(verbatim: characteristic.metadata.name),
                 subtitle: subtitle
             )
         }
@@ -47,7 +37,7 @@ internal extension AccessoryCharacteristicRow {
 internal extension AccessoryCharacteristicRow.StateView {
     
     var subtitle: Text? {
-        switch cache.value {
+        switch characteristic.value {
         case .none:
             return nil
         case let .single(value):
@@ -58,7 +48,7 @@ internal extension AccessoryCharacteristicRow.StateView {
     }
     
     func customValueDescription(for value: CharacteristicValue) -> String? {
-        guard let characteristicType = store.characteristicTypes[cache.metadata.type] else {
+        guard let characteristicType = BluetoothUUID.accessoryCharacteristicType[characteristic.metadata.type] else {
             return nil
         }
         switch characteristicType {

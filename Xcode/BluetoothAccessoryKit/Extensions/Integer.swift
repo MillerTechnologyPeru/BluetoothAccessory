@@ -27,13 +27,11 @@ internal extension UInt32 {
     
     /// Initializes value from four bytes.
     init(bytes: (UInt8, UInt8, UInt8, UInt8)) {
-        
         self = unsafeBitCast(bytes, to: UInt32.self)
     }
     
     /// Converts to four bytes.
     var bytes: (UInt8, UInt8, UInt8, UInt8) {
-        
         return unsafeBitCast(self, to: (UInt8, UInt8, UInt8, UInt8).self)
     }
 }
@@ -42,13 +40,11 @@ internal extension UInt64 {
     
     /// Initializes value from four bytes.
     init(bytes: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8)) {
-        
         self = unsafeBitCast(bytes, to: UInt64.self)
     }
     
     /// Converts to eight bytes.
     var bytes: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8) {
-        
         return unsafeBitCast(self, to: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8).self)
     }
 }
