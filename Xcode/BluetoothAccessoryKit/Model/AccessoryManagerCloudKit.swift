@@ -15,8 +15,8 @@ public extension AccessoryManager {
 
 internal extension AccessoryManager {
     
-    func loadCloudContainer(identifier: String?) -> CKContainer {
-        let container = identifier.flatMap { CKContainer(identifier: $0) } ?? .default()
+    func loadCloudContainer() -> CKContainer {
+        let container = configuration.cloud.flatMap { CKContainer(identifier: $0) } ?? .default()
         return container
     }
     

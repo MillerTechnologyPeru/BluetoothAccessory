@@ -48,18 +48,25 @@ public final class AccessoryManager: ObservableObject {
     @Published
     public internal(set) var scanResults = [Peripheral: ScanDataCache]()
     
-    /// Keys of paired devices.
+    /// Paired devices.
     @Published
-    public internal(set) var keys = [UUID: Key]()
+    public internal(set) var cache = [UUID: AccessoryInformation]()
     
+    /// Discovered characteristics
     @Published
     public internal(set) var characteristics = [Peripheral: [Characteristic: CharacteristicCache]]()
     
-    internal lazy var central = loadBluetooth(options: configuration.central)
+    internal lazy var central = loadBluetooth()
     
     internal var scanStream: AsyncCentralScan<Central>?
     
-    internal lazy var cloudContainer = loadCloudContainer(identifier: configuration.cloud)
+    internal lazy var keychain = loadKeychain()
+    
+    internal lazy var fileManager = FileManager()
+    
+    internal lazy var containerURL = loadContainerURL()
+    
+    internal lazy var cloudContainer = loadCloudContainer()
     
     #if os(iOS)
     internal lazy var keyValueStore: NSUbiquitousKeyValueStore = .default
@@ -80,6 +87,7 @@ public final class AccessoryManager: ObservableObject {
         configuration: Configuration
     ) {
         self.configuration = configuration
+        self.cache = loadCache()
     }
 }
 
@@ -94,9 +102,18 @@ public extension AccessoryManager {
         
         public var cloud: String?
         
-        public init(central: NativeCentral.Options, cloud: String? = nil) {
+        public var appGroup: String
+        
+        public var keychain: Keychain
+        
+        public init(
+            central: NativeCentral.Options,
+            cloud: String? = nil,
+            keychain: Keychain
+        ) {
             self.central = central
             self.cloud = cloud
+            self.keychain = keychain
         }
     }
 }

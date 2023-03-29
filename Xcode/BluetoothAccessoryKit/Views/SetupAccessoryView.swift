@@ -78,12 +78,10 @@ private extension SetupAccessoryView {
                     throw BluetoothAccessoryError.bluetoothUnavailable
                 }
                 let peripheral = try await store.peripheral(for: accessory)
-                /*
                 try await store.setup(
-                    for: peripheral,
-                    using: sharedSecret,
-                    name: name
-                )*/
+                    peripheral,
+                    using: sharedSecret
+                )
                 self.state = .success(accessory, name)
             } catch {
                 self.state = .error(error)

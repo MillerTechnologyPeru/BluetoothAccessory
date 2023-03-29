@@ -288,14 +288,30 @@ public extension AccessoryManager {
         self.characteristics[characteristic.peripheral, default: [:]][characteristic, default: cache].value = .single(newValue)
         return newValue
     }
+    
+    func write() {
+        
+    }
+    
+    func setup(
+        _ peripheral: AccessoryPeripheral,
+        using sharedSecret: KeyData
+    ) async throws {
+        /*
+        let username = await loadUsername()
+        try await self.connection(for: peripheral) { connection in
+            let request = SetupRequest(id: UUID(), secret: sharedSecret, name: )
+            connection.setup(, using: )
+        }*/
+    }
 }
 
 // MARK: - Internal Methods
 
 internal extension AccessoryManager {
     
-    func loadBluetooth(options: NativeCentral.Options) -> Central {
-        let central = NativeCentral(options: options)
+    func loadBluetooth() -> Central {
+        let central = NativeCentral(options: configuration.central)
         central.log = { [unowned self] in self.log("📲 Central: " + $0) }
         Task {
             observeBluetoothState()
