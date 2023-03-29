@@ -31,6 +31,9 @@ public struct NearbyAccessoryView: View {
     @State
     var isReloading = false
     
+    @State
+    var canShowActivityIndicator = true
+    
     public init(
         peripheral: AccessoryManager.Peripheral,
         scanResponse: AccessoryScanResponse
@@ -50,8 +53,14 @@ public struct NearbyAccessoryView: View {
             blacklist: blacklist,
             error: error
         )
-        .task { await reload() }
-        .refreshable { await reload() }
+        .task {
+            canShowActivityIndicator = true
+            await reload()
+        }
+        .refreshable {
+            canShowActivityIndicator = false
+            await reload()
+        }
         .toolbar { leftBarButtonItem }
     }
 }
@@ -72,16 +81,21 @@ internal extension NearbyAccessoryView {
     
     var leftBarButtonItem: some View {
         if isReloading {
+            #if os(iOS)
             return AnyView(
                 ProgressView()
                     .progressViewStyle(.circular)
             )
+            #elseif os(macOS)
+            return EmptyView()
+            #endif
         } else if error != nil {
             return AnyView(
                 Image(systemSymbol: .exclamationmarkTriangleFill)
                     .symbolRenderingMode(.multicolor)
             )
         } else {
+            #if os(macOS)
             return AnyView(Button(action: {
                 Task {
                     await reload()
@@ -89,10 +103,14 @@ internal extension NearbyAccessoryView {
             }) {
                 Image(systemSymbol: .arrowClockwise)
             })
+            #elseif os(iOS)
+            return AnyView(EmptyView()) // only pull to refresh supported
+            #endif
         }
     }
     
     var blacklist: Set<BluetoothUUID> {
+        // hide authentication characteristics
         var blacklist: Set<BluetoothUUID> = [
             BluetoothUUID(characteristic: .authenticate),
             BluetoothUUID(characteristic: .cryptoHash),
@@ -100,11 +118,16 @@ internal extension NearbyAccessoryView {
             BluetoothUUID(characteristic: .metadata),
         ]
         let characteristics = store.characteristics[peripheral] ?? [:]
-        // check if isConfigured
-        if let cachedConfigurationState = characteristics.values.first(where: { $0.service == BluetoothUUID(service: .authentication) && $0.metadata.type == BluetoothUUID(characteristic: .isConfigured) })?.value,
-            cachedConfigurationState == true {
+        // hide setup if configured
+        let isConfigured = characteristics.values.first(where: { $0.service == BluetoothUUID(service: .authentication) && $0.metadata.type == BluetoothUUID(characteristic: .isConfigured) })?.value == true
+        
+        if isConfigured {
             blacklist.insert(BluetoothUUID(characteristic: .setup)) // hide setup
         }
+        // hide creating or removing key if not admin
+        
+        // hide confirm key if already have key or not setup
+        
         return blacklist
     }
     
