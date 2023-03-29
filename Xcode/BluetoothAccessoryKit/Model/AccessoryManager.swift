@@ -28,6 +28,9 @@ public final class AccessoryManager: ObservableObject {
     @Published
     public internal(set) var isScanning = false
     
+    @Published
+    public internal(set) var peripherals = [Peripheral: Bool]()
+    
     /// Discovered accessories with advertised identifiers.
     @Published
     public internal(set) var accessoryPeripherals = [UUID: AccessoryPeripheral]()
@@ -39,10 +42,6 @@ public final class AccessoryManager: ObservableObject {
     /// All discovered devices.
     @Published
     public internal(set) var scanResults = [Peripheral: ScanDataCache]()
-    
-    /// Currently connected devices.
-    @Published
-    public internal(set) var connected = Set<Peripheral>()
     
     /// Keys of paired devices.
     @Published
@@ -59,5 +58,8 @@ public final class AccessoryManager: ObservableObject {
     
     public static let shared = AccessoryManager()
     
-    private init() { }
+    private init() {
+        observeBluetoothState()
+        observePeripherals()
+    }
 }

@@ -11,6 +11,7 @@ import Bluetooth
 import GATT
 import DarwinGATT
 import BluetoothAccessory
+import SFSafeSymbols
 
 public struct NearbyAccessoryView: View {
     
@@ -20,6 +21,15 @@ public struct NearbyAccessoryView: View {
     let peripheral: AccessoryManager.Peripheral
     
     let scanResponse: AccessoryScanResponse
+    
+    @State
+    var cachedID: UUID?
+    
+    @State
+    var error: String?
+    
+    @State
+    var isReloading = false
     
     public init(
         peripheral: AccessoryManager.Peripheral,
@@ -35,27 +45,80 @@ public struct NearbyAccessoryView: View {
             scanResponse: scanResponse,
             manufacturerData: store[manufacturerData: peripheral],
             beacon: store[beacon: peripheral],
-            key: accessoryID.flatMap { store.keys[$0] },
-            characteristics: store.characteristics[peripheral] ?? [:]
+            key: cachedID.flatMap { store.keys[$0] },
+            characteristics: store.characteristics[peripheral] ?? [:],
+            blacklist: blacklist,
+            error: error
         )
         .task { await reload() }
         .refreshable { await reload() }
+        .toolbar { leftBarButtonItem }
     }
 }
 
 internal extension NearbyAccessoryView {
     
-    var accessoryID: UUID? {
+    var advertisementID: UUID? {
         store[manufacturerData: peripheral]?.id ?? store[beacon: peripheral]?.uuid
     }
     
+    var isConnected: Bool {
+        store.peripherals[peripheral] ?? false
+    }
+    
+    var showActivity: Bool {
+        isReloading
+    }
+    
+    var leftBarButtonItem: some View {
+        if isReloading {
+            return AnyView(
+                ProgressView()
+                    .progressViewStyle(.circular)
+            )
+        } else if error != nil {
+            return AnyView(
+                Image(systemSymbol: .exclamationmarkTriangleFill)
+                    .symbolRenderingMode(.multicolor)
+            )
+        } else {
+            return AnyView(Button(action: {
+                Task {
+                    await reload()
+                }
+            }) {
+                Image(systemSymbol: .arrowClockwise)
+            })
+        }
+    }
+    
+    var blacklist: Set<BluetoothUUID> {
+        var blacklist: Set<BluetoothUUID> = [
+            BluetoothUUID(characteristic: .authenticate),
+            BluetoothUUID(characteristic: .cryptoHash),
+            BluetoothUUID(characteristic: .isConfigured),
+            BluetoothUUID(characteristic: .metadata),
+        ]
+        let characteristics = store.characteristics[peripheral] ?? [:]
+        // check if isConfigured
+        if let cachedConfigurationState = characteristics.values.first(where: { $0.service == BluetoothUUID(service: .authentication) && $0.metadata.type == BluetoothUUID(characteristic: .isConfigured) })?.value,
+            cachedConfigurationState == true {
+            blacklist.insert(BluetoothUUID(characteristic: .setup)) // hide setup
+        }
+        return blacklist
+    }
+    
     func reload() async {
+        self.error = nil
+        self.isReloading = true
+        defer { isReloading = false }
         do {
-            try await store.central.connection(for: peripheral) { connection in
+            try await store.connection(for: peripheral) { connection in
                 // discover characteristics
                 try await store.discoverCharacteristics(connection: connection)
                 // read identifier
                 let id = try await store.identifier(connection: connection)
+                self.cachedID = cachedID
                 // read all non-list characteristics
                 let keys = self.store.keys
                 let key = keys[id]
@@ -74,7 +137,7 @@ internal extension NearbyAccessoryView {
             }
         }
         catch {
-            
+            self.error = error.localizedDescription
         }
     }
 }
@@ -97,6 +160,10 @@ internal extension NearbyAccessoryView {
         let key: Key?
         
         let characteristics: [AccessoryManager.Characteristic: CharacteristicCache]
+        
+        let blacklist: Set<BluetoothUUID>
+        
+        let error: String?
         
         var body: some View {
             List {
@@ -173,12 +240,6 @@ internal extension NearbyAccessoryView.StateView {
     }
     
     var characteristicsByService: [BluetoothUUID: [CharacteristicItem]] {
-        let blacklist: Set<BluetoothUUID> = [
-            BluetoothUUID(characteristic: .authenticate),
-            BluetoothUUID(characteristic: .cryptoHash),
-            BluetoothUUID(characteristic: .isConfigured),
-            BluetoothUUID(characteristic: .metadata),
-        ]
         var characteristicsByService = [BluetoothUUID: [CharacteristicItem]]()
         for (characteristic, cache) in self.characteristics {
             guard blacklist.contains(characteristic.uuid) == false else {

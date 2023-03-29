@@ -11,6 +11,7 @@ import Bluetooth
 import GATT
 import DarwinGATT
 import BluetoothAccessory
+import SFSafeSymbols
 
 public struct NearbyDevicesView: View {
     
@@ -124,13 +125,13 @@ extension NearbyDevicesView {
         }, label: {
             switch state {
             case .bluetoothUnavailable:
-                Image(systemName: "exclamationmark.triangle.fill")
+                Image(systemSymbol: .exclamationmarkTriangleFill)
                     .symbolRenderingMode(.multicolor)
             case .scanning:
-                Image(systemName: "stop.fill")
+                Image(systemSymbol: .stopFill)
                     .symbolRenderingMode(.monochrome)
             case .stopScan:
-                Image(systemName: "arrow.clockwise")
+                Image(systemSymbol: .arrowClockwise)
                     .symbolRenderingMode(.monochrome)
             }
         })

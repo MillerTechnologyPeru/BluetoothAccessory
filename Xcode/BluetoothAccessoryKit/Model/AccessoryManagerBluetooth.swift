@@ -11,10 +11,10 @@ import GATT
 import DarwinGATT
 import BluetoothAccessory
 
+// MARK: - Subscript
+
 public extension AccessoryManager {
-    
-    // MARK: - Subscript
-    
+        
     /// Bluetooth ``Peripheral`` for the Accessory with the specified ID.
     subscript (peripheral id: UUID) -> Peripheral? {
         accessoryPeripherals[id]?.peripheral
@@ -116,6 +116,22 @@ public extension AccessoryManager {
         isScanning = false
     }
     
+    func connection<T>(
+        for peripheral: Peripheral,
+        _ connection: (GATTConnection<Central>) async throws -> (T)
+    ) async throws -> T {
+        await updatePeripherals()
+        while let isConnected = peripherals[peripheral], isConnected {
+            // wait for previous connection to finish
+            try await Task.sleep(timeInterval: 1.0)
+            await updatePeripherals()
+        }
+        return try await central.connection(
+            for: peripheral,
+            connection
+        )
+    }
+    
     /// Load cached identifier or read from device.
     func identifier(
         connection: GATTConnection<Central>
@@ -132,7 +148,12 @@ public extension AccessoryManager {
         ).value // read and cache value
         // cache new value
         if let scanResponse = self.scanResponses[connection.peripheral] {
-            self.accessoryPeripherals[id] = .init(peripheral: connection.peripheral, id: id, name: scanResponse.name, service: scanResponse.service)
+            self.accessoryPeripherals[id] = .init(
+                peripheral: connection.peripheral,
+                id: id,
+                name: scanResponse.name,
+                service: scanResponse.service
+            )
         }
         return id
     }
@@ -243,29 +264,48 @@ internal extension AccessoryManager {
     func loadBluetooth() -> Central {
         let central = NativeCentral()
         central.log = { [unowned self] in self.log("📲 Central: " + $0) }
-        Task {
-            observeBluetoothState()
-        }
         return central
     }
-}
-
-private extension AccessoryManager {
+    
+    func updateBluetoothState() async {
+        let newState = await self.central.state
+        let oldValue = self.state
+        if newState != oldValue {
+            self.state = newState
+        }
+    }
     
     func observeBluetoothState() {
         // observe state
         Task { [weak self] in
             while let self = self {
-                let newState = await self.central.state
-                let oldValue = self.state
-                if newState != oldValue {
-                    self.state = newState
-                }
+                await self.updateBluetoothState()
                 try await Task.sleep(timeInterval: 0.5)
             }
         }
     }
     
+    func updatePeripherals() async {
+        let newValue = await self.central.peripherals
+        let oldValue = self.peripherals
+        if newValue != oldValue {
+            self.peripherals = newValue
+        }
+    }
+    
+    func observePeripherals() {
+        // observe state
+        Task { [weak self] in
+            while let self = self {
+                await self.updatePeripherals()
+                try await Task.sleep(timeInterval: 0.5)
+            }
+        }
+    }
+}
+
+private extension AccessoryManager {
+        
     func found(_ scanData: ScanData) async -> Bool {
         
         // parse scan response
@@ -313,8 +353,9 @@ private extension AccessoryManager {
         // cache identified accessory
         let manufacturerData = cache.manufacturerData.flatMap { AccessoryManufacturerData(manufacturerData: $0) }
         let accessoryBeacon = cache.beacon.flatMap { AccessoryBeacon(beacon: $0) }
-        guard let id = manufacturerData?.id ?? accessoryBeacon?.uuid
-            else { return false }
+        guard let id = manufacturerData?.id ?? accessoryBeacon?.uuid else {
+            return false
+        }
         
         let accessory = AccessoryPeripheral(
             peripheral: scanData.peripheral,
