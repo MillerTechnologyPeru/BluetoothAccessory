@@ -62,6 +62,20 @@ public extension AccessoryManager {
         }
     }
     
+    func peripheral(for id: UUID) async throws -> AccessoryPeripheral {
+        // return cached value
+        if let peripheral = accessoryPeripherals[id] {
+            return peripheral
+        }
+        // TODO: Scan
+        try await self.scan(duration: 1)
+        // return cached value
+        guard let peripheral = accessoryPeripherals[id] else {
+            throw BluetoothAccessoryError.notInRange(id)
+        }
+        return peripheral
+    }
+    
     func scan(
         duration: TimeInterval? = nil,
         services: [ServiceType] = []
