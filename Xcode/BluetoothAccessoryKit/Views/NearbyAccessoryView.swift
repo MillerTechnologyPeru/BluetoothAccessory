@@ -83,7 +83,7 @@ internal extension NearbyAccessoryView {
                     .progressViewStyle(.circular)
             )
             #elseif os(macOS)
-            return EmptyView()
+            return AnyView(EmptyView())
             #endif
         } else if error != nil {
             return AnyView(
@@ -117,9 +117,13 @@ internal extension NearbyAccessoryView {
         
         // hide setup if configured
         let isConfigured = characteristics.values.first(where: { $0.service == BluetoothUUID(service: .authentication) && $0.metadata.type == BluetoothUUID(characteristic: .isConfigured) })?.value == true
+        #if os(iOS)
         if isConfigured {
             blacklist.insert(BluetoothUUID(characteristic: .setup)) // hide setup
         }
+        #else
+        blacklist.insert(BluetoothUUID(characteristic: .setup)) // can only setup on iOS
+        #endif
         
         // hide admin key characteristics if not admin
         if let id = self.cachedID, let key = store.keys[id], key.permission.isAdministrator {
@@ -226,7 +230,7 @@ internal extension NearbyAccessoryView.StateView {
     }
     
     var advertisementSection: some View {
-        Section("Advertisement") {
+        Section(content: {
             if let accessoryType = manufacturerData?.accessoryType {
                 SubtitleRow(
                     title: Text("Type"),
@@ -255,7 +259,7 @@ internal extension NearbyAccessoryView.StateView {
                     subtitle: Text(verbatim: isConfigured.description)
                 )
             }
-        }
+        }, header: { Text("Advertisement") }, footer: { error.flatMap { Text(verbatim: $0) } })
     }
     
     var services: [ServiceItem] {
@@ -266,6 +270,7 @@ internal extension NearbyAccessoryView.StateView {
                 characteristics: characteristics.sorted(by: { $0.cache.metadata.name < $1.cache.metadata.name })
             )
         }
+        .filter { $0.characteristics.isEmpty == false }
         .sorted(by: { $0.name < $1.name })
         .sorted(by: { $0.id == BluetoothUUID(service: scanResponse.service) && $1.id != BluetoothUUID(service: scanResponse.service) })
         .sorted(by: { $0.id != BluetoothUUID(service: .information) && $1.id == BluetoothUUID(service: .information) })
