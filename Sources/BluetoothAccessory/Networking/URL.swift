@@ -99,3 +99,12 @@ extension AccessoryURL: RawRepresentable {
         return url
     }
 }
+
+// MARK: - CustomStringConvertible
+
+extension AccessoryURL: CustomStringConvertible {
+    
+    public var description: String {
+        rawValue.absoluteString
+    }
+}
