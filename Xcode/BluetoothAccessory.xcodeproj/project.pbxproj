@@ -232,19 +232,19 @@
 		6EFCFFCA29D05F23004B6DE8 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				6E71635F29D3961F0042565D /* BluetoothUUID.swift */,
+				6E71637B29D4C7250042565D /* CloudKit.swift */,
 				6EFCFFD329D116FA004B6DE8 /* Data.swift */,
 				6EFCFFD829D116FB004B6DE8 /* DataConvertible.swift */,
+				6E71635929D392A50042565D /* EnvironmentValues.swift */,
+				6E71636929D411DB0042565D /* Error.swift */,
+				6E71637F29D4D2140042565D /* FileManager.swift */,
 				6EFCFFD429D116FA004B6DE8 /* Hexadecimal.swift */,
 				6EFCFFD729D116FB004B6DE8 /* iBeacon.swift */,
 				6EFCFFD529D116FB004B6DE8 /* Integer.swift */,
-				6EFCFFD629D116FB004B6DE8 /* UUID.swift */,
-				6E71635F29D3961F0042565D /* BluetoothUUID.swift */,
-				6EFCFFCC29D05F23004B6DE8 /* Task.swift */,
 				6E71636529D4100A0042565D /* Permission.swift */,
-				6E71636929D411DB0042565D /* Error.swift */,
-				6E71637F29D4D2140042565D /* FileManager.swift */,
-				6E71635929D392A50042565D /* EnvironmentValues.swift */,
-				6E71637B29D4C7250042565D /* CloudKit.swift */,
+				6EFCFFCC29D05F23004B6DE8 /* Task.swift */,
+				6EFCFFD629D116FB004B6DE8 /* UUID.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -252,24 +252,24 @@
 		6EFCFFCF29D061B3004B6DE8 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				6E71637329D428D40042565D /* NewKeyDocument.swift */,
 				6E71638129D4D3CE0042565D /* AccessoryCache.swift */,
-				6E71636729D410B20042565D /* Preferences.swift */,
-				6E71636329D40FF10042565D /* BeaconController.swift */,
-				6E71636129D40FDD0042565D /* NetworkMonitor.swift */,
 				6EFCFFE529D12EBE004B6DE8 /* AccessoryInformation.swift */,
 				6EFCFFC629D05E24004B6DE8 /* AccessoryManager.swift */,
-				6E71637D29D4D12E0042565D /* AccessoryManagerFileManager.swift */,
-				6E71637929D4B0560042565D /* AccessoryManagerCoreData.swift */,
-				6E71637729D4B03E0042565D /* AccessoryManagerCloudKit.swift */,
-				6E71638529D4E13E0042565D /* JSONFile.swift */,
 				6EFCFFDF29D12E79004B6DE8 /* AccessoryManagerBluetooth.swift */,
+				6E71637729D4B03E0042565D /* AccessoryManagerCloudKit.swift */,
+				6E71637529D453450042565D /* AccessoryManagerContacts.swift */,
+				6E71637929D4B0560042565D /* AccessoryManagerCoreData.swift */,
+				6E71637D29D4D12E0042565D /* AccessoryManagerFileManager.swift */,
 				6EFCFFE329D12EAD004B6DE8 /* AccessoryManagerKeychain.swift */,
 				6EFCFFE129D12EA4004B6DE8 /* AccessoryManagerLog.swift */,
-				6E71637529D453450042565D /* AccessoryManagerContacts.swift */,
 				6EFCFFE729D12ECA004B6DE8 /* AccessoryPeripheral.swift */,
+				6E71636329D40FF10042565D /* BeaconController.swift */,
 				6EFCFFCB29D05F23004B6DE8 /* Central.swift */,
 				6E63874129D1679400E1BD42 /* CharacteristicCache.swift */,
+				6E71638529D4E13E0042565D /* JSONFile.swift */,
+				6E71636129D40FDD0042565D /* NetworkMonitor.swift */,
+				6E71637329D428D40042565D /* NewKeyDocument.swift */,
+				6E71636729D410B20042565D /* Preferences.swift */,
 				6EFCFFE929D12EDB004B6DE8 /* ScanDataCache.swift */,
 			);
 			path = Model;
