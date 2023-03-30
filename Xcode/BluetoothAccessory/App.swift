@@ -12,9 +12,7 @@ import BluetoothAccessoryKit
 struct BluetoothAccessoryApp: App {
     
     @StateObject
-    var accessoryManager = AccessoryManager(
-        configuration: Self.configuration
-    )
+    var accessoryManager: AccessoryManager
     
     var body: some Scene {
         WindowGroup {
@@ -24,7 +22,11 @@ struct BluetoothAccessoryApp: App {
     }
     
     init() {
+        let accessoryManager = AccessoryManager(
+            configuration: Self.configuration
+        )
         accessoryManager.log("Launching Bluetooth Accessory") //v\(Bundle.InfoPlist.shortVersion) (\(Bundle.InfoPlist.version))")
+        _accessoryManager = .init(wrappedValue: accessoryManager)
     }
 }
 
