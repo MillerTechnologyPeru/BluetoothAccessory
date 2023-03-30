@@ -17,7 +17,7 @@ public struct AccessoryCache: Equatable, Hashable, Codable, JSONFile {
     /// Date application data was last modified.
     public private(set) var updated: Date
     
-    /// Persistent lock information.
+    /// Persistent accessory information.
     public var accessories: [UUID: AccessoryInformation] {
         didSet { if accessories != oldValue { didUpdate() } }
     }

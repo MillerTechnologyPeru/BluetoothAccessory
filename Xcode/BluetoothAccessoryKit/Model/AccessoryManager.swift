@@ -7,7 +7,9 @@
 
 import Foundation
 import Combine
+import CoreData
 import CloudKit
+import Contacts
 import KeychainAccess
 
 import Bluetooth
@@ -78,6 +80,14 @@ public final class AccessoryManager: ObservableObject {
     #endif
     
     internal var keyValueStoreObserver: NSObjectProtocol?
+    
+    internal lazy var contactStore = loadContacts()
+    
+    public lazy var persistentContainer = loadPersistentContainer()
+    
+    public lazy var managedObjectContext = loadViewContext()
+    
+    internal lazy var backgroundContext = loadBackgroundContext()
     
     // MARK: - Initialization
     
