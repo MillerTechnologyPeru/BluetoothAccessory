@@ -25,8 +25,9 @@ struct BluetoothAccessoryApp: App {
         let accessoryManager = AccessoryManager(
             configuration: Self.configuration
         )
-        accessoryManager.log("Launching Bluetooth Accessory") //v\(Bundle.InfoPlist.shortVersion) (\(Bundle.InfoPlist.version))")
         _accessoryManager = .init(wrappedValue: accessoryManager)
+        // print version
+        accessoryManager.log("Launching Bluetooth Accessory v\(Bundle.InfoPlist.shortVersion) (\(Bundle.InfoPlist.version))")
     }
 }
 
