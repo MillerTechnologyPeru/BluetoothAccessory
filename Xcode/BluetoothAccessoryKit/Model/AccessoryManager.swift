@@ -62,6 +62,8 @@ public final class AccessoryManager: ObservableObject {
     
     internal lazy var keychain = loadKeychain()
     
+    public lazy var preferences = Preferences(suiteName: configuration.appGroup)!
+    
     internal lazy var fileManager = FileManager()
     
     internal lazy var containerURL = loadContainerURL()
@@ -87,7 +89,7 @@ public final class AccessoryManager: ObservableObject {
         configuration: Configuration
     ) {
         self.configuration = configuration
-        self.cache = loadCache()
+        let _ = try! loadCache()
     }
 }
 
@@ -104,16 +106,18 @@ public extension AccessoryManager {
         
         public var appGroup: String
         
-        public var keychain: Keychain
+        public var keychain: String
         
         public init(
             central: NativeCentral.Options,
-            cloud: String? = nil,
-            keychain: Keychain
+            keychain: String,
+            appGroup: String,
+            cloud: String? = nil
         ) {
             self.central = central
             self.cloud = cloud
             self.keychain = keychain
+            self.appGroup = appGroup
         }
     }
 }

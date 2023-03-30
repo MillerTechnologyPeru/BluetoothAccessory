@@ -261,21 +261,16 @@ public extension AccessoryManager {
         let newValue: CharacteristicValue
         if cache.metadata.properties.contains(.encrypted) {
             let id = try await identifier(connection: connection)
-            guard let key = self.keys[id] else {
+            guard let key = self.key(for: id) else {
                 throw BluetoothAccessoryError.authenticationRequired(characteristic.uuid)
             }
             // TODO: validate key permission
-            let keyData = try secret(for: key.id)
-            let credential = Credential(
-                id: key.id,
-                secret: keyData
-            )
             newValue = try await central.readEncryped(
                 characteristic: characteristic,
                 service: cache.service,
                 cryptoHash: connection.cache.characteristic(.cryptoHash, service: .authentication),
                 authentication: connection.cache.characteristic(.authenticate, service: .authentication),
-                key: credential,
+                key: key,
                 format: cache.metadata.format
             )
         } else {

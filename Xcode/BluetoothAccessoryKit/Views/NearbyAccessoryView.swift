@@ -48,7 +48,7 @@ public struct NearbyAccessoryView: View {
             scanResponse: scanResponse,
             manufacturerData: store[manufacturerData: peripheral],
             beacon: store[beacon: peripheral],
-            key: cachedID.flatMap { store.keys[$0] },
+            key: cachedID.flatMap { store[cache: $0]?.key },
             characteristics: store.characteristics[peripheral] ?? [:],
             blacklist: blacklist,
             error: error
@@ -126,7 +126,7 @@ internal extension NearbyAccessoryView {
         #endif
         
         // hide admin key characteristics if not admin
-        if let id = self.cachedID, let key = store.keys[id], key.permission.isAdministrator {
+        if let id = self.cachedID, let key = store[cache: id]?.key, key.permission.isAdministrator {
             //
         } else {
             blacklist.insert(BluetoothUUID(characteristic: .createKey))
@@ -137,7 +137,7 @@ internal extension NearbyAccessoryView {
         // hide confirm key if already have key or not setup
         if isConfigured == false {
             blacklist.insert(BluetoothUUID(characteristic: .confirmKey))
-        } else if let id = self.cachedID, let _ = store.keys[id] {
+        } else if let id = self.cachedID, let _ = store[cache: id] {
             blacklist.insert(BluetoothUUID(characteristic: .confirmKey))
         }
         
@@ -156,8 +156,7 @@ internal extension NearbyAccessoryView {
                 let id = try await store.identifier(connection: connection)
                 self.cachedID = cachedID
                 // read all non-list characteristics
-                let keys = self.store.keys
-                let key = keys[id]
+                let key = self.store[cache: id]?.key
                 for (characteristic, cache) in (store.characteristics[peripheral] ?? [:]).sorted(by: { $0.key.id < $1.key.id }) {
                     // filter
                     let isEncrypted = cache.metadata.properties.contains(.encrypted)
