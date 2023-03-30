@@ -101,17 +101,17 @@ public extension AccessoryManager {
     struct Configuration {
         
         public var central: NativeCentral.Options
+                
+        public var appGroup: String
         
         public var cloud: String?
         
-        public var appGroup: String
-        
-        public var keychain: String
-        
+        public var keychain: (service: String, group: String)
+                
         public init(
             central: NativeCentral.Options,
-            keychain: String,
             appGroup: String,
+            keychain: (service: String, group: String),
             cloud: String? = nil
         ) {
             self.central = central

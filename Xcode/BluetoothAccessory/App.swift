@@ -22,6 +22,10 @@ struct BluetoothAccessoryApp: App {
                 .environmentObject(accessoryManager)
         }
     }
+    
+    init() {
+        accessoryManager.log("Launching Bluetooth Accessory") //v\(Bundle.InfoPlist.shortVersion) (\(Bundle.InfoPlist.version))")
+    }
 }
 
 extension BluetoothAccessoryApp {
@@ -32,8 +36,11 @@ extension BluetoothAccessoryApp {
                 showPowerAlert: true,
                 restoreIdentifier: "com.colemancda.BluetoothAccessory.CBCentralManager"
             ),
-            keychain: "com.colemancda.BluetoothAccessory",
-            appGroup: "4W79SG34MW.com.colemancda.BluetoothAccessory",
+            appGroup: "group.com.colemancda.BluetoothAccessory",
+            keychain: (
+                service: "com.colemancda.BluetoothAccessory",
+                group: "4W79SG34MW.com.colemancda.BluetoothAccessory"
+            ),
             cloud: "iCloud.com.colemancda.BluetoothAccessory"
         )
     }

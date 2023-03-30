@@ -88,8 +88,8 @@ internal extension AccessoryManager {
     
     func loadKeychain() -> Keychain {
         let keychain = Keychain(
-            service: configuration.keychain,
-            accessGroup: configuration.appGroup
+            service: configuration.keychain.service,
+            accessGroup: configuration.keychain.group
         )
         // reset if new installation
         clearKeychainNewInstall()
