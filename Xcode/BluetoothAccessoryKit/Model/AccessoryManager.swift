@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 import CloudKit
 import KeychainAccess
 
@@ -58,6 +59,8 @@ public final class AccessoryManager: ObservableObject {
     
     internal lazy var central = loadBluetooth()
     
+    internal var centralObserver: AnyCancellable?
+    
     internal var scanStream: AsyncCentralScan<Central>?
     
     internal lazy var keychain = loadKeychain()
@@ -80,6 +83,7 @@ public final class AccessoryManager: ObservableObject {
     
     deinit {
         // stop observing
+        self.centralObserver?.cancel()
         if let observer = keyValueStoreObserver {
             NotificationCenter.default.removeObserver(observer)
         }

@@ -308,11 +308,20 @@ internal extension AccessoryManager {
     func loadBluetooth() -> Central {
         let central = NativeCentral(options: configuration.central)
         central.log = { [unowned self] in self.log("📲 Central: " + $0) }
-        Task {
-            observeBluetoothState()
-            observePeripherals()
-        }
+        observeBluetoothState(central)
         return central
+    }
+}
+
+private extension AccessoryManager {
+    
+    func observeBluetoothState(_ central: NativeCentral) {
+        self.centralObserver = central.objectWillChange.sink(receiveValue: {
+            Task { [weak self] in
+                await self?.updatePeripherals()
+                await self?.updateBluetoothState()
+            }
+        })
     }
     
     func updateBluetoothState() async {
@@ -323,16 +332,6 @@ internal extension AccessoryManager {
         }
     }
     
-    func observeBluetoothState() {
-        // observe state
-        Task { [weak self] in
-            while let self = self {
-                await self.updateBluetoothState()
-                try await Task.sleep(timeInterval: 0.5)
-            }
-        }
-    }
-    
     func updatePeripherals() async {
         let newValue = await self.central.peripherals
         let oldValue = self.peripherals
@@ -340,19 +339,6 @@ internal extension AccessoryManager {
             self.peripherals = newValue
         }
     }
-    
-    func observePeripherals() {
-        // observe state
-        Task { [weak self] in
-            while let self = self {
-                await self.updatePeripherals()
-                try await Task.sleep(timeInterval: 0.5)
-            }
-        }
-    }
-}
-
-private extension AccessoryManager {
         
     func found(_ scanData: ScanData) async -> Bool {
         
