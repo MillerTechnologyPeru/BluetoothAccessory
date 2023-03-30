@@ -13,7 +13,7 @@ public extension AccessoryManager {
     func loadCache() throws -> AccessoryCache {
         let url = self.url(for: .cache)
         let file: AccessoryCache
-        if fileManager.fileExists(atPath: containerURL.path) {
+        if fileManager.fileExists(atPath: url.path) {
             file = try AccessoryCache(url: url)
         } else {
             file = AccessoryCache()
