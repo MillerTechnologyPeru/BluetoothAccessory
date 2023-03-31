@@ -48,8 +48,16 @@ public extension AccessoryManager {
     }
     //#endif
     
-    func loadUsername() async throws -> String {
-        return "" // TODO
+    func loadUsername() async throws -> String? {
+        let userIdentities = cloudContainer.discoverAllUserIdentities()
+        let currentUser = try await cloudContainer.userRecordID()
+        for try await identity in userIdentities {
+            guard identity.userRecordID == currentUser else {
+                continue
+            }
+            return identity.lookupInfo?.emailAddress
+        }
+        return nil
     }
 }
 
@@ -59,5 +67,4 @@ internal extension AccessoryManager {
         let contactStore = CNContactStore()
         return contactStore
     }
-    
 }
