@@ -23,11 +23,13 @@ import GATT
 import DarwinGATT
 import BluetoothAccessory
 
+/// Accessory Manager
 @MainActor
 public final class AccessoryManager: ObservableObject {
     
     // MARK: - Properties
     
+    /// Accessory Manager Configuration
     public let configuration: Configuration
     
     @Published
@@ -99,6 +101,7 @@ public final class AccessoryManager: ObservableObject {
         }
     }
     
+    /// Initialize Accessory Maneger with the speicified configuration.
     public init(
         configuration: Configuration
     ) {

@@ -11,7 +11,7 @@ import BluetoothAccessory
 public extension AccessoryManager {
     
     func loadCache() throws -> AccessoryCache {
-        let url = self.url(for: .cache)
+        let url = self.url(for: .cacheJSON)
         let file: AccessoryCache
         if fileManager.fileExists(atPath: url.path) {
             file = try AccessoryCache(url: url)
@@ -31,7 +31,7 @@ public extension AccessoryManager {
             do {
                 var file = try loadCache()
                 file.accessories[id] = newValue
-                try file.write(to: url(for: .cache))
+                try file.write(to: url(for: .cacheJSON))
             }
             catch {
                 assertionFailure("Unable to save cache. \(error)")
@@ -62,6 +62,6 @@ internal extension AccessoryManager {
 
 internal enum AccessoryManagerFile: String {
     
-    case cache = "data.json"
-    
+    case cacheJSON      = "data.json"
+    case cacheSqlite    = "data.sqlite"
 }

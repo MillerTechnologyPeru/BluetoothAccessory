@@ -16,15 +16,11 @@ public extension AccessoryManager {
 internal extension AccessoryManager {
     
     func loadPersistentContainer() -> NSPersistentContainer {
-        #if os(tvOS)
-        guard let containerURL = fileManager.cachesDirectory
-            else { fatalError("Couldn't get caches directory") }
-        #else
-        guard let containerURL = fileManager.containerURL(for: configuration.appGroup)
-            else { fatalError("Couldn't get app group") }
-        #endif
-        let container = NSPersistentContainer(name: "BluetoothAccessoryCache", managedObjectModel: .bluetoothAccessory)
-        let storeDescription = NSPersistentStoreDescription(url: containerURL.appendingPathComponent("data.sqlite"))
+        let container = NSPersistentContainer(
+            name: "BluetoothAccessoryCache",
+            managedObjectModel: .bluetoothAccessory
+        )
+        let storeDescription = NSPersistentStoreDescription(url: url(for: .cacheSqlite))
         storeDescription.shouldInferMappingModelAutomatically = true
         storeDescription.shouldMigrateStoreAutomatically = true
         container.persistentStoreDescriptions = [storeDescription]
@@ -45,4 +41,6 @@ internal extension AccessoryManager {
         context.undoManager = nil
         return context
     }
+    
+    
 }

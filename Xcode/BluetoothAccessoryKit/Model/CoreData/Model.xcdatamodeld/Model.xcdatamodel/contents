@@ -26,6 +26,19 @@
         <attribute name="type" attributeType="String"/>
         <attribute name="unit" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="accessory" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Accessory" inverseName="characteristics" inverseEntity="Accessory"/>
+        <relationship name="value" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CharacteristicValue"/>
+        <relationship name="values" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="CharacteristicValue"/>
+    </entity>
+    <entity name="CharacteristicValue" representedClassName=".CharacteristicValueManagedObject" syncable="YES" codeGenerationType="category">
+        <attribute name="binaryValue" optional="YES" attributeType="Binary"/>
+        <attribute name="boolValue" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="dateValue" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="doubleValue" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="encoded" attributeType="Binary"/>
+        <attribute name="floatValue" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="intValue" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="stringValue" optional="YES" attributeType="String"/>
+        <attribute name="uuidValue" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
     </entity>
     <entity name="Contact" representedClassName=".ContactManagedObject" syncable="YES" codeGenerationType="category">
         <attribute name="email" optional="YES" attributeType="String"/>
