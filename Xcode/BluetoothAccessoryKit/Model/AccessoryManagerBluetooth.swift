@@ -339,7 +339,7 @@ private extension AccessoryManager {
             self.peripherals = newValue
         }
     }
-        
+    
     func found(_ scanData: ScanData) async -> Bool {
         
         // parse scan response

@@ -15,6 +15,7 @@
     </entity>
     <entity name="Characteristic" representedClassName=".CharacteristicManagedObject" syncable="YES" codeGenerationType="category">
         <attribute name="format" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="identifier" attributeType="String" minValueString="4"/>
         <attribute name="isEncrypted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isList" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isReadable" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
