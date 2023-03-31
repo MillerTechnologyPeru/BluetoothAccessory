@@ -12,7 +12,10 @@ import TLVCoding
 
 public final class CharacteristicValueManagedObject: NSManagedObject {
     
-    internal convenience init(_ value: CharacteristicValue, context: NSManagedObjectContext) {
+    internal convenience init(
+        _ value: CharacteristicValue,
+        context: NSManagedObjectContext
+    ) {
         self.init(context: context)
         self.encoded = try! TLVEncoder.bluetoothAccessory.encode(value)
         switch value {
@@ -43,7 +46,7 @@ public final class CharacteristicValueManagedObject: NSManagedObject {
         case .uint64(let value):
             self.intValue = .init(bitPattern: value)
         case .int64(let value):
-            self.intValue = numericCast(value)
+            self.intValue = value
         case .float(let float):
             self.floatValue = float
         case .double(let double):
