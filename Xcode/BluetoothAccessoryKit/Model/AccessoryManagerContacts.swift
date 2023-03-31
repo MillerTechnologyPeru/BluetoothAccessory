@@ -49,15 +49,17 @@ public extension AccessoryManager {
     //#endif
     
     func loadUsername() async throws -> String? {
-        let userIdentities = cloudContainer.discoverAllUserIdentities()
-        let currentUser = try await cloudContainer.userRecordID()
-        for try await identity in userIdentities {
-            guard identity.userRecordID == currentUser else {
-                continue
-            }
-            return identity.lookupInfo?.emailAddress
+        guard try await cloudContainer.accountStatus() == .available else {
+            return nil
         }
-        return nil
+        if try await cloudContainer.applicationPermissionStatus(for: [.userDiscoverability]) != .granted {
+            try await cloudContainer.requestApplicationPermission([.userDiscoverability])
+        }
+        let currentUser = try await cloudContainer.userRecordID()
+        guard let userIdentity = try await cloudContainer.userIdentities(forUserRecordIDs: [currentUser])[currentUser] else {
+            return nil
+        }
+        return try userIdentity.lookupInfo?.emailAddress ?? emailAddresses(for: userIdentity).first
     }
 }
 
@@ -66,5 +68,23 @@ internal extension AccessoryManager {
     func loadContacts() -> CNContactStore {
         let contactStore = CNContactStore()
         return contactStore
+    }
+    
+    func emailAddresses(for identity: CKUserIdentity) throws -> [String] {
+        #if canImport(Contacts)
+        guard CNContactStore.authorizationStatus(for: .contacts) == .authorized else {
+            return []
+        }
+        // find contact in address book
+        let predicate = CNContact.predicateForContacts(withIdentifiers: identity.contactIdentifiers)
+        let contacts = try contactStore.unifiedContacts(matching: predicate, keysToFetch: [
+            CNContactEmailAddressesKey as NSString
+        ])
+        return contacts.reduce(into: [], {
+            $0 += $1.emailAddresses.map { $0.value as String }
+        })
+        #else
+        return nil
+        #endif
     }
 }
