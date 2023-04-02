@@ -21,3 +21,26 @@ public struct ManufacturerCharacteristic: Equatable, Hashable, AccessoryCharacte
     
     public var value: String
 }
+
+// MARK: - Central
+
+public extension CentralManager {
+    
+    /// Read manufacturer.
+    func readManufacturer(
+        characteristic: Characteristic<Peripheral, AttributeID>
+    ) async throws -> String {
+        let characteristic = try await read(ManufacturerCharacteristic.self, characteristic: characteristic)
+        return characteristic.value
+    }
+}
+
+public extension GATTConnection {
+    
+    /// Read manufacturer.
+    func readManufacturer() async throws -> String {
+        let characteristic = try self.cache.characteristic(.manufacturer, service: .information)
+        return try await self.central.readManufacturer(characteristic: characteristic)
+    }
+}
+
