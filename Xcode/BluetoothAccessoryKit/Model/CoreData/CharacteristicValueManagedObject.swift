@@ -14,10 +14,12 @@ public final class CharacteristicValueManagedObject: NSManagedObject {
     
     internal convenience init(
         _ value: CharacteristicValue,
+        characteristic: CharacteristicManagedObject,
         context: NSManagedObjectContext
     ) {
         self.init(context: context)
-        self.encoded = try! TLVEncoder.bluetoothAccessory.encode(value)
+        self.characteristic = characteristic
+        self.encoded = value.encode()
         switch value {
         case .tlv8(let data):
             self.binaryValue = data
@@ -58,6 +60,7 @@ public final class CharacteristicValueManagedObject: NSManagedObject {
 public extension CharacteristicValue {
     
     init(managedObject: CharacteristicValueManagedObject) {
-        self = try! TLVDecoder.bluetoothAccessory.decode(CharacteristicValue.self, from: managedObject.encoded!)
+        let format = CharacteristicFormat(rawValue: UInt8(managedObject.characteristic!.format))!
+        self = CharacteristicValue.init(from: managedObject.encoded!, format: format)!
     }
 }

@@ -56,10 +56,10 @@ internal extension CharacteristicManagedObject {
             self.value = nil
         case let .single(value):
             self.values = nil
-            self.value = CharacteristicValueManagedObject(value, context: context)
+            self.value = CharacteristicValueManagedObject(value, characteristic: self, context: context)
         case let .list(values):
             self.value = nil
-            self.values = NSOrderedSet(array: values.map { CharacteristicValueManagedObject($0, context: context) })
+            self.values = NSOrderedSet(array: values.map { CharacteristicValueManagedObject($0, characteristic: self, context: context) })
         }
     }
 }
