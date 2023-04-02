@@ -21,3 +21,25 @@ public struct SerialNumberCharacteristic: Equatable, Hashable, AccessoryCharacte
     
     public var value: String
 }
+
+// MARK: - Central
+
+public extension CentralManager {
+    
+    /// Read serial number.
+    func readSerialNumber(
+        characteristic: Characteristic<Peripheral, AttributeID>
+    ) async throws -> String {
+        let characteristic = try await read(SerialNumberCharacteristic.self, characteristic: characteristic)
+        return characteristic.value
+    }
+}
+
+public extension GATTConnection {
+    
+    /// Read serial number.
+    func readSerialNumber() async throws -> String {
+        let characteristic = try self.cache.characteristic(.serialNumber, service: .information)
+        return try await self.central.readSerialNumber(characteristic: characteristic)
+    }
+}
