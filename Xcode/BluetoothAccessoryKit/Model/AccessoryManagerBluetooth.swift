@@ -284,20 +284,26 @@ public extension AccessoryManager {
         return newValue
     }
     
-    func write() {
-        
-    }
-    
     func setup(
         _ peripheral: AccessoryPeripheral,
-        using sharedSecret: KeyData
+        using sharedSecret: KeyData,
+        name: String
     ) async throws {
-        /*
-        let username = await loadUsername()
-        try await self.connection(for: peripheral) { connection in
-            let request = SetupRequest(id: UUID(), secret: sharedSecret, name: )
-            connection.setup(, using: )
-        }*/
+        let keyData = KeyData()
+        let information = try await self.connection(for: peripheral.peripheral) { connection in
+            let request = SetupRequest(
+                id: UUID(),
+                secret: keyData,
+                name: name
+            )
+            try await connection.setup(request, using: sharedSecret)
+            // read information
+            let key = Key(setup: request)
+            return try await readInformation(peripheral, key: key, connection: connection)
+        }
+        // cache key
+        self[key: information.key.id] = keyData
+        self[cache: information.id] = information
     }
 }
 
@@ -310,6 +316,31 @@ internal extension AccessoryManager {
         central.log = { [unowned self] in self.log("📲 Central: " + $0) }
         observeBluetoothState(central)
         return central
+    }
+    
+    func readInformation(
+        _ peripheral: AccessoryPeripheral,
+        key: Key,
+        connection: GATTConnection<Central>
+    ) async throws -> AccessoryInformation {
+        let id = try await connection.readIdentifier()
+        let name = try await connection.readName()
+        let accessoryType = try await connection.readAccessoryType()
+        let manufacturer = try await connection.readManufacturer()
+        let softwareVersion = try await connection.readSoftwareVersion()
+        let model = try await connection.readModel()
+        let serialNumber = try await connection.readSerialNumber()
+        return AccessoryInformation(
+            id: id,
+            name: name,
+            key: key,
+            accessory: accessoryType,
+            service: peripheral.service,
+            manufacturer: manufacturer,
+            serialNumber: serialNumber,
+            model: model,
+            softwareVersion: softwareVersion
+        )
     }
 }
 

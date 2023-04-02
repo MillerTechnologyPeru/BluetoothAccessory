@@ -80,7 +80,8 @@ private extension SetupAccessoryView {
                 let peripheral = try await store.peripheral(for: accessory)
                 try await store.setup(
                     peripheral,
-                    using: sharedSecret
+                    using: sharedSecret,
+                    name: name
                 )
                 self.state = .success(accessory, name)
             } catch {
@@ -167,7 +168,7 @@ internal extension SetupAccessoryView {
         let confirm: (String) -> ()
         
         @State
-        private var name: String = ""
+        private var name: String = "@cloud.com"
         
         var body: some View {
             VStack(alignment: .center, spacing: 16) {
