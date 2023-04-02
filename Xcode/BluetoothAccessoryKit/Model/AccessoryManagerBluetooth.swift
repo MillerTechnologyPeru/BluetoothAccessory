@@ -284,6 +284,46 @@ public extension AccessoryManager {
         return newValue
     }
     
+    func write(
+        _ newValue: CharacteristicValue,
+        characteristic: Characteristic,
+        connection: GATTConnection<Central>
+    ) async throws {
+        assert(characteristic.peripheral == connection.peripheral)
+        guard let cache = self.characteristics[characteristic.peripheral]?[characteristic] else {
+            throw BluetoothAccessoryError.metadataRequired(characteristic.uuid)
+        }
+        assert(cache.metadata.type == characteristic.uuid)
+        // must be readable
+        guard cache.metadata.properties.contains(.read) else {
+            assertionFailure()
+            throw CocoaError(.featureUnsupported)
+        }
+        // must be single value
+        guard cache.metadata.properties.contains(.list) == false else {
+            assertionFailure()
+            throw CocoaError(.featureUnsupported)
+        }
+        // write encrypted
+        if cache.metadata.properties.contains(.encrypted) {
+            let id = try await identifier(connection: connection)
+            guard let key = self.key(for: id) else {
+                throw BluetoothAccessoryError.authenticationRequired(characteristic.uuid)
+            }
+            // TODO: validate key permission
+            try await central.writeEncrypted(
+                newValue,
+                for: characteristic,
+                cryptoHash: connection.cache.characteristic(.cryptoHash, service: .authentication),
+                key: key
+            )
+        } else {
+            try await central.write(newValue, for: characteristic)
+        }
+        // update cache
+        self.characteristics[characteristic.peripheral, default: [:]][characteristic, default: cache].value = .single(newValue)
+    }
+    
     func setup(
         _ peripheral: AccessoryPeripheral,
         using sharedSecret: KeyData,
