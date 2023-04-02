@@ -107,11 +107,13 @@ internal extension NearbyAccessoryView {
     
     var blacklist: Set<BluetoothUUID> {
         // hide authentication characteristics
-        var blacklist: Set<BluetoothUUID> = [
-            BluetoothUUID(characteristic: .authenticate),
-            BluetoothUUID(characteristic: .cryptoHash),
-            BluetoothUUID(characteristic: .isConfigured),
-            BluetoothUUID(characteristic: .metadata),
+        var blacklist: Set<CharacteristicType> = [
+            .authenticate,
+            .cryptoHash,
+            .isConfigured,
+            .metadata,
+            .createKey,
+            .removeKey
         ]
         let characteristics = store.characteristics[peripheral] ?? [:]
         
@@ -119,29 +121,27 @@ internal extension NearbyAccessoryView {
         let isConfigured = characteristics.values.first(where: { $0.service == BluetoothUUID(service: .authentication) && $0.metadata.type == BluetoothUUID(characteristic: .isConfigured) })?.value == true
         #if os(iOS)
         if isConfigured {
-            blacklist.insert(BluetoothUUID(characteristic: .setup)) // hide setup
+            blacklist.insert(.setup) // hide setup
         }
         #else
-        blacklist.insert(BluetoothUUID(characteristic: .setup)) // can only setup on iOS
+        blacklist.insert(.setup) // can only setup on iOS
         #endif
         
         // hide admin key characteristics if not admin
         if let id = self.cachedID, let key = store[cache: id]?.key, key.permission.isAdministrator {
             //
         } else {
-            blacklist.insert(BluetoothUUID(characteristic: .createKey))
-            blacklist.insert(BluetoothUUID(characteristic: .removeKey))
-            blacklist.insert(BluetoothUUID(characteristic: .keys))
+            blacklist.insert(.keys)
         }
         
         // hide confirm key if already have key or not setup
         if isConfigured == false {
-            blacklist.insert(BluetoothUUID(characteristic: .confirmKey))
+            blacklist.insert(.confirmKey)
         } else if let id = self.cachedID, let _ = store[cache: id] {
-            blacklist.insert(BluetoothUUID(characteristic: .confirmKey))
+            blacklist.insert(.confirmKey)
         }
         
-        return blacklist
+        return Set(blacklist.lazy.map { BluetoothUUID(characteristic: $0) })
     }
     
     func reload() async {
