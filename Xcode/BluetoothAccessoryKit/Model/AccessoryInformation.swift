@@ -9,6 +9,20 @@ import Foundation
 import BluetoothAccessory
 
 /// Paired accessory information.
+public struct PairedAccessory: Equatable, Hashable, Codable, Identifiable {
+    
+    /// Accessory identifier
+    public var id: UUID {
+        information.id
+    }
+    
+    /// Accessory name
+    public var information: AccessoryInformation
+    
+    /// Key for the paired accessory
+    public let key: Key
+}
+
 public struct AccessoryInformation: Equatable, Hashable, Codable, Identifiable {
     
     /// Accessory identifier
@@ -16,9 +30,6 @@ public struct AccessoryInformation: Equatable, Hashable, Codable, Identifiable {
     
     /// Accessory name
     public var name: String
-    
-    /// Key for the paired accessory
-    public let key: Key
     
     /// Accessory type
     public let accessory: AccessoryType

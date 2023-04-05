@@ -20,10 +20,13 @@ public extension AccessoryManager {
             try file.write(to: url)
         }
         self.cache = file.accessories
+        Task {
+            await updateCoreDataCache()
+        }
         return file
     }
     
-    internal(set) subscript (cache id: UUID) -> AccessoryInformation? {
+    internal(set) subscript (cache id: UUID) -> PairedAccessory? {
         get {
             return self.cache[id]
         }
@@ -38,6 +41,9 @@ public extension AccessoryManager {
                 return
             }
             self.cache[id] = newValue
+            Task {
+                await updateCoreDataCache()
+            }
         }
     }
 }

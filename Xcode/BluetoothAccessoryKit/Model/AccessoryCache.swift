@@ -18,7 +18,7 @@ public struct AccessoryCache: Equatable, Hashable, Codable, JSONFile {
     public private(set) var updated: Date
     
     /// Persistent accessory information.
-    public var accessories: [UUID: AccessoryInformation] {
+    public var accessories: [UUID: PairedAccessory] {
         didSet { if accessories != oldValue { didUpdate() } }
     }
     
