@@ -9,7 +9,7 @@
         <attribute name="serialNumber" attributeType="String"/>
         <attribute name="service" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="softwareVersion" attributeType="String"/>
-        <relationship name="characteristics" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Characteristic" inverseName="accessory" inverseEntity="Characteristic"/>
+        <relationship name="characteristics" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Characteristic" inverseName="accessory" inverseEntity="Characteristic"/>
         <relationship name="keys" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Key" inverseName="accessory" inverseEntity="Key"/>
         <relationship name="pendingKeys" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="NewKey" inverseName="accessory" inverseEntity="NewKey"/>
     </entity>
