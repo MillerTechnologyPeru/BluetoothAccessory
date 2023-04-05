@@ -32,8 +32,12 @@ public struct CharacteristicCache: Equatable, Hashable, Codable {
 
 extension CharacteristicCache: Identifiable {
     
+    internal static func id(accessory: UUID, service: BluetoothUUID, characteristic: BluetoothUUID) -> String {
+        accessory.uuidString + "/" + service.rawValue + "/" + characteristic.rawValue
+    }
+    
     public var id: String {
-        accessory.description + "/" + service.description + "/" + metadata.type.description
+        return CharacteristicCache.id(accessory: accessory, service: service, characteristic: metadata.type)
     }
 }
 
