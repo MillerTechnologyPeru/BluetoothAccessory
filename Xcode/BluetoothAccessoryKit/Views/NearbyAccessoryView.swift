@@ -160,7 +160,7 @@ internal extension NearbyAccessoryView {
                 let characteristics = try await store.discoverCharacteristics(connection: connection)
                 // read identifier
                 let id = try await store.identifier(connection: connection)
-                self.cachedID = cachedID
+                self.cachedID = id
                 // read all non-list characteristics
                 let key = self.store[cache: id]?.key
                 assert(characteristics.isEmpty == false)
