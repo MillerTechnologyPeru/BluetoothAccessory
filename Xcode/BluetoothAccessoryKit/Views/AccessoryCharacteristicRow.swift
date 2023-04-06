@@ -52,7 +52,15 @@ internal extension AccessoryCharacteristicRow.StateView {
         case .none:
             return nil
         case let .single(value):
-            return Text(verbatim: customValueDescription(for: value) ?? value.description)
+            let description: String
+            if let customDescription = customValueDescription(for: value) {
+                description = customDescription
+            } else if let unit = characteristic.metadata.unit {
+                description = unit.description(for: value)
+            } else {
+                description = value.description
+            }
+            return Text(verbatim: description)
         case let .list(items):
             return Text("\(items.count) values")
         }
@@ -65,6 +73,16 @@ internal extension AccessoryCharacteristicRow.StateView {
         switch characteristicType {
         case .accessoryType:
             guard let value = AccessoryType.init(characteristicValue: value) else {
+                return nil
+            }
+            return value.description
+        case .statusLowBattery:
+            guard let value = StatusLowBattery.init(characteristicValue: value) else {
+                return nil
+            }
+            return value.description
+        case .chargingState:
+            guard let value = ChargingState.init(characteristicValue: value) else {
                 return nil
             }
             return value.description

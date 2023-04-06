@@ -58,11 +58,12 @@ private extension SetupAccessoryView {
     func scanResult(_ result: Result<ScanResult, ScanError>) {
         switch result {
         case let .success(scanResult):
-            guard let url = URL(string: scanResult.string),
-                  let accessoryURL = AccessoryURL(rawValue: url),
+            guard let accessoryURL = AccessoryURL(rawValue: scanResult.string),
                   case let .setup(accessory, secret) = accessoryURL,
-                  self.accessory == accessory || self.accessory == nil
-                else { self.state = .error(BluetoothAccessoryError.invalidQRCode); return }
+                  self.accessory == accessory || self.accessory == nil else {
+                self.state = .error(BluetoothAccessoryError.invalidQRCode)
+                return
+            }
             self.state = .confirm(accessory, secret)
         case let .failure(error):
             self.state = .error(error)
