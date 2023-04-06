@@ -37,6 +37,22 @@ public enum ChargingState: UInt8, Codable, CaseIterable, CharacteristicCodable {
     case notChargeable = 2
 }
 
+// MARK: - CustomStringConvertible
+
+extension ChargingState: CustomStringConvertible {
+    
+    public var description: String {
+        switch self {
+        case .notCharging:
+            return "Not Charging"
+        case .charging:
+            return "Charging"
+        case .notChargeable:
+            return "Not Chargeable"
+        }
+    }
+}
+
 // MARK: - Central
 
 public extension CentralManager {
