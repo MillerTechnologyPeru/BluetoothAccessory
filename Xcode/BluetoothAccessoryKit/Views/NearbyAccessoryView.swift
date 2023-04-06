@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import CoreData
 import Bluetooth
 import GATT
 import DarwinGATT
@@ -17,6 +18,9 @@ public struct NearbyAccessoryView: View {
     
     @EnvironmentObject
     var store: AccessoryManager
+    
+    @Environment(\.managedObjectContext)
+    var managedObjectContext
     
     let peripheral: AccessoryManager.Peripheral
     
@@ -34,6 +38,7 @@ public struct NearbyAccessoryView: View {
     @State
     var canShowActivityIndicator = true
     
+    
     public init(
         peripheral: AccessoryManager.Peripheral,
         scanResponse: AccessoryScanResponse
@@ -49,7 +54,7 @@ public struct NearbyAccessoryView: View {
             manufacturerData: store[manufacturerData: peripheral],
             beacon: store[beacon: peripheral],
             key: cachedID.flatMap { store[cache: $0]?.key },
-            characteristics: cachedID.flatMap { try! store.characteristics(for: $0) } ?? [],
+            characteristics: cachedID.flatMap { try? store.characteristics(for: $0) } ?? [],
             blacklist: blacklist,
             error: error
         )
@@ -116,7 +121,7 @@ internal extension NearbyAccessoryView {
             .removeKey
         ]
         
-        let characteristics = cachedID.flatMap { try! store.characteristics(for: $0) } ?? []
+        let characteristics = cachedID.flatMap { try? store.characteristics(for: $0) } ?? []
         
         // hide setup if configured
         let isConfigured = characteristics.first(where: { $0.service == BluetoothUUID(service: .authentication) && $0.metadata.type == BluetoothUUID(characteristic: .isConfigured) })?.value == true
@@ -152,23 +157,23 @@ internal extension NearbyAccessoryView {
         do {
             try await store.connection(for: peripheral) { connection in
                 // discover characteristics
-                try await store.discoverCharacteristics(connection: connection)
+                let characteristics = try await store.discoverCharacteristics(connection: connection)
                 // read identifier
                 let id = try await store.identifier(connection: connection)
                 self.cachedID = cachedID
                 // read all non-list characteristics
                 let key = self.store[cache: id]?.key
-                let characteristics = cachedID.flatMap { try! store.characteristics(for: $0) } ?? []
-                for cache in characteristics {
+                assert(characteristics.isEmpty == false)
+                for (service, metadata) in characteristics {
                     // filter
-                    let isEncrypted = cache.metadata.properties.contains(.encrypted)
-                    let canRead = cache.metadata.properties.contains(.read) // must be readable
-                        && !cache.metadata.properties.contains(.list) // will not read lists
+                    let isEncrypted = metadata.properties.contains(.encrypted)
+                    let canRead = metadata.properties.contains(.read) // must be readable
+                        && !metadata.properties.contains(.list) // will not read lists
                         && (!isEncrypted || key != nil) // must have key if encrypted
                     guard canRead else { continue }
                     let _ = try await store.read(
-                        characteristic: cache.metadata.type,
-                        service: cache.service,
+                        characteristic: metadata.type,
+                        service: service,
                         connection: connection
                     )
                 }

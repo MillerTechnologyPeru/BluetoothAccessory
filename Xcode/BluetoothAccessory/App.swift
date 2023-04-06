@@ -35,6 +35,7 @@ struct BluetoothAccessoryApp: App {
             configuration: Self.configuration
         )
         _accessoryManager = .init(wrappedValue: accessoryManager)
+        appDelegate.accessoryManager = accessoryManager
         // print version
         accessoryManager.log("Launching Bluetooth Accessory v\(Bundle.InfoPlist.shortVersion) (\(Bundle.InfoPlist.version))")
         Task {
@@ -85,18 +86,17 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private(set) var didBecomeActive: Bool = false
     
+    var accessoryManager: AccessoryManager!
+    
     // MARK: - UIApplicationDelegate
     
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        
-        // set app appearance
-        //UIView.configureLockAppearance()
-        
+                
         #if DEBUG
-        defer { log("App finished launching in \(String(format: "%.3f", Date().timeIntervalSince(appLaunch)))s") }
+        defer { accessoryManager.log("App finished launching in \(String(format: "%.3f", Date().timeIntervalSince(appLaunch)))s") }
         #endif
         
         return true
@@ -106,7 +106,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
         
-        log("Will resign active")
+        accessoryManager.log("Will resign active")
     }
 }
 

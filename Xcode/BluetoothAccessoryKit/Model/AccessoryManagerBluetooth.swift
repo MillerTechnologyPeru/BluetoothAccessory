@@ -156,10 +156,11 @@ public extension AccessoryManager {
     }
     
     /// Discovery all services characteristics. Metadata for each characteristic must be provided.
+    @discardableResult
     func discoverCharacteristics(
         connection: GATTConnection<Central>,
         custom: Bool = true
-    ) async throws {
+    ) async throws -> [(service: BluetoothUUID, metadata: CharacteristicMetadata)] {
         // read identifier
         let id = try await identifier(connection: connection)
         let _ = try await readInformation(connection: connection)
@@ -181,6 +182,7 @@ public extension AccessoryManager {
             }
         }
         try await updateCoreDataCharacteristics(characteristics, for: id)
+        return characteristics
     }
     
     @discardableResult
@@ -207,7 +209,7 @@ public extension AccessoryManager {
         connection: GATTConnection<Central>
     ) async throws -> CharacteristicValue {
         let id = try await identifier(connection: connection)
-        let metadata = try await backgroundContext.metadata(for: characteristicUUID, service: service, accessory: id)
+        let metadata = try self.managedObjectContext.metadata(for: characteristicUUID, service: service, accessory: id)
         assert(metadata.type == characteristicUUID)
         let characteristic = try connection.cache.characteristic(characteristicUUID, service: service)
         assert(characteristic.uuid == characteristicUUID)
@@ -253,7 +255,7 @@ public extension AccessoryManager {
         connection: GATTConnection<Central>
     ) async throws {
         let id = try await identifier(connection: connection)
-        let metadata = try await backgroundContext.metadata(for: characteristicUUID, service: service, accessory: id)
+        let metadata = try self.managedObjectContext.metadata(for: characteristicUUID, service: service, accessory: id)
         assert(metadata.type == characteristicUUID)
         let characteristic = try connection.cache.characteristic(characteristicUUID, service: service)
         assert(characteristic.uuid == characteristicUUID)

@@ -142,4 +142,13 @@ internal extension NSManagedObjectContext {
         assert(managedObject.accessory?.identifier == accessory)
         return CharacteristicMetadata(managedObject: managedObject)
     }
+    
+    func characteristics(
+        for accessory: UUID
+    ) throws -> [CharacteristicCache] {
+        guard let managedObject = try find(id: accessory, type: AccessoryManagedObject.self),
+            let orderedSet = managedObject.characteristics
+            else { return [] }
+        return (orderedSet.array as! [CharacteristicManagedObject]).map { .init(managedObject: $0) }
+    }
 }

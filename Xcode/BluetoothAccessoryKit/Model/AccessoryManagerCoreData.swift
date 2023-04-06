@@ -14,10 +14,7 @@ public extension AccessoryManager {
     func characteristics(
         for accessory: UUID
     ) throws -> [CharacteristicCache] {
-        guard let managedObject = try managedObjectContext.find(id: accessory, type: AccessoryManagedObject.self) else {
-            return []
-        }
-        return (managedObject.characteristics?.array as? [CharacteristicManagedObject])?.map { .init(managedObject: $0) } ?? []
+        try managedObjectContext.characteristics(for: accessory)
     }
     
     func metadata(
@@ -49,7 +46,6 @@ internal extension AccessoryManager {
     
     func loadViewContext() -> NSManagedObjectContext {
         let context = self.persistentContainer.viewContext
-        context.automaticallyMergesChangesFromParent = true
         context.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
         context.undoManager = nil
         return context
@@ -96,7 +92,7 @@ internal extension AccessoryManager {
         // modify background context
         let context = self.backgroundContext
         assert(context.concurrencyType == .privateQueueConcurrencyType)
-        try await context.perform { [unowned context] in
+        try await context.perform { [unowned context, unowned self] in
             context.reset()
             // run closure
             do {
@@ -114,10 +110,7 @@ internal extension AccessoryManager {
                     try context.save()
                 }
             } catch {
-                print("⚠️ Unable to commit changes: \(error.localizedDescription)")
-                #if DEBUG
-                print(error)
-                #endif
+                self.log("⚠️ Unable to commit changes: \(error.localizedDescription)")
                 assertionFailure("Core Data error. \(error)")
                 throw error
             }
@@ -181,7 +174,7 @@ internal extension AccessoryManager {
             // remove old characteristics
             oldValues
             .filter { managedOject in
-                managedObjects.contains(where: { $0 === managedOject }) == false
+                managedObjects.contains(where: { $0.identifier == managedOject.identifier }) == false
             }
             .forEach {
                 context.delete($0)
