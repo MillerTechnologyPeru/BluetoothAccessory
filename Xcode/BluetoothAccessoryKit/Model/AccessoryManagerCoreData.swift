@@ -13,7 +13,7 @@ public extension AccessoryManager {
     
     func characteristics(
         for accessory: UUID
-    ) async throws -> [CharacteristicCache] {
+    ) throws -> [CharacteristicCache] {
         guard let managedObject = try managedObjectContext.find(id: accessory, type: AccessoryManagedObject.self) else {
             return []
         }
