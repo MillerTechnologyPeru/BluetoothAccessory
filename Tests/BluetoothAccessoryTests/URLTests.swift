@@ -13,19 +13,18 @@ final class URLTests: XCTestCase {
     
     func testSetup() {
         
-        let string = "bluetooth-accessory:/setup/25261345-ADC6-4802-882B-613AD8E86BE1/AcDIoBrCWorulJh4WBRr2z0KTWxzXt9Rz37bOqHYChA="
-        let url = URL(string: string)!
+        let string = "bluetooth-accessory:/setup/524792BF-E5B6-49C9-AEDF-C352A100FD4B/b8Y72Q8SN9Bh7PCH2fNCU_oKp4sWu-dhv9x0n2tPIHk"
         
-        guard let accessoryURL = AccessoryURL(rawValue: url)
+        guard let accessoryURL = AccessoryURL(rawValue: string)
             else { XCTFail("Invalid URL"); return }
         
-        XCTAssertEqual(accessoryURL.rawValue, url)
+        XCTAssertEqual(accessoryURL.rawValue, string)
         XCTAssertEqual(accessoryURL.description, string)
         
         guard case let .setup(identifier, secret) = accessoryURL
             else { XCTFail("Invalid URL"); return }
         
-        XCTAssertEqual(identifier.uuidString, "25261345-ADC6-4802-882B-613AD8E86BE1")
-        XCTAssertEqual(secret.data.base64EncodedString(), "AcDIoBrCWorulJh4WBRr2z0KTWxzXt9Rz37bOqHYChA=")
+        XCTAssertEqual(identifier.uuidString, "524792BF-E5B6-49C9-AEDF-C352A100FD4B")
+        XCTAssertEqual(secret.data.base64URLEncodedString(), "b8Y72Q8SN9Bh7PCH2fNCU_oKp4sWu-dhv9x0n2tPIHk")
     }
 }
