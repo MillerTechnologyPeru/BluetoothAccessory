@@ -11,6 +11,14 @@ import BluetoothAccessoryKit
 @main
 struct BluetoothAccessoryApp: App {
     
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor(AppDelegate.self)
+    var appDelegate
+    #elseif os(iOS) || os(tvOS)
+    @UIApplicationDelegateAdaptor(AppDelegate.self)
+    var appDelegate
+    #endif
+    
     @StateObject
     var accessoryManager: AccessoryManager
     
@@ -18,6 +26,7 @@ struct BluetoothAccessoryApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(accessoryManager)
+                .environment(\.managedObjectContext, accessoryManager.managedObjectContext)
         }
     }
     
@@ -48,3 +57,48 @@ extension BluetoothAccessoryApp {
         )
     }
 }
+
+#if os(iOS) || os(tvOS)
+final class AppDelegate: UIResponder, UIApplicationDelegate {
+    
+    let appLaunch = Date()
+    
+    private(set) var didBecomeActive: Bool = false
+    
+    // MARK: - UIApplicationDelegate
+    
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        
+        // set app appearance
+        //UIView.configureLockAppearance()
+        
+        #if DEBUG
+        defer { log("App finished launching in \(String(format: "%.3f", Date().timeIntervalSince(appLaunch)))s") }
+        #endif
+        
+        return true
+    }
+    
+    func applicationWillResignActive(_ application: UIApplication) {
+        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
+        // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+        
+        log("Will resign active")
+    }
+}
+
+#elseif os(macOS)
+final class AppDelegate: NSResponder, NSApplicationDelegate {
+    
+    // MARK: - NSApplicationDelegate
+        
+    func applicationShouldTerminateAfterLastWindowClosed(
+        _ sender: NSApplication
+    ) -> Bool {
+        return false
+    }
+}
+#endif
