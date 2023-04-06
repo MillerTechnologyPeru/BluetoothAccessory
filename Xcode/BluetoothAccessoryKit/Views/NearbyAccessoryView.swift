@@ -189,9 +189,6 @@ internal extension NearbyAccessoryView {
     
     struct StateView: View {
         
-        @EnvironmentObject
-        var store: AccessoryManager
-        
         let peripheral: AccessoryManager.Peripheral
         
         let scanResponse: AccessoryScanResponse
