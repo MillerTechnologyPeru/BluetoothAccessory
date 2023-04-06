@@ -115,6 +115,8 @@ internal extension AccessoryManager {
                 throw error
             }
         }
+        // update SwiftUI that doesnt use FRC
+        self.objectWillChange.send()
     }
     
     func cacheCoreDataAccessory(
