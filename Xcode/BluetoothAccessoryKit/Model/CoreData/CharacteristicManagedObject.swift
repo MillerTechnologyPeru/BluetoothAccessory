@@ -85,6 +85,30 @@ internal extension CharacteristicManagedObject {
     }
 }
 
+internal extension CharacteristicCache {
+    
+    init(managedObject: CharacteristicManagedObject) {
+        let metadata = CharacteristicMetadata(managedObject: managedObject)
+        let value: Value?
+        if metadata.properties.contains(.list) {
+            if let array = managedObject.values?.array as? [CharacteristicValueManagedObject] {
+                value = .list(array.map { CharacteristicValue(managedObject: $0) })
+            } else {
+                value = nil
+            }
+        } else {
+            value = managedObject.value.flatMap { .single(.init(managedObject: $0)) }
+        }
+        self.init(
+            accessory: managedObject.accessory!.identifier!,
+            service: .init(rawValue: managedObject.service!)!,
+            metadata: .init(managedObject: managedObject),
+            value: value,
+            updated: managedObject.lastUpdate!
+        )
+    }
+}
+
 internal extension CharacteristicMetadata {
     
     init(managedObject: CharacteristicManagedObject) {
@@ -95,5 +119,27 @@ internal extension CharacteristicMetadata {
             format: .init(rawValue: UInt8(managedObject.format))!,
             unit: managedObject.unit.flatMap { .init(rawValue: $0.uint8Value) }
         )
+    }
+}
+
+internal extension NSManagedObjectContext {
+    
+    func metadata(
+        for characteristic: BluetoothUUID,
+        service: BluetoothUUID,
+        accessory: UUID
+    ) throws -> CharacteristicMetadata {
+        let id = CharacteristicCache.id(accessory: accessory, service: service, characteristic: characteristic)
+        guard let managedObject = try self.find(
+            identifier: id as NSString,
+            propertyName: #keyPath(CharacteristicManagedObject.identifier),
+            type: CharacteristicManagedObject.self
+        ) else {
+            throw BluetoothAccessoryError.metadataRequired(characteristic)
+        }
+        assert(managedObject.type == characteristic.rawValue)
+        assert(managedObject.service == service.rawValue)
+        assert(managedObject.accessory?.identifier == accessory)
+        return CharacteristicMetadata(managedObject: managedObject)
     }
 }

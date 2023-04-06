@@ -11,26 +11,25 @@ import BluetoothAccessory
 
 public extension AccessoryManager {
     
+    func characteristics(
+        for accessory: UUID
+    ) async throws -> [CharacteristicCache] {
+        guard let managedObject = try managedObjectContext.find(id: accessory, type: AccessoryManagedObject.self) else {
+            return []
+        }
+        return (managedObject.characteristics?.array as? [CharacteristicManagedObject])?.map { .init(managedObject: $0) } ?? []
+    }
+    
     func metadata(
         for characteristic: BluetoothUUID,
         service: BluetoothUUID,
         accessory: UUID
-    ) async throws -> CharacteristicMetadata {
-        let id = CharacteristicCache.id(accessory: accessory, service: service, characteristic: characteristic)
-        let context = self.backgroundContext
-        return try await context.perform {
-            guard let managedObject = try context.find(
-                identifier: id as NSString,
-                propertyName: #keyPath(CharacteristicManagedObject.identifier),
-                type: CharacteristicManagedObject.self
-            ) else {
-                throw BluetoothAccessoryError.metadataRequired(characteristic)
-            }
-            assert(managedObject.type == characteristic.rawValue)
-            assert(managedObject.service == service.rawValue)
-            assert(managedObject.accessory?.identifier == accessory)
-            return CharacteristicMetadata(managedObject: managedObject)
-        }
+    ) throws -> CharacteristicMetadata {
+        return try managedObjectContext.metadata(
+            for: characteristic,
+            service: service,
+            accessory: accessory
+        )
     }
 }
 

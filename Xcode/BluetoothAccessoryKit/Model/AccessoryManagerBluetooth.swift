@@ -207,7 +207,7 @@ public extension AccessoryManager {
         connection: GATTConnection<Central>
     ) async throws -> CharacteristicValue {
         let id = try await identifier(connection: connection)
-        let metadata = try await metadata(for: characteristicUUID, service: service, accessory: id)
+        let metadata = try await backgroundContext.metadata(for: characteristicUUID, service: service, accessory: id)
         assert(metadata.type == characteristicUUID)
         let characteristic = try connection.cache.characteristic(characteristicUUID, service: service)
         assert(characteristic.uuid == characteristicUUID)
@@ -253,7 +253,7 @@ public extension AccessoryManager {
         connection: GATTConnection<Central>
     ) async throws {
         let id = try await identifier(connection: connection)
-        let metadata = try await metadata(for: characteristicUUID, service: service, accessory: id)
+        let metadata = try await backgroundContext.metadata(for: characteristicUUID, service: service, accessory: id)
         assert(metadata.type == characteristicUUID)
         let characteristic = try connection.cache.characteristic(characteristicUUID, service: service)
         assert(characteristic.uuid == characteristicUUID)
