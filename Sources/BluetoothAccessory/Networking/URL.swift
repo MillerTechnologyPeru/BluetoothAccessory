@@ -52,51 +52,15 @@ internal extension AccessoryURL {
 
 extension AccessoryURL: RawRepresentable {
     
-    public init?(rawValue url: URL) {
-        
-        let pathComponents = url.pathComponents.filter { $0 != "/" }
-        
-        guard url.scheme == Swift.type(of: self).scheme,
-            let type = pathComponents.first.flatMap({ URLType(rawValue: $0.lowercased()) }),
-            pathComponents.count == type.componentsCount
-            else { return nil }
-        
-        switch type {
-        case .setup:
-            guard let accessoryIdentifier = UUID(uuidString: pathComponents[1]),
-                let secretBase64 = Data(base64Encoded: pathComponents[2]),
-                let secret = KeyData(data: secretBase64)
-                else { return nil }
-            self = .setup(accessoryIdentifier, secret)
-        case .newKey:
-            guard let data = Data(base64Encoded: pathComponents[1]),
-                  let invitation = try? Self.decoder.decode(NewKey.Invitation.self, from: data)
-                else { return nil }
-            self = .newKey(invitation)
+    public init?(rawValue: String) {
+        guard let url = URL(string: rawValue) else {
+            return nil
         }
+        self.init(url: url)
     }
     
-    public var rawValue: URL {
-        
-        let type = self.type
-        var path = [String]()
-        path.reserveCapacity(type.componentsCount)
-        path.append(type.rawValue)
-        switch self {
-        case let .setup(accessoryIdentifier, secretData):
-            path.append(accessoryIdentifier.uuidString)
-            path.append(secretData.data.base64EncodedString())
-        case let .newKey(newKey):
-            let data = try! Self.encoder.encode(newKey)
-            let base64 = data.base64EncodedString()
-            path.append(base64)
-        }
-        var components = URLComponents()
-        components.scheme = Swift.type(of: self).scheme
-        components.path = path.reduce("", { $0 + "/" + $1 })
-        guard let url = components.url
-            else { fatalError("Could not compose URL") }
-        return url
+    public var rawValue: String {
+        URL(self).absoluteString
     }
 }
 
@@ -105,6 +69,61 @@ extension AccessoryURL: RawRepresentable {
 extension AccessoryURL: CustomStringConvertible {
     
     public var description: String {
-        rawValue.absoluteString
+        rawValue
+    }
+}
+
+// MARK: - URL
+
+public extension URL {
+    
+    init(_ accessoryURL: AccessoryURL) {
+        
+        let type = accessoryURL.type
+        var path = [String]()
+        path.reserveCapacity(type.componentsCount)
+        path.append(type.rawValue)
+        switch accessoryURL {
+        case let .setup(accessoryIdentifier, secretData):
+            path.append(accessoryIdentifier.uuidString)
+            path.append(secretData.data.base64URLEncodedString())
+        case let .newKey(newKey):
+            let data = try! AccessoryURL.encoder.encode(newKey)
+            let base64 = data.base64URLEncodedString()
+            path.append(base64)
+        }
+        var components = URLComponents()
+        components.scheme = AccessoryURL.scheme
+        components.path = path.reduce("", { $0 + "/" + $1 })
+        guard let url = components.url
+            else { fatalError("Could not compose URL") }
+        self = url
+    }
+}
+
+public extension AccessoryURL {
+    
+    init?(url: URL) {
+        
+        let pathComponents = url.pathComponents.filter { $0 != "/" }
+        
+        guard url.scheme == AccessoryURL.scheme,
+            let type = pathComponents.first.flatMap({ URLType(rawValue: $0.lowercased()) }),
+            pathComponents.count == type.componentsCount
+            else { return nil }
+        
+        switch type {
+        case .setup:
+            guard let accessoryIdentifier = UUID(uuidString: pathComponents[1]),
+                let secretBase64 = Data(base64URLEncoded: pathComponents[2]),
+                let secret = KeyData(data: secretBase64)
+                else { return nil }
+            self = .setup(accessoryIdentifier, secret)
+        case .newKey:
+            guard let data = Data(base64URLEncoded: pathComponents[1]),
+                  let invitation = try? AccessoryURL.decoder.decode(NewKey.Invitation.self, from: data)
+                else { return nil }
+            self = .newKey(invitation)
+        }
     }
 }
