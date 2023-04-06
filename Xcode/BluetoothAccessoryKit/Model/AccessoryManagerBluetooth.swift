@@ -155,158 +155,120 @@ public extension AccessoryManager {
         )
     }
     
-    /// Load cached identifier or read from device.
-    func identifier(
-        connection: GATTConnection<Central>
-    ) async throws -> UUID {
-        // load cached
-        if let uuid = self.accessoryPeripherals.first(where: { $0.value.peripheral == connection.peripheral })?.key {
-            return uuid
-        }
-        // read identifier
-        let id = try await connection.readIdentifier()
-        // cache read value
-        let idCharacteristic = try connection.cache.characteristic(BluetoothUUID(characteristic: .identifier), service: BluetoothUUID(service: .information))
-        self.characteristics[connection.peripheral, default: [:]][idCharacteristic] = CharacteristicCache(
-            accessory: id,
-            service: BluetoothUUID(service: .information),
-            metadata: CharacteristicMetadata(type: .identifier),
-            value: .single(.uuid(id)),
-            updated: Date()
-        )
-        // cache new value
-        if let scanResponse = self.scanResponses[connection.peripheral] {
-            self.accessoryPeripherals[id] = .init(
-                peripheral: connection.peripheral,
-                id: id,
-                name: scanResponse.name,
-                service: scanResponse.service
-            )
-        }
-        return id
-    }
-    
     /// Discovery all services characteristics. Metadata for each characteristic must be provided.
     func discoverCharacteristics(
         connection: GATTConnection<Central>,
         custom: Bool = true
     ) async throws {
+        // read identifier
+        let id = try await identifier(connection: connection)
+        let _ = try await readInformation(connection: connection)
         // TODO: Fetch custom metadata
         let customMetadata = [BluetoothUUID: CharacteristicMetadata]()
-        var discoveredCharacteristics = [Characteristic: (service: BluetoothUUID, metadata: CharacteristicMetadata)]()
         // iterate each service
+        var characteristics = [(service: BluetoothUUID, metadata: CharacteristicMetadata)]()
         for service in connection.cache.services {
             let serviceUUID = service.service.uuid
             for characteristicCache in service.characteristics {
                 let uuid = characteristicCache.characteristic.uuid
-                /// attempt to fetch metadata for defined characteristic
+                // attempt to fetch metadata for defined characteristic
                 guard let metadata = BluetoothUUID.accessoryCharacteristicType[uuid].flatMap({ CharacteristicMetadata(type: $0) }) ?? customMetadata[uuid] else {
                     continue
                 }
-                // cache
-                discoveredCharacteristics[characteristicCache.characteristic] = (serviceUUID, metadata)
+                characteristics.append(
+                    (serviceUUID, metadata)
+                )
             }
         }
-        // read identifier
-        let id = try await identifier(connection: connection)
-        // set new discovered characteristics for the specified peripheral with previous values
-        var newValue = [Characteristic: CharacteristicCache]()
-        newValue.reserveCapacity(discoveredCharacteristics.count)
-        for (characteristic, (service, metadata)) in discoveredCharacteristics {
-            assert(characteristic.peripheral == connection.peripheral)
-            newValue[characteristic] = CharacteristicCache(
-                accessory: id,
-                service: service,
-                metadata: metadata,
-                value: self.characteristics[characteristic.peripheral, default: [:]][characteristic]?.value,
-                updated: Date()
-            )
-        }
-        // set new value
-        self.characteristics[connection.peripheral] = newValue
+        try await updateCoreDataCharacteristics(characteristics, for: id)
     }
     
+    @discardableResult
     func read<T: AccessoryCharacteristic>(
         _ characteristic: T.Type,
         service: BluetoothUUID,
         connection: GATTConnection<Central>
     ) async throws -> T {
-        let characteristic = try connection.cache.characteristic(T.type, service: service)
-        let value = try await read(characteristic: characteristic, connection: connection)
+        let value = try await read(
+            characteristic: T.type,
+            service: service,
+            connection: connection
+        )
         guard let characteristicValue = T.init(characteristicValue: value) else {
             throw BluetoothAccessoryError.invalidCharacteristicValue(T.type)
         }
         return characteristicValue
     }
     
+    @discardableResult
     func read(
-        characteristic: Characteristic,
+        characteristic characteristicUUID: BluetoothUUID,
+        service: BluetoothUUID,
         connection: GATTConnection<Central>
     ) async throws -> CharacteristicValue {
-        assert(characteristic.peripheral == connection.peripheral)
-        guard let cache = self.characteristics[characteristic.peripheral]?[characteristic] else {
-            throw BluetoothAccessoryError.metadataRequired(characteristic.uuid)
-        }
-        assert(cache.metadata.type == characteristic.uuid)
+        let id = try await identifier(connection: connection)
+        let metadata = try await metadata(for: characteristicUUID, service: service, accessory: id)
+        assert(metadata.type == characteristicUUID)
+        let characteristic = try connection.cache.characteristic(characteristicUUID, service: service)
+        assert(characteristic.uuid == characteristicUUID)
         // must be readable
-        guard cache.metadata.properties.contains(.read) else {
+        guard metadata.properties.contains(.read) else {
             assertionFailure()
             throw CocoaError(.featureUnsupported)
         }
         // must be single value
-        guard cache.metadata.properties.contains(.list) == false else {
+        guard metadata.properties.contains(.list) == false else {
             assertionFailure()
             throw CocoaError(.featureUnsupported)
         }
         let newValue: CharacteristicValue
-        if cache.metadata.properties.contains(.encrypted) {
-            let id = try await identifier(connection: connection)
+        if metadata.properties.contains(.encrypted) {
             guard let key = self.key(for: id) else {
                 throw BluetoothAccessoryError.authenticationRequired(characteristic.uuid)
             }
             // TODO: validate key permission
             newValue = try await central.readEncryped(
                 characteristic: characteristic,
-                service: cache.service,
+                service: service,
                 cryptoHash: connection.cache.characteristic(.cryptoHash, service: .authentication),
                 authentication: connection.cache.characteristic(.authenticate, service: .authentication),
                 key: key,
-                format: cache.metadata.format
+                format: metadata.format
             )
         } else {
             newValue = try await central.read(
                 characteristic: characteristic,
-                format: cache.metadata.format
+                format: metadata.format
             )
         }
         // update cache
-        self.characteristics[characteristic.peripheral, default: [:]][characteristic, default: cache].value = .single(newValue)
+        try await updateCoreDataCharacteristicValue(.single(newValue), for: characteristicUUID, service: service, accessory: id)
         return newValue
     }
     
     func write(
         _ newValue: CharacteristicValue,
-        characteristic: Characteristic,
+        characteristic characteristicUUID: BluetoothUUID,
+        service: BluetoothUUID,
         connection: GATTConnection<Central>
     ) async throws {
-        assert(characteristic.peripheral == connection.peripheral)
-        guard let cache = self.characteristics[characteristic.peripheral]?[characteristic] else {
-            throw BluetoothAccessoryError.metadataRequired(characteristic.uuid)
-        }
-        assert(cache.metadata.type == characteristic.uuid)
+        let id = try await identifier(connection: connection)
+        let metadata = try await metadata(for: characteristicUUID, service: service, accessory: id)
+        assert(metadata.type == characteristicUUID)
+        let characteristic = try connection.cache.characteristic(characteristicUUID, service: service)
+        assert(characteristic.uuid == characteristicUUID)
         // must be readable
-        guard cache.metadata.properties.contains(.read) else {
+        guard metadata.properties.contains(.read) else {
             assertionFailure()
             throw CocoaError(.featureUnsupported)
         }
         // must be single value
-        guard cache.metadata.properties.contains(.list) == false else {
+        guard metadata.properties.contains(.list) == false else {
             assertionFailure()
             throw CocoaError(.featureUnsupported)
         }
         // write encrypted
-        if cache.metadata.properties.contains(.encrypted) {
-            let id = try await identifier(connection: connection)
+        if metadata.properties.contains(.encrypted) {
             guard let key = self.key(for: id) else {
                 throw BluetoothAccessoryError.authenticationRequired(characteristic.uuid)
             }
@@ -321,7 +283,7 @@ public extension AccessoryManager {
             try await central.write(newValue, for: characteristic)
         }
         // update cache
-        self.characteristics[characteristic.peripheral, default: [:]][characteristic, default: cache].value = .single(newValue)
+        try await updateCoreDataCharacteristicValue(.single(newValue), for: characteristicUUID, service: service, accessory: id)
     }
     
     func setup(
@@ -330,20 +292,24 @@ public extension AccessoryManager {
         name: String
     ) async throws {
         let keyData = KeyData()
+        let request = SetupRequest(
+            id: UUID(),
+            secret: keyData,
+            name: name
+        )
         let information = try await self.connection(for: peripheral.peripheral) { connection in
-            let request = SetupRequest(
-                id: UUID(),
-                secret: keyData,
-                name: name
-            )
             try await connection.setup(request, using: sharedSecret)
             // read information
-            let key = Key(setup: request)
-            return try await readInformation(peripheral, key: key, connection: connection)
+            return try await readInformation(connection: connection)
         }
         // cache key
-        self[key: information.key.id] = keyData
-        self[cache: information.id] = information
+        let key = Key(setup: request)
+        let accessory = PairedAccessory(
+            information: information,
+            key: key
+        )
+        self[key: key.id] = keyData
+        self[cache: information.id] = accessory
     }
 }
 
@@ -358,29 +324,55 @@ internal extension AccessoryManager {
         return central
     }
     
+    /// Load cached identifier or read from device.
+    func identifier(
+        connection: GATTConnection<Central>
+    ) async throws -> UUID {
+        // load cached
+        if let uuid = self.accessoryPeripherals.first(where: { $0.value.peripheral == connection.peripheral })?.key {
+            return uuid
+        }
+        // read identifier
+        let id = try await connection.readIdentifier()
+        // cache new found device
+        if let scanResponse = self.scanResponses[connection.peripheral] {
+            self.accessoryPeripherals[id] = .init(
+                peripheral: connection.peripheral,
+                id: id,
+                name: scanResponse.name,
+                service: scanResponse.service
+            )
+        }
+        return id
+    }
+    
     func readInformation(
-        _ peripheral: AccessoryPeripheral,
-        key: Key,
         connection: GATTConnection<Central>
     ) async throws -> AccessoryInformation {
-        let id = try await connection.readIdentifier()
+        guard let scanResponse = self.scanResponses[connection.peripheral] else {
+            assertionFailure()
+            throw BluetoothAccessoryError.incompatiblePeripheral
+        }
+        let id = try await self.identifier(connection: connection)
         let name = try await connection.readName()
         let accessoryType = try await connection.readAccessoryType()
         let manufacturer = try await connection.readManufacturer()
         let softwareVersion = try await connection.readSoftwareVersion()
         let model = try await connection.readModel()
         let serialNumber = try await connection.readSerialNumber()
-        return AccessoryInformation(
+        let information = AccessoryInformation(
             id: id,
             name: name,
-            key: key,
             accessory: accessoryType,
-            service: peripheral.service,
+            service: scanResponse.service,
             manufacturer: manufacturer,
             serialNumber: serialNumber,
             model: model,
             softwareVersion: softwareVersion
         )
+        // update Core Data
+        try await cacheCoreDataAccessory(information)
+        return information
     }
 }
 

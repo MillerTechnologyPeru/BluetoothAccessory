@@ -43,19 +43,19 @@ extension AccessoryManagedObject: IdentifiableManagedObject { }
 internal extension NSManagedObjectContext {
     
     @discardableResult
-    func insert(_ accessories: [UUID: AccessoryInformation]) throws -> [AccessoryManagedObject] {
+    func insert(_ accessories: [UUID: PairedAccessory]) throws -> [AccessoryManagedObject] {
         
         // insert accessories
         return try accessories.map { (identifier, cache) in
             if let managedObject = try find(id: identifier, type: AccessoryManagedObject.self) {
                 // update read info
-                managedObject.update(cache, context: self)
+                managedObject.update(cache.information, context: self)
                 // insert key
                 try insert(cache.key, for: managedObject)
                 return managedObject
             } else {
                 return AccessoryManagedObject(
-                    cache,
+                    cache.information,
                     context: self
                 )
             }

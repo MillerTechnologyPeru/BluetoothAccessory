@@ -11,7 +11,27 @@ import BluetoothAccessory
 
 public extension AccessoryManager {
     
-    
+    func metadata(
+        for characteristic: BluetoothUUID,
+        service: BluetoothUUID,
+        accessory: UUID
+    ) async throws -> CharacteristicMetadata {
+        let id = CharacteristicCache.id(accessory: accessory, service: service, characteristic: characteristic)
+        let context = self.backgroundContext
+        return try await context.perform {
+            guard let managedObject = try context.find(
+                identifier: id as NSString,
+                propertyName: #keyPath(CharacteristicManagedObject.identifier),
+                type: CharacteristicManagedObject.self
+            ) else {
+                throw BluetoothAccessoryError.metadataRequired(characteristic)
+            }
+            assert(managedObject.type == characteristic.rawValue)
+            assert(managedObject.service == service.rawValue)
+            assert(managedObject.accessory?.identifier == accessory)
+            return CharacteristicMetadata(managedObject: managedObject)
+        }
+    }
 }
 
 internal extension AccessoryManager {
@@ -43,18 +63,61 @@ internal extension AccessoryManager {
         return context
     }
     
-    func updateCoreDataCache() async {
+    func updateCoreDataCache() async throws {
         let cache = self.cache
-        await self.backgroundContext.commit { context in
+        try await self.commit { context in
             try context.insert(cache)
+        }
+    }
+    
+    func commit(_ block: @escaping (NSManagedObjectContext) throws -> ()) async throws {
+        let context = self.backgroundContext
+        assert(context.concurrencyType == .privateQueueConcurrencyType)
+        try await context.perform { [unowned context] in
+            context.reset()
+            // run closure
+            do {
+                try block(context)
+            }
+            catch {
+                if context.hasChanges {
+                    context.undo()
+                }
+                throw error
+            }
+            // attempt to save
+            do {
+                if context.hasChanges {
+                    try context.save()
+                }
+            } catch {
+                print("⚠️ Unable to commit changes: \(error.localizedDescription)")
+                #if DEBUG
+                print(error)
+                #endif
+                assertionFailure("Core Data error. \(error)")
+                throw error
+            }
+        }
+    }
+    
+    func cacheCoreDataAccessory(
+        _ information: AccessoryInformation
+    ) async throws {
+        try await commit { context in
+            if let managedObject = try context.find(id: information.id, type: AccessoryManagedObject.self) {
+                managedObject.update(information, context: context)
+            } else {
+                let _ = AccessoryManagedObject(information, context: context)
+            }
         }
     }
     
     func updateCoreDataCharacteristics(
         _ characteristics: [(service: BluetoothUUID, metadata: CharacteristicMetadata)],
         for accessory: UUID
-    ) async {
-        await self.backgroundContext.commit { context in
+    ) async throws {
+        try await commit { context in
             guard let accessoryManagedObject = try context.find(id: accessory, type: AccessoryManagedObject.self) else {
                 assertionFailure()
                 return
@@ -105,14 +168,14 @@ internal extension AccessoryManager {
         }
     }
     
-    func metadata(
+    func updateCoreDataCharacteristicValue(
+        _ newValue: CharacteristicCache.Value,
         for characteristic: BluetoothUUID,
         service: BluetoothUUID,
         accessory: UUID
-    ) async throws -> CharacteristicMetadata {
+    ) async throws {
         let id = CharacteristicCache.id(accessory: accessory, service: service, characteristic: characteristic)
-        let context = self.backgroundContext
-        return try await context.perform {
+        return try await commit { context in
             guard let managedObject = try context.find(
                 identifier: id as NSString,
                 propertyName: #keyPath(CharacteristicManagedObject.identifier),
@@ -120,7 +183,33 @@ internal extension AccessoryManager {
             ) else {
                 throw BluetoothAccessoryError.metadataRequired(characteristic)
             }
-            return CharacteristicMetadata(managedObject: managedObject)
+            assert(managedObject.type == characteristic.rawValue)
+            assert(managedObject.service == service.rawValue)
+            assert(managedObject.accessory?.identifier == accessory)
+            // delete old value
+            managedObject.value
+                .flatMap { context.delete($0) }
+            managedObject.values?
+                .forEach { context.delete($0 as! NSManagedObject) }
+            // set new value
+            switch newValue {
+            case .single(let characteristicValue):
+                assert(managedObject.isList == false)
+                managedObject.value = CharacteristicValueManagedObject(
+                    characteristicValue,
+                    characteristic: managedObject,
+                    context: context
+                )
+            case .list(let array):
+                assert(managedObject.isList)
+                managedObject.values = NSOrderedSet(array: array.map {
+                    CharacteristicValueManagedObject(
+                        $0,
+                        characteristic: managedObject,
+                        context: context
+                    )
+                })
+            }
         }
     }
 }

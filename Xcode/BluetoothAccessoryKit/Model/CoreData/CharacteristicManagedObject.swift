@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import Bluetooth
 import BluetoothAccessory
 
 public final class CharacteristicManagedObject: NSManagedObject {
@@ -30,7 +31,6 @@ internal extension CharacteristicManagedObject {
     func update(_ cache: CharacteristicCache, context: NSManagedObjectContext) {
         assert(accessory?.identifier == cache.accessory)
         assert(service == cache.service.rawValue)
-        self.lastUpdate = Date()
         update(cache.metadata, context: context)
         update(cache.value, context: context)
     }
@@ -48,6 +48,7 @@ internal extension CharacteristicManagedObject {
     }
     
     func update(_ value: CharacteristicCache.Value?, context: NSManagedObjectContext) {
+        self.lastUpdate = Date()
         self.value.flatMap { context.delete($0) }
         self.values?.forEach { context.delete($0 as! NSManagedObject) }
         switch value {
@@ -61,5 +62,38 @@ internal extension CharacteristicManagedObject {
             self.value = nil
             self.values = NSOrderedSet(array: values.map { CharacteristicValueManagedObject($0, characteristic: self, context: context) })
         }
+    }
+    
+    var properties: BitMaskOptionSet<BluetoothAccessory.CharacteristicProperty> {
+        var properties = BitMaskOptionSet<BluetoothAccessory.CharacteristicProperty>()
+        if isReadable {
+            properties.insert(.read)
+        }
+        if isWritable {
+            properties.insert(.write)
+        }
+        if isWriteWithoutResponse {
+            properties.insert(.writeWithoutResponse)
+        }
+        if isEncrypted {
+            properties.insert(.encrypted)
+        }
+        if isList {
+            properties.insert(.list)
+        }
+        return properties
+    }
+}
+
+internal extension CharacteristicMetadata {
+    
+    init(managedObject: CharacteristicManagedObject) {
+        self.init(
+            type: BluetoothUUID(rawValue: managedObject.type!)!,
+            name: managedObject.name ?? "",
+            properties: managedObject.properties,
+            format: .init(rawValue: UInt8(managedObject.format))!,
+            unit: managedObject.unit.flatMap { .init(rawValue: $0.uint8Value) }
+        )
     }
 }

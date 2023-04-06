@@ -28,7 +28,7 @@ public extension AccessoryManager {
                 else { return }
             insertedUsers.insert(userRecordID.recordName)
             // save in CoreData
-            await backgroundContext.commit {
+            try await commit {
                 try $0.insert(contact: user, contactStore: contactStore)
             }
         }
@@ -40,7 +40,7 @@ public extension AccessoryManager {
             .init(keyPath: \ContactManagedObject.identifier, ascending: true)
         ]
         fetchRequest.predicate = NSPredicate(format: "NONE %K IN %@", #keyPath(ContactManagedObject.identifier), insertedUsers)
-        await backgroundContext.commit { (context) in
+        try await commit { (context) in
             try context.fetch(fetchRequest).forEach {
                 context.delete($0)
             }

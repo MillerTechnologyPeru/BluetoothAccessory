@@ -21,7 +21,8 @@ public extension AccessoryManager {
         }
         self.cache = file.accessories
         Task {
-            await updateCoreDataCache()
+            do { try await updateCoreDataCache() }
+            catch { assertionFailure("\(error)") }
         }
         return file
     }
@@ -42,7 +43,8 @@ public extension AccessoryManager {
             }
             self.cache[id] = newValue
             Task {
-                await updateCoreDataCache()
+                do { try await updateCoreDataCache() }
+                catch { assertionFailure("\(error)") }
             }
         }
     }

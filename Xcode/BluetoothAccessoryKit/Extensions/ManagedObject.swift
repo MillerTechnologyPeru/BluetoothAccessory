@@ -22,30 +22,6 @@ public extension NSManagedObjectModel {
 
 internal extension NSManagedObjectContext {
     
-    func commit(_ block: @escaping (NSManagedObjectContext) throws -> ()) async {
-        
-        assert(concurrencyType == .privateQueueConcurrencyType)
-        await perform { [unowned self] in
-            self.reset()
-            do {
-                try block(self)
-                if self.hasChanges {
-                    try self.save()
-                }
-            } catch {
-                print("⚠️ Unable to commit changes: \(error.localizedDescription)")
-                #if DEBUG
-                print(error)
-                #endif
-                assertionFailure("Core Data error")
-                return
-            }
-        }
-    }
-}
-
-internal extension NSManagedObjectContext {
-    
     func find<T>(identifier: NSObject, propertyName: String, type: T.Type) throws -> T? where T: NSManagedObject {
         
         let fetchRequest = NSFetchRequest<T>()

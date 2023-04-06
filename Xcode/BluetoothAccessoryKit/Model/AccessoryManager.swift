@@ -55,11 +55,7 @@ public final class AccessoryManager: ObservableObject {
     
     /// Paired devices.
     @Published
-    public internal(set) var cache = [UUID: AccessoryInformation]()
-    
-    /// Discovered characteristics
-    @Published
-    public internal(set) var characteristics = [Peripheral: [Characteristic: CharacteristicCache]]()
+    public internal(set) var cache = [UUID: PairedAccessory]()
     
     internal lazy var central = loadBluetooth()
     
