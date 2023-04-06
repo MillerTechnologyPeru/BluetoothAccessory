@@ -49,7 +49,7 @@ public struct NearbyAccessoryView: View {
             manufacturerData: store[manufacturerData: peripheral],
             beacon: store[beacon: peripheral],
             key: cachedID.flatMap { store[cache: $0]?.key },
-            characteristics: store.characteristics[peripheral] ?? [:],
+            characteristics: cachedID.flatMap { try! store.characteristics(for: $0) } ?? [],
             blacklist: blacklist,
             error: error
         )
@@ -115,10 +115,11 @@ internal extension NearbyAccessoryView {
             .createKey,
             .removeKey
         ]
-        let characteristics = store.characteristics[peripheral] ?? [:]
+        
+        let characteristics = cachedID.flatMap { try! store.characteristics(for: $0) } ?? []
         
         // hide setup if configured
-        let isConfigured = characteristics.values.first(where: { $0.service == BluetoothUUID(service: .authentication) && $0.metadata.type == BluetoothUUID(characteristic: .isConfigured) })?.value == true
+        let isConfigured = characteristics.first(where: { $0.service == BluetoothUUID(service: .authentication) && $0.metadata.type == BluetoothUUID(characteristic: .isConfigured) })?.value == true
         #if os(iOS)
         if isConfigured {
             blacklist.insert(.setup) // hide setup
@@ -157,7 +158,8 @@ internal extension NearbyAccessoryView {
                 self.cachedID = cachedID
                 // read all non-list characteristics
                 let key = self.store[cache: id]?.key
-                for (characteristic, cache) in (store.characteristics[peripheral] ?? [:]).sorted(by: { $0.key.id < $1.key.id }) {
+                let characteristics = cachedID.flatMap { try! store.characteristics(for: $0) } ?? []
+                for cache in characteristics {
                     // filter
                     let isEncrypted = cache.metadata.properties.contains(.encrypted)
                     let canRead = cache.metadata.properties.contains(.read) // must be readable
@@ -165,7 +167,8 @@ internal extension NearbyAccessoryView {
                         && (!isEncrypted || key != nil) // must have key if encrypted
                     guard canRead else { continue }
                     let _ = try await store.read(
-                        characteristic: characteristic,
+                        characteristic: cache.metadata.type,
+                        service: cache.service,
                         connection: connection
                     )
                 }
@@ -194,7 +197,7 @@ internal extension NearbyAccessoryView {
         
         let key: Key?
         
-        let characteristics: [AccessoryManager.Characteristic: CharacteristicCache]
+        let characteristics: [CharacteristicCache]
         
         let blacklist: Set<BluetoothUUID>
         
@@ -207,7 +210,7 @@ internal extension NearbyAccessoryView {
                     Section(service.name) {
                         ForEach(service.characteristics) { characteristic in
                             AccessoryCharacteristicRow(
-                                characteristic: characteristic.cache
+                                characteristic: characteristic
                             )
                         }
                     }
@@ -224,7 +227,7 @@ internal extension NearbyAccessoryView.StateView {
         scanResponse.name
     }
     
-    var accessoryID: UUID? {
+    var advertisedID: UUID? {
         manufacturerData?.id ?? beacon?.uuid
     }
     
@@ -246,7 +249,7 @@ internal extension NearbyAccessoryView.StateView {
                 subtitle: Text(verbatim: "\(peripheral.description)")
             )
             #endif
-            if let id = accessoryID {
+            if let id = advertisedID {
                 SubtitleRow(
                     title: Text("Identifier"),
                     subtitle: Text(verbatim: id.description)
@@ -266,7 +269,7 @@ internal extension NearbyAccessoryView.StateView {
             ServiceItem(
                 id: service,
                 name: BluetoothUUID.accessoryServiceTypes[service]?.description ?? service.description,
-                characteristics: characteristics.sorted(by: { $0.cache.metadata.name < $1.cache.metadata.name })
+                characteristics: characteristics.sorted(by: { $0.metadata.name < $1.metadata.name })
             )
         }
         .filter { $0.characteristics.isEmpty == false }
@@ -275,14 +278,13 @@ internal extension NearbyAccessoryView.StateView {
         .sorted(by: { $0.id != BluetoothUUID(service: .information) && $1.id == BluetoothUUID(service: .information) })
     }
     
-    var characteristicsByService: [BluetoothUUID: [CharacteristicItem]] {
-        var characteristicsByService = [BluetoothUUID: [CharacteristicItem]]()
-        for (characteristic, cache) in self.characteristics {
-            guard blacklist.contains(characteristic.uuid) == false else {
+    var characteristicsByService: [BluetoothUUID: [CharacteristicCache]] {
+        var characteristicsByService = [BluetoothUUID: [CharacteristicCache]]()
+        for cache in self.characteristics {
+            guard blacklist.contains(cache.metadata.type) == false else {
                 continue
             }
-            let characteristicItem = CharacteristicItem(characteristic: characteristic, cache: cache)
-            characteristicsByService[cache.service, default: []].append(characteristicItem)
+            characteristicsByService[cache.service, default: []].append(cache)
         }
         return characteristicsByService
     }
@@ -296,17 +298,6 @@ internal extension NearbyAccessoryView.StateView {
         
         let name: String
         
-        var characteristics: [CharacteristicItem]
-    }
-    
-    struct CharacteristicItem: Identifiable {
-        
-        var id: BluetoothUUID {
-            characteristic.uuid
-        }
-        
-        let characteristic: AccessoryManager.Characteristic
-        
-        let cache: CharacteristicCache
+        var characteristics: [CharacteristicCache]
     }
 }
