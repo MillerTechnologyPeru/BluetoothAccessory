@@ -37,6 +37,22 @@ public enum StatusLowBattery: UInt8, Codable, CaseIterable, CharacteristicCodabl
     case service = 2
 }
 
+// MARK: - CustomStringConvertible
+
+extension StatusLowBattery: CustomStringConvertible {
+    
+    public var description: String {
+        switch self {
+        case .normal:
+            return "Normal"
+        case .low:
+            return "Low"
+        case .service:
+            return "Service"
+        }
+    }
+}
+
 // MARK: - Central
 
 public extension CentralManager {
