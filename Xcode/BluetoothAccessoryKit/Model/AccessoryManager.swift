@@ -71,7 +71,7 @@ public final class AccessoryManager: ObservableObject {
     
     internal lazy var containerURL = loadContainerURL()
     
-    internal lazy var cloudContainer = loadCloudContainer()
+    public lazy var cloudContainer = loadCloudContainer()
     
     #if os(iOS)
     internal lazy var keyValueStore: NSUbiquitousKeyValueStore = .default

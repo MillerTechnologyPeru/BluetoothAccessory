@@ -37,6 +37,10 @@ struct BluetoothAccessoryApp: App {
         _accessoryManager = .init(wrappedValue: accessoryManager)
         // print version
         accessoryManager.log("Launching Bluetooth Accessory v\(Bundle.InfoPlist.shortVersion) (\(Bundle.InfoPlist.version))")
+        Task {
+            try? await Task.sleep(timeInterval: 0.2)
+            await Self.didLaunch(accessoryManager)
+        }
     }
 }
 
@@ -55,6 +59,22 @@ extension BluetoothAccessoryApp {
             ),
             cloud: "iCloud.com.colemancda.BluetoothAccessory"
         )
+    }
+}
+
+private extension App {
+    
+    static func didLaunch(_ accessoryManager: AccessoryManager) async {
+        
+        // CloudKit discoverability
+        do {
+            guard try await accessoryManager.cloudContainer.accountStatus() == .available,
+                  try await accessoryManager.cloudContainer.applicationPermissionStatus(for: .userDiscoverability) == .initialState
+                else { return }
+            let status = try await accessoryManager.cloudContainer.requestApplicationPermission(.userDiscoverability)
+            accessoryManager.log("☁️ CloudKit permisions \(status == .granted ? "granted" : "not granted")")
+        }
+        catch { accessoryManager.log("⚠️ Could not request CloudKit permissions. \(error.localizedDescription)") }
     }
 }
 
