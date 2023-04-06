@@ -52,6 +52,7 @@
 		6E71639B29D580F90042565D /* ScheduleManagedObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71639A29D580F90042565D /* ScheduleManagedObject.swift */; };
 		6E71639D29D607CF0042565D /* CharacteristicManagedObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71639C29D607CF0042565D /* CharacteristicManagedObject.swift */; };
 		6E71639F29D73FE20042565D /* CharacteristicValueManagedObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71639E29D73FE20042565D /* CharacteristicValueManagedObject.swift */; };
+		6EF1EC1E29DF747200113ED4 /* CharacteristicUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EF1EC1D29DF747200113ED4 /* CharacteristicUnit.swift */; };
 		6EFCFFC729D05E24004B6DE8 /* AccessoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFC629D05E24004B6DE8 /* AccessoryManager.swift */; };
 		6EFCFFCD29D05F23004B6DE8 /* Central.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFCB29D05F23004B6DE8 /* Central.swift */; };
 		6EFCFFCE29D05F23004B6DE8 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFCC29D05F23004B6DE8 /* Task.swift */; };
@@ -138,6 +139,7 @@
 		6E71639A29D580F90042565D /* ScheduleManagedObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScheduleManagedObject.swift; sourceTree = "<group>"; };
 		6E71639C29D607CF0042565D /* CharacteristicManagedObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacteristicManagedObject.swift; sourceTree = "<group>"; };
 		6E71639E29D73FE20042565D /* CharacteristicValueManagedObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacteristicValueManagedObject.swift; sourceTree = "<group>"; };
+		6EF1EC1D29DF747200113ED4 /* CharacteristicUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacteristicUnit.swift; sourceTree = "<group>"; };
 		6EFCFFC629D05E24004B6DE8 /* AccessoryManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccessoryManager.swift; sourceTree = "<group>"; };
 		6EFCFFCB29D05F23004B6DE8 /* Central.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Central.swift; sourceTree = "<group>"; };
 		6EFCFFCC29D05F23004B6DE8 /* Task.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
@@ -272,6 +274,7 @@
 			children = (
 				6E71635F29D3961F0042565D /* BluetoothUUID.swift */,
 				6E71637B29D4C7250042565D /* CloudKit.swift */,
+				6EF1EC1D29DF747200113ED4 /* CharacteristicUnit.swift */,
 				6EFCFFD329D116FA004B6DE8 /* Data.swift */,
 				6EFCFFD829D116FB004B6DE8 /* DataConvertible.swift */,
 				6E71635929D392A50042565D /* EnvironmentValues.swift */,
@@ -499,6 +502,7 @@
 				6EFCFFC729D05E24004B6DE8 /* AccessoryManager.swift in Sources */,
 				6EFCFFD229D07A33004B6DE8 /* NearbyDevicesView.swift in Sources */,
 				6E71636829D410B20042565D /* Preferences.swift in Sources */,
+				6EF1EC1E29DF747200113ED4 /* CharacteristicUnit.swift in Sources */,
 				6E71638629D4E13E0042565D /* JSONFile.swift in Sources */,
 				6E71638D29D571180042565D /* Model.xcdatamodeld in Sources */,
 				6EFCFFCD29D05F23004B6DE8 /* Central.swift in Sources */,
