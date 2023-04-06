@@ -69,7 +69,31 @@ internal extension AccessoryManager {
         }
     }
     
+    func loadPersistentStores() async {
+        guard didLoadPersistentStores == false else {
+            return
+        }
+        do {
+            for try await store in persistentContainer.loadPersistentStores() {
+                log("Loaded CoreData store \(store.url?.absoluteString ?? "")")
+            }
+            didLoadPersistentStores = true
+        }
+        catch {
+            log("Error loading CoreData: \(error.localizedDescription)")
+            // remove sqlite file at url
+            for url in persistentContainer.persistentStoreDescriptions.compactMap({ $0.url }) {
+                try? fileManager.removeItem(at: url)
+            }
+            // try again
+            await loadPersistentStores()
+        }
+    }
+    
     func commit(_ block: @escaping (NSManagedObjectContext) throws -> ()) async throws {
+        // load persist store
+        await loadPersistentStores()
+        // modify background context
         let context = self.backgroundContext
         assert(context.concurrencyType == .privateQueueConcurrencyType)
         try await context.perform { [unowned context] in

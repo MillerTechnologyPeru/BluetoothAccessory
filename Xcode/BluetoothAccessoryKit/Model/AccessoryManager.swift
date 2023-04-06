@@ -87,6 +87,8 @@ public final class AccessoryManager: ObservableObject {
     
     internal lazy var backgroundContext = loadBackgroundContext()
     
+    internal var didLoadPersistentStores = false
+    
     // MARK: - Initialization
     
     deinit {
