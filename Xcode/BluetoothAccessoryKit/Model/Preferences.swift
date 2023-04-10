@@ -9,14 +9,11 @@ import Foundation
 import Combine
 
 /// Preferences
-public final class Preferences {
+public final class Preferences: ObservableObject {
     
     // MARK: - Preferences
     
     private let userDefaults: UserDefaults
-        
-    @available(iOS 13.0, watchOS 6.0, *)
-    public lazy var objectWillChange = ObservableObjectPublisher()
     
     // MARK: - Initialization
     
@@ -26,21 +23,14 @@ public final class Preferences {
     
     // MARK: - Methods
     
-    private subscript <T> (key: Key) -> T? {
+    internal subscript <T> (key: Key) -> T? {
         get { userDefaults.object(forKey: key.rawValue) as? T }
         set {
-            if #available(iOS 13.0, watchOSApplicationExtension 6.0, *) {
-                objectWillChange.send()
-            }
+            objectWillChange.send()
             userDefaults.set(newValue, forKey: key.rawValue)
         }
     }
 }
-
-// MARK: - ObservableObject
-
-@available(iOS 13.0, watchOS 6.0, *)
-extension Preferences: ObservableObject { }
 
 // MARK: - App Group
 
@@ -65,6 +55,11 @@ public extension Preferences {
     var isAppInstalled: Bool {
         get { return self[.isAppInstalled] ?? false }
         set { self[.isAppInstalled] = newValue }
+    }
+    
+    var appVersion: String? {
+        get { return self[.appVersion] }
+        set { self[.appVersion] = newValue }
     }
     
     var isCloudBackupEnabled: Bool {
@@ -122,16 +117,16 @@ public extension Preferences {
     
     enum Key: String, CaseIterable {
         
-        case isAppInstalled
-        case isCloudBackupEnabled
-        case lastCloudUpdate
-        case lastWatchUpdate
-        
-        case bluetoothTimeout
-        case filterDuplicates
-        case showPowerAlert
-        case writeWithoutResponseTimeout
-        case scanDuration
-        case monitorBluetoothNotifications
+        case isAppInstalled                     = "com.colemancda.BluetoothAccessory.UserDefaults.IsAppInstalled"
+        case appVersion                         = "com.colemancda.BluetoothAccessory.UserDefaults.AppVersion"
+        case isCloudBackupEnabled               = "com.colemancda.BluetoothAccessory.UserDefaults.IsCloudBackupEnabled"
+        case lastCloudUpdate                    = "com.colemancda.BluetoothAccessory.UserDefaults.LastCloudUpdate"
+        case lastWatchUpdate                    = "com.colemancda.BluetoothAccessory.UserDefaults.LastWatchUpdate"
+        case bluetoothTimeout                   = "com.colemancda.BluetoothAccessory.UserDefaults.BluetoothTimeout"
+        case filterDuplicates                   = "com.colemancda.BluetoothAccessory.UserDefaults.FilterDuplicates"
+        case showPowerAlert                     = "com.colemancda.BluetoothAccessory.UserDefaults.ShowPowerAlert"
+        case writeWithoutResponseTimeout        = "com.colemancda.BluetoothAccessory.UserDefaults.WriteWithoutResponseTimeout"
+        case scanDuration                       = "com.colemancda.BluetoothAccessory.UserDefaults.ScanDuration"
+        case monitorBluetoothNotifications      = "com.colemancda.BluetoothAccessory.UserDefaults.MonitorBluetoothNotifications"
     }
 }
