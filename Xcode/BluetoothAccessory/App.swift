@@ -66,7 +66,7 @@ extension BluetoothAccessoryApp {
 private extension App {
     
     static func didLaunch(_ accessoryManager: AccessoryManager) async {
-        
+        /*
         // CloudKit discoverability
         do {
             guard try await accessoryManager.cloudContainer.accountStatus() == .available,
@@ -76,11 +76,14 @@ private extension App {
             accessoryManager.log("☁️ CloudKit permisions \(status == .granted ? "granted" : "not granted")")
         }
         catch { accessoryManager.log("⚠️ Could not request CloudKit permissions. \(error.localizedDescription)") }
+        */
     }
 }
 
 #if os(iOS) || os(tvOS)
 final class AppDelegate: UIResponder, UIApplicationDelegate {
+    
+    static var shared: AppDelegate { UIApplication.shared.delegate as! AppDelegate }
     
     let appLaunch = Date()
     
@@ -112,6 +115,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
 #elseif os(macOS)
 final class AppDelegate: NSResponder, NSApplicationDelegate {
+    
+    static var shared: AppDelegate { NSApplication.shared.delegate as! AppDelegate }
+    
+    var accessoryManager: AccessoryManager!
     
     // MARK: - NSApplicationDelegate
         
