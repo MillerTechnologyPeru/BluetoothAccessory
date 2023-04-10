@@ -186,28 +186,11 @@ public extension AccessoryManager {
     }
     
     @discardableResult
-    func read<T: AccessoryCharacteristic>(
-        _ characteristic: T.Type,
-        service: BluetoothUUID,
-        connection: GATTConnection<Central>
-    ) async throws -> T {
-        let value = try await read(
-            characteristic: T.type,
-            service: service,
-            connection: connection
-        )
-        guard let characteristicValue = T.init(characteristicValue: value) else {
-            throw BluetoothAccessoryError.invalidCharacteristicValue(T.type)
-        }
-        return characteristicValue
-    }
-    
-    @discardableResult
     func read(
         characteristic characteristicUUID: BluetoothUUID,
         service: BluetoothUUID,
         connection: GATTConnection<Central>
-    ) async throws -> CharacteristicValue {
+    ) async throws -> CharacteristicCache.Value {
         let id = try await identifier(connection: connection)
         let metadata = try self.managedObjectContext.metadata(for: characteristicUUID, service: service, accessory: id)
         assert(metadata.type == characteristicUUID)
@@ -223,28 +206,50 @@ public extension AccessoryManager {
             assertionFailure()
             throw CocoaError(.featureUnsupported)
         }
-        let newValue: CharacteristicValue
+        let newValue: CharacteristicCache.Value
         if metadata.properties.contains(.encrypted) {
             guard let key = self.key(for: id) else {
                 throw BluetoothAccessoryError.authenticationRequired(characteristic.uuid)
             }
-            // TODO: validate key permission
-            newValue = try await central.readEncryped(
-                characteristic: characteristic,
-                service: service,
-                cryptoHash: connection.cache.characteristic(.cryptoHash, service: .authentication),
-                authentication: connection.cache.characteristic(.authenticate, service: .authentication),
-                key: key,
-                format: metadata.format
-            )
+            let cryptoHash = try connection.cache.characteristic(.cryptoHash, service: .authentication)
+            let authentication = try connection.cache.characteristic(.authenticate, service: .authentication)
+            // read list
+            if metadata.properties.contains(.list) {
+                let stream = try await central.readList(
+                    characteristic: characteristic,
+                    service: service,
+                    cryptoHash: cryptoHash,
+                    authentication: authentication,
+                    key: key,
+                    format: metadata.format
+                )
+                var values = [CharacteristicValue]()
+                for try await value in stream {
+                    try await addCoreDataCharacteristicListValue(value, for: characteristicUUID, service: service, accessory: id)
+                    values.append(value)
+                }
+                newValue = .list(values)
+            } else {
+                // TODO: validate key permission
+                let value = try await central.readEncryped(
+                    characteristic: characteristic,
+                    service: service,
+                    cryptoHash: cryptoHash,
+                    authentication: authentication,
+                    key: key,
+                    format: metadata.format
+                )
+                newValue = .single(value)
+                try await updateCoreDataCharacteristicValue(newValue, for: characteristicUUID, service: service, accessory: id)
+            }
         } else {
-            newValue = try await central.read(
+            let value = try await central.read(
                 characteristic: characteristic,
                 format: metadata.format
             )
+            newValue = .single(value)
+            try await updateCoreDataCharacteristicValue(newValue, for: characteristicUUID, service: service, accessory: id)
         }
-        // update cache
-        try await updateCoreDataCharacteristicValue(.single(newValue), for: characteristicUUID, service: service, accessory: id)
         return newValue
     }
     
@@ -313,6 +318,8 @@ public extension AccessoryManager {
         self[key: key.id] = keyData
         self[cache: information.id] = accessory
     }
+    
+    
 }
 
 // MARK: - Internal Methods

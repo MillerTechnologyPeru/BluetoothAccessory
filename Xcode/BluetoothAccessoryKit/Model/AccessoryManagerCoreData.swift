@@ -230,4 +230,33 @@ internal extension AccessoryManager {
             }
         }
     }
+    
+    func addCoreDataCharacteristicListValue(
+        _ newValue: CharacteristicValue,
+        for characteristic: BluetoothUUID,
+        service: BluetoothUUID,
+        accessory: UUID
+    ) async throws {
+        let id = CharacteristicCache.id(accessory: accessory, service: service, characteristic: characteristic)
+        return try await commit { context in
+            guard let managedObject = try context.find(
+                identifier: id as NSString,
+                propertyName: #keyPath(CharacteristicManagedObject.identifier),
+                type: CharacteristicManagedObject.self
+            ) else {
+                throw BluetoothAccessoryError.metadataRequired(characteristic)
+            }
+            assert(managedObject.type == characteristic.rawValue)
+            assert(managedObject.service == service.rawValue)
+            assert(managedObject.accessory?.identifier == accessory)
+            // set new value
+            assert(managedObject.isList)
+            let valueObject = CharacteristicValueManagedObject(
+                newValue,
+                characteristic: managedObject,
+                context: context
+            )
+            managedObject.addToValues(valueObject)
+        }
+    }
 }
