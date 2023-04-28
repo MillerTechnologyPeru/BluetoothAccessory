@@ -11,9 +11,8 @@ import Bluetooth
 import GATT
 
 /// Test L2CAP socket
-@MainActor
-internal final class TestL2CAPSocket: L2CAPSocket {
-        
+internal actor TestL2CAPSocket: L2CAPSocket {
+            
     private actor Cache {
         
         static let shared = Cache()
@@ -107,6 +106,10 @@ internal final class TestL2CAPSocket: L2CAPSocket {
     
     // MARK: - Methods
     
+    func close() async {
+        
+    }
+    
     func accept() async throws -> TestL2CAPSocket {
         // sleep until a client socket is created
         while (await Cache.shared.pendingClients[address] ?? []).isEmpty {
@@ -115,8 +118,8 @@ internal final class TestL2CAPSocket: L2CAPSocket {
         let client = await Cache.shared.dequeue(server: address)!
         let newConnection = TestL2CAPSocket(address: client.address, name: "Server connection")
         // connect sockets
-        newConnection.connect(to: client)
-        client.connect(to: newConnection)
+        await newConnection.connect(to: client)
+        await client.connect(to: newConnection)
         return newConnection
     }
     
@@ -128,10 +131,8 @@ internal final class TestL2CAPSocket: L2CAPSocket {
         guard let target = self.target
             else { throw POSIXError(.ECONNRESET) }
         
-        target.receive(data)
-        eventContinuation.yield(.write(data.count))
-        
-        try await Task.sleep(nanoseconds: 1_000_000)
+        await target.receive(data)
+        eventContinuation.yield(.didWrite(data.count))
     }
     
     /// Reads from the socket.
@@ -147,20 +148,17 @@ internal final class TestL2CAPSocket: L2CAPSocket {
         
         let data = self.receivedData.removeFirst()
         cache.append(data)
-        eventContinuation.yield(.read(data.count))
-        
-        try await Task.sleep(nanoseconds: 1_000_000)
-        
+        eventContinuation.yield(.didRead(data.count))
         return data
     }
     
     fileprivate func receive(_ data: Data) {
         receivedData.append(data)
         print("L2CAP Socket: \(name) recieved \([UInt8](data))")
-        eventContinuation.yield(.pendingRead)
+        eventContinuation.yield(.read)
     }
     
-    fileprivate func connect(to socket: TestL2CAPSocket) {
+    internal func connect(to socket: TestL2CAPSocket) {
         self.target = socket
     }
 }

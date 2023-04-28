@@ -30,7 +30,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/apple/swift-crypto.git",
-            from: "2.4.0"
+            from: "2.5.0"
         ),
     ],
     targets: [
