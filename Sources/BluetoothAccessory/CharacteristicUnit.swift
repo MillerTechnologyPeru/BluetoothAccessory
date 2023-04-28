@@ -20,4 +20,5 @@ public enum CharacteristicUnit: UInt8, Codable, CaseIterable {
     case amps
     case volts
     case hertz
+    case meters
 }
