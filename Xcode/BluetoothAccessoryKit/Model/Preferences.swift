@@ -117,11 +117,11 @@ public extension Preferences {
     
     enum Key: String, CaseIterable {
         
-        case isAppInstalled                     = "com.colemancda.BluetoothAccessory.UserDefaults.IsAppInstalled"
+        case isAppInstalled                     = "com.colemancda.BluetoothAccessory.UserDefaults.AppInstalled"
         case appVersion                         = "com.colemancda.BluetoothAccessory.UserDefaults.AppVersion"
-        case isCloudBackupEnabled               = "com.colemancda.BluetoothAccessory.UserDefaults.IsCloudBackupEnabled"
-        case lastCloudUpdate                    = "com.colemancda.BluetoothAccessory.UserDefaults.LastCloudUpdate"
-        case lastWatchUpdate                    = "com.colemancda.BluetoothAccessory.UserDefaults.LastWatchUpdate"
+        case isCloudBackupEnabled               = "com.colemancda.BluetoothAccessory.UserDefaults.CloudBackupEnabled"
+        case lastCloudUpdate                    = "com.colemancda.BluetoothAccessory.UserDefaults.CloudUpdate"
+        case lastWatchUpdate                    = "com.colemancda.BluetoothAccessory.UserDefaults.WatchUpdate"
         case bluetoothTimeout                   = "com.colemancda.BluetoothAccessory.UserDefaults.BluetoothTimeout"
         case filterDuplicates                   = "com.colemancda.BluetoothAccessory.UserDefaults.FilterDuplicates"
         case showPowerAlert                     = "com.colemancda.BluetoothAccessory.UserDefaults.ShowPowerAlert"
