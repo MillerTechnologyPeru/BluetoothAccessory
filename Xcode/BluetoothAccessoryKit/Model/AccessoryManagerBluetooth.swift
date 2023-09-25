@@ -88,7 +88,6 @@ public extension AccessoryManager {
         self.accessoryPeripherals.removeAll(keepingCapacity: true)
         self.scanResults.removeAll(keepingCapacity: true)
         stopScanning()
-        isScanning = true
         let scanStream = central.scan(
             with: Set(services.lazy.map { BluetoothUUID(service: $0) }),
             filterDuplicates: filterDuplicates
@@ -99,10 +98,10 @@ public extension AccessoryManager {
                 for try await scanData in scanStream {
                     guard await found(scanData) else { continue }
                 }
-                self.isScanning = false
+                self.scanStream = nil
             }
             catch {
-                self.isScanning = false
+                self.scanStream = nil
                 throw error
             }
         }
@@ -127,7 +126,6 @@ public extension AccessoryManager {
     func stopScanning() {
         scanStream?.stop()
         scanStream = nil
-        isScanning = false
     }
     
     func connection<T>(

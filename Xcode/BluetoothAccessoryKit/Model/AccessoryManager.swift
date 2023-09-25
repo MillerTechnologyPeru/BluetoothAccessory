@@ -35,8 +35,9 @@ public final class AccessoryManager: ObservableObject {
     @Published
     public internal(set) var state: DarwinBluetoothState = .unknown
     
-    @Published
-    public internal(set) var isScanning = false
+    public var isScanning: Bool {
+        scanStream != nil
+    }
     
     @Published
     public internal(set) var peripherals = [Peripheral: Bool]()
@@ -61,6 +62,7 @@ public final class AccessoryManager: ObservableObject {
     
     internal var centralObserver: AnyCancellable?
     
+    @Published
     internal var scanStream: AsyncCentralScan<Central>?
     
     internal lazy var keychain = loadKeychain()
