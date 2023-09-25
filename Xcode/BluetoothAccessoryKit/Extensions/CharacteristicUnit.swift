@@ -40,6 +40,8 @@ public extension CharacteristicUnit {
             return "V"
         case .hertz:
             return "Hz"
+        case .meters:
+            return "m"
         }
     }
 }
