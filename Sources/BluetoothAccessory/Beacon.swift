@@ -18,7 +18,7 @@ public enum AccessoryBeacon: Equatable, Hashable {
     case characteristicChanged(UUID, CharacteristicType)
     
     // Setup mode
-    //case setup(UUID, AccessoryType)
+    case setup(UUID, AccessoryType)
 }
 
 public extension AccessoryBeacon {
@@ -29,6 +29,8 @@ public extension AccessoryBeacon {
             return uuid
         case let .characteristicChanged(uuid, _):
             return uuid
+        case let .setup(uuid, _):
+            return uuid
         }
     }
     
@@ -38,6 +40,8 @@ public extension AccessoryBeacon {
             return 0x00
         case .characteristicChanged:
             return 0x01
+        case .setup:
+            return 0x02
         }
     }
     
@@ -46,6 +50,8 @@ public extension AccessoryBeacon {
         case .id:
             return 0x00
         case let .characteristicChanged(_, type):
+            return type.rawValue
+        case let .setup(_, type):
             return type.rawValue
         }
     }
@@ -72,6 +78,11 @@ public extension AccessoryBeacon {
                 return nil
             }
             self = .characteristicChanged(beacon.uuid, characteristicType)
+        case 0x02:
+            guard let accessoryType = AccessoryType(rawValue: beacon.minor) else {
+                return nil
+            }
+            self = .setup(beacon.uuid, accessoryType)
         default:
             return nil
         }
