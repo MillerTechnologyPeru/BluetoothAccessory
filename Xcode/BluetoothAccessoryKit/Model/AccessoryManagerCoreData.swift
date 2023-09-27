@@ -7,7 +7,10 @@
 
 import Foundation
 import CoreData
+import CoreModel
+import CoreDataModel
 import BluetoothAccessory
+
 public enum PersistentStoreState {
     
     case uninitialized
@@ -19,8 +22,8 @@ public extension AccessoryManager {
     
     func characteristics(
         for accessory: UUID
-    ) throws -> [CharacteristicCache] {
-        try managedObjectContext.characteristics(for: accessory)
+    ) async throws -> [CharacteristicCache] {
+        try await managedObjectContext.characteristics(for: accessory)
     }
     
     func metadata(
@@ -28,11 +31,16 @@ public extension AccessoryManager {
         service: BluetoothUUID,
         accessory: UUID
     ) throws -> CharacteristicMetadata {
-        return try managedObjectContext.metadata(
-            for: characteristic,
+        let id = CharacteristicEntity.ID(
+            accessory: accessory,
             service: service,
-            accessory: accessory
+            characteristic: characteristic
         )
+        guard let modelData = try managedObjectContext.fetch(CharacteristicEntity.entityName, for: ObjectID(id)) else {
+            throw BluetoothAccessoryError.metadataRequired(characteristic)
+        }
+        let entity = try CharacteristicEntity(from: modelData)
+        return CharacteristicMetadata(entity)
     }
 }
 
@@ -41,7 +49,7 @@ internal extension AccessoryManager {
     func loadPersistentContainer() -> NSPersistentContainer {
         let container = NSPersistentContainer(
             name: "BluetoothAccessoryCache",
-            managedObjectModel: .bluetoothAccessory
+            managedObjectModel: .init(model: .bluetoothAccessory)
         )
         let storeDescription = NSPersistentStoreDescription(url: url(for: .cacheSqlite))
         storeDescription.shouldInferMappingModelAutomatically = true
@@ -67,7 +75,21 @@ internal extension AccessoryManager {
     func updateCoreDataCache() async throws {
         let cache = self.cache
         try await self.commit { context in
-            try context.insert(cache)
+            for (id, cache) in cache {
+                var accessory: AccessoryEntity
+                if let accessoryData = try context.fetch(AccessoryEntity.entityName, for: ObjectID(id)) {
+                    accessory = try AccessoryEntity(from: accessoryData)
+                    accessory.update(cache.information)
+                } else {
+                    accessory = AccessoryEntity(cache.information, keys: [cache.key.id])
+                }
+                let key = KeyEntity(cache.key, accessory: id)
+                // save
+                var modelData = [ModelData]()
+                try modelData.append(accessory.encode())
+                try modelData.append(key.encode())
+                try context.insert(modelData)
+            }
         }
     }
     
@@ -131,10 +153,14 @@ internal extension AccessoryManager {
         _ information: AccessoryInformation
     ) async throws {
         try await commit { context in
-            if let managedObject = try context.find(id: information.id, type: AccessoryManagedObject.self) {
-                managedObject.update(information, context: context)
+            if var modelData = try context.fetch(AccessoryEntity.entityName, for: ObjectID(information.id)) {
+                var entity = try AccessoryEntity(from: modelData)
+                entity.update(information)
+                modelData = try entity.encode()
+                try context.insert(modelData)
             } else {
-                let _ = AccessoryManagedObject(information, context: context)
+                let modelData = try AccessoryEntity(information).encode()
+                try context.insert(modelData)
             }
         }
     }
@@ -144,53 +170,26 @@ internal extension AccessoryManager {
         for accessory: UUID
     ) async throws {
         try await commit { context in
-            guard let accessoryManagedObject = try context.find(id: accessory, type: AccessoryManagedObject.self) else {
+            guard let _ = try context.fetch(AccessoryEntity.entityName, for: ObjectID(accessory)) else {
                 assertionFailure()
                 return
             }
-            let oldValues = (accessoryManagedObject.characteristics?.array ?? [])
-                .map { $0 as! CharacteristicManagedObject }
-            var managedObjects = [CharacteristicManagedObject]()
-            managedObjects.reserveCapacity(characteristics.count)
-            for (service, metadata) in characteristics {
-                let id = CharacteristicCache.id(
+            let values = try characteristics.map { (service, metadata) in
+                let id = CharacteristicCache.ID(
                     accessory: accessory,
                     service: service,
                     characteristic: metadata.type
                 )
-                // find or create
-                let managedObject: CharacteristicManagedObject
-                if let object = try context.find(
-                    identifier: id as NSString,
-                    propertyName: #keyPath(CharacteristicManagedObject.identifier),
-                    type: CharacteristicManagedObject.self
-                ) {
-                    managedObject = object
-                    managedObject.update(metadata, context: context)
+                var entity: CharacteristicEntity
+                if var modelData = try context.fetch(CharacteristicEntity.entityName, for: ObjectID(id)) {
+                    entity = try CharacteristicEntity(from: modelData)
+                    entity.update(metadata: metadata)
                 } else {
-                    let cache = CharacteristicCache(
-                        accessory: accessory,
-                        service: service,
-                        metadata: metadata,
-                        updated: Date()
-                    )
-                    managedObject = CharacteristicManagedObject(cache, accessory: accessoryManagedObject, context: context)
+                    entity = .init(metadata: metadata, accessory: accessory, service: service)
                 }
-                assert(managedObject.identifier == id)
-                assert(managedObject.service == service.rawValue)
-                assert(managedObject.accessory?.identifier == accessory)
-                managedObjects.append(managedObject)
+                return try entity.encode()
             }
-            // remove old characteristics
-            oldValues
-            .filter { managedOject in
-                managedObjects.contains(where: { $0.identifier == managedOject.identifier }) == false
-            }
-            .forEach {
-                context.delete($0)
-            }
-            // set new value
-            accessoryManagedObject.characteristics = NSOrderedSet(array: managedObjects)
+            try context.insert(values)
         }
     }
     
@@ -200,42 +199,38 @@ internal extension AccessoryManager {
         service: BluetoothUUID,
         accessory: UUID
     ) async throws {
-        let id = CharacteristicCache.id(accessory: accessory, service: service, characteristic: characteristic)
-        return try await commit { context in
-            guard let managedObject = try context.find(
-                identifier: id as NSString,
-                propertyName: #keyPath(CharacteristicManagedObject.identifier),
-                type: CharacteristicManagedObject.self
-            ) else {
+        let id = CharacteristicEntity.ID(
+            accessory: accessory,
+            service: service,
+            characteristic: characteristic
+        )
+        try await commit { context in
+            guard var modelData = try context.fetch(CharacteristicEntity.entityName, for: ObjectID(id)) else {
                 throw BluetoothAccessoryError.metadataRequired(characteristic)
             }
-            assert(managedObject.type == characteristic.rawValue)
-            assert(managedObject.service == service.rawValue)
-            assert(managedObject.accessory?.identifier == accessory)
-            // delete old value
-            managedObject.value
-                .flatMap { context.delete($0) }
-            managedObject.values?
-                .forEach { context.delete($0 as! NSManagedObject) }
+            var entity = try CharacteristicEntity(from: modelData)
+            let oldValues = entity.values
+            var values: [CharacteristicValueEntity]
             // set new value
             switch newValue {
-            case .single(let characteristicValue):
-                assert(managedObject.isList == false)
-                managedObject.value = CharacteristicValueManagedObject(
-                    characteristicValue,
-                    characteristic: managedObject,
-                    context: context
-                )
+            case .single(let value):
+                values = [.init(characteristic: id, index: 0, value: value)]
             case .list(let array):
-                assert(managedObject.isList)
-                managedObject.values = NSOrderedSet(array: array.map {
-                    CharacteristicValueManagedObject(
-                        $0,
-                        characteristic: managedObject,
-                        context: context
-                    )
-                })
+                values = array
+                    .enumerated()
+                    .map { CharacteristicValueEntity(characteristic: id, index: UInt($0.offset), value: $0.element) }
             }
+            entity.values = values.map { $0.id }
+            // remove old values
+            try oldValues
+                .filter { entity.values.contains($0) == false }
+                .forEach { try context.delete(CharacteristicValueEntity.entityName, for: .init($0)) }
+            // save new values
+            modelData = try entity.encode()
+            var insertedValues = [ModelData]()
+            insertedValues.append(modelData)
+            insertedValues += try values.map { try $0.encode() }
+            try context.insert(insertedValues)
         }
     }
     
@@ -245,26 +240,30 @@ internal extension AccessoryManager {
         service: BluetoothUUID,
         accessory: UUID
     ) async throws {
-        let id = CharacteristicCache.id(accessory: accessory, service: service, characteristic: characteristic)
-        return try await commit { context in
-            guard let managedObject = try context.find(
-                identifier: id as NSString,
-                propertyName: #keyPath(CharacteristicManagedObject.identifier),
-                type: CharacteristicManagedObject.self
-            ) else {
+        let id = CharacteristicEntity.ID(
+            accessory: accessory,
+            service: service,
+            characteristic: characteristic
+        )
+        try await commit { context in
+            guard let modelData = try context.fetch(CharacteristicEntity.entityName, for: ObjectID(id)) else {
                 throw BluetoothAccessoryError.metadataRequired(characteristic)
             }
-            assert(managedObject.type == characteristic.rawValue)
-            assert(managedObject.service == service.rawValue)
-            assert(managedObject.accessory?.identifier == accessory)
+            var entity = try CharacteristicEntity(from: modelData)
             // set new value
-            assert(managedObject.isList)
-            let valueObject = CharacteristicValueManagedObject(
-                newValue,
-                characteristic: managedObject,
-                context: context
+            assert(entity.isList)
+            let index = entity.values.last?.index ?? 0
+            let valueEntity = CharacteristicValueEntity(
+                characteristic: id,
+                index: index,
+                value: newValue
             )
-            managedObject.addToValues(valueObject)
+            entity.values.append(valueEntity.id)
+            // save new values
+            var insertedValues = [ModelData]()
+            try insertedValues.append(entity.encode())
+            try insertedValues.append(valueEntity.encode())
+            try context.insert(insertedValues)
         }
     }
 }

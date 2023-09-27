@@ -50,10 +50,15 @@ public struct CharacteristicValueEntity: Equatable, Hashable, Identifiable, Send
 extension CharacteristicValueEntity: Codable {
     
     public init(from decoder: Decoder) throws {
-        var container = try decoder.container(keyedBy: CodingKeys.self)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
         let id = try container.decode(ID.self, forKey: .id)
-        self.characteristic = try container.decode(CharacteristicEntity.ID.self, forKey: .characteristic)
-        self.index = try container.decode(UInt.self, forKey: .index)
+        let characteristic = try container.decode(CharacteristicEntity.ID.self, forKey: .characteristic)
+        let index = try container.decode(UInt.self, forKey: .index)
+        guard id.characteristic == characteristic.characteristic, id.accessory == characteristic.accessory, id.service == characteristic.service, id.index == index else {
+            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Invalid identifier \(id)"))
+        }
+        self.index = index
+        self.characteristic = characteristic
         let type = try container.decode(CharacteristicFormat.self, forKey: .type)
         switch type {
         case .bool:
@@ -185,7 +190,6 @@ extension CharacteristicValueEntity: Entity {
         ]
     }
 }
-
 
 // MARK: - Supporting Types
 

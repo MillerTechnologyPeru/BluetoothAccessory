@@ -62,6 +62,28 @@ public struct KeyEntity: Equatable, Hashable, Identifiable, Codable, Sendable {
     }
 }
 
+public extension KeyEntity {
+    
+    init(_ value: Key, accessory: UUID) {
+        self.id = value.id
+        self.accessory = accessory
+        self.created = value.created
+        self.name = value.name
+        self.permission = value.permission.type
+        let schedule = value.permission.schedule
+        self.scheduleExpiry = schedule?.expiry
+        self.intervalMin = schedule?.interval.rawValue.lowerBound ?? 0
+        self.intervalMax = schedule?.interval.rawValue.upperBound ?? 1440
+        self.monday = schedule?.weekdays.monday ?? true
+        self.tuesday = schedule?.weekdays.tuesday ?? true
+        self.wednesday = schedule?.weekdays.wednesday ?? true
+        self.thursday = schedule?.weekdays.thursday ?? true
+        self.friday = schedule?.weekdays.friday ?? true
+        self.saturday = schedule?.weekdays.saturday ?? true
+        self.sunday = schedule?.weekdays.sunday ?? true
+    }
+}
+
 // MARK: - Entity
 
 extension KeyEntity: Entity {
@@ -72,7 +94,7 @@ extension KeyEntity: Entity {
         [
             .created : .date,
             .name: .string,
-            .permission: .int16,
+            .permission: .string,
             .scheduleExpiry: .date,
             .monday: .bool,
             .tuesday: .bool,

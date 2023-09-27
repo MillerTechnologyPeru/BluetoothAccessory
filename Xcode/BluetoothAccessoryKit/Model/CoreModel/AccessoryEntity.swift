@@ -78,6 +78,13 @@ public extension AccessoryEntity {
     }
 }
 
+internal extension AccessoryEntity {
+    
+    mutating func update(_ value: AccessoryInformation) {
+        self = .init(value, characteristics: self.characteristics, keys: self.keys, pendingKeys: self.pendingKeys)
+    }
+}
+
 // MARK: - Entity
 
 extension AccessoryEntity: Entity {
@@ -102,6 +109,20 @@ extension AccessoryEntity: Entity {
                 id: .characteristics,
                 entity: AccessoryEntity.self,
                 destination: CharacteristicEntity.self,
+                type: .toMany,
+                inverseRelationship: .accessory
+            ),
+            .keys : Relationship(
+                id: .keys,
+                entity: AccessoryEntity.self,
+                destination: KeyEntity.self,
+                type: .toMany,
+                inverseRelationship: .accessory
+            ),
+            .pendingKeys : Relationship(
+                id: .pendingKeys,
+                entity: AccessoryEntity.self,
+                destination: NewKeyEntity.self,
                 type: .toMany,
                 inverseRelationship: .accessory
             ),

@@ -11,7 +11,7 @@ import CoreData
 import CloudKit
 
 public extension AccessoryManager {
-    
+    /*
     //#if !os(tvOS)
     @available(tvOS, unavailable)
     func updateContacts() async throws {
@@ -47,7 +47,7 @@ public extension AccessoryManager {
         }
     }
     //#endif
-    
+    */
     func loadUsername() async throws -> String? {
         guard try await cloudContainer.accountStatus() == .available else {
             return nil

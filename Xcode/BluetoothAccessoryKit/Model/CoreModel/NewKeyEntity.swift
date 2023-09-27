@@ -64,6 +64,29 @@ public struct NewKeyEntity: Equatable, Hashable, Identifiable, Codable, Sendable
     }
 }
 
+public extension NewKeyEntity {
+    
+    init(_ value: NewKey, accessory: UUID) {
+        self.id = value.id
+        self.accessory = accessory
+        self.created = value.created
+        self.name = value.name
+        self.expiration = value.expiration
+        self.permission = value.permission.type
+        let schedule = value.permission.schedule
+        self.scheduleExpiry = schedule?.expiry
+        self.intervalMin = schedule?.interval.rawValue.lowerBound ?? 0
+        self.intervalMax = schedule?.interval.rawValue.upperBound ?? 1440
+        self.monday = schedule?.weekdays.monday ?? true
+        self.tuesday = schedule?.weekdays.tuesday ?? true
+        self.wednesday = schedule?.weekdays.wednesday ?? true
+        self.thursday = schedule?.weekdays.thursday ?? true
+        self.friday = schedule?.weekdays.friday ?? true
+        self.saturday = schedule?.weekdays.saturday ?? true
+        self.sunday = schedule?.weekdays.sunday ?? true
+    }
+}
+
 // MARK: - Entity
 
 extension NewKeyEntity: Entity {
@@ -75,7 +98,7 @@ extension NewKeyEntity: Entity {
             .created : .date,
             .name: .string,
             .expiration: .date,
-            .permission: .int16,
+            .permission: .string,
             .scheduleExpiry: .date,
             .monday: .bool,
             .tuesday: .bool,

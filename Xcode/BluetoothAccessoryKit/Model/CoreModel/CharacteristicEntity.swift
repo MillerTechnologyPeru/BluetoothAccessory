@@ -37,7 +37,7 @@ public struct CharacteristicEntity: Equatable, Hashable, Identifiable, Codable, 
     
     public let isWriteWithoutResponse: Bool
     
-    public var lastUpdate: Date?
+    public var lastUpdate: Date
     
     public var values: [CharacteristicValueEntity.ID]
     
@@ -55,7 +55,105 @@ public struct CharacteristicEntity: Equatable, Hashable, Identifiable, Codable, 
         case isReadable
         case isWritable
         case isWriteWithoutResponse
+        case lastUpdate
         case values
+    }
+}
+
+public extension CharacteristicEntity {
+    
+    var properties: BitMaskOptionSet<BluetoothAccessory.CharacteristicProperty> {
+        var properties = BitMaskOptionSet<BluetoothAccessory.CharacteristicProperty>()
+        if isReadable {
+            properties.insert(.read)
+        }
+        if isWritable {
+            properties.insert(.write)
+        }
+        if isWriteWithoutResponse {
+            properties.insert(.writeWithoutResponse)
+        }
+        if isEncrypted {
+            properties.insert(.encrypted)
+        }
+        if isList {
+            properties.insert(.list)
+        }
+        return properties
+    }
+}
+
+internal extension CharacteristicEntity {
+    
+    init(
+        metadata: CharacteristicMetadata,
+        accessory: UUID,
+        service: BluetoothUUID,
+        lastUpdate: Date = Date(),
+        values: [CharacteristicValueEntity.ID] = []
+    ) {
+        self.id = .init(accessory: accessory, service: service, characteristic: metadata.type)
+        self.accessory = accessory
+        self.service = service
+        self.type = metadata.type
+        self.format = metadata.format
+        self.unit = metadata.unit
+        self.name = metadata.name
+        self.lastUpdate = lastUpdate
+        self.values = values
+        self.isReadable = metadata.properties.contains(.read)
+        self.isWritable = metadata.properties.contains(.write)
+        self.isWriteWithoutResponse = metadata.properties.contains(.writeWithoutResponse)
+        self.isEncrypted = metadata.properties.contains(.encrypted)
+        self.isList = metadata.properties.contains(.list)
+    }
+    
+    mutating func update(metadata: CharacteristicMetadata) {
+        self = .init(metadata: metadata, accessory: accessory, service: service, lastUpdate: Date(), values: values)
+    }
+}
+
+internal extension CharacteristicCache {
+    
+    init<Storage: ModelStorage>(
+        _ value: CharacteristicEntity,
+        storage: Storage
+    ) async throws {
+        var values = [CharacteristicValueEntity]()
+        values.reserveCapacity(value.values.count)
+        for id in value.values {
+            guard let valueEntity = try await storage.fetch(CharacteristicValueEntity.self, for: id) else {
+                assertionFailure()
+                continue
+            }
+            values.append(valueEntity)
+        }
+        let cachedValue: CharacteristicCache.Value?
+        if value.isList {
+            cachedValue = .list(values.map { $0.value })
+        } else {
+            cachedValue = values.first.flatMap({ .single($0.value) })
+        }
+        self.init(
+            accessory: value.accessory,
+            service: value.service,
+            metadata: .init(value),
+            value: cachedValue,
+            updated: value.lastUpdate
+        )
+    }
+}
+
+internal extension CharacteristicMetadata {
+    
+    init(_ value: CharacteristicEntity) {
+        self.init(
+            type: value.type,
+            name: value.name,
+            properties: value.properties,
+            format: value.format,
+            unit: value.unit
+        )
     }
 }
 
@@ -81,8 +179,19 @@ internal extension ModelStorage {
     
     func characteristics(
         for accessory: UUID
-    ) throws -> [CharacteristicCache] {
-        []
+    ) async throws -> [CharacteristicCache] {
+        let predicate = FetchRequest.Predicate.comparison(.init(
+            left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.accessory.rawValue)),
+            right: .relationship(.toOne(ObjectID(accessory))))
+        )
+        let entities = try await fetch(CharacteristicEntity.self, predicate: predicate)
+        var cachedValues = [CharacteristicCache]()
+        cachedValues.reserveCapacity(entities.count)
+        for entity in entities {
+            let cache = try await CharacteristicCache(entity, storage: self)
+            cachedValues.append(cache)
+        }
+        return cachedValues
     }
 }
 
