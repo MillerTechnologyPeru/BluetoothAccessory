@@ -9,7 +9,7 @@ import Foundation
 import BluetoothAccessory
 
 /// Paired accessory information.
-public struct PairedAccessory: Equatable, Hashable, Codable, Identifiable {
+public struct PairedAccessory: Equatable, Hashable, Codable, Identifiable, Sendable {
     
     /// Accessory identifier
     public var id: UUID {
@@ -23,7 +23,7 @@ public struct PairedAccessory: Equatable, Hashable, Codable, Identifiable {
     public let key: Key
 }
 
-public struct AccessoryInformation: Equatable, Hashable, Codable, Identifiable {
+public struct AccessoryInformation: Equatable, Hashable, Codable, Identifiable, Sendable {
     
     /// Accessory identifier
     public let id: UUID
