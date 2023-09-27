@@ -34,7 +34,7 @@ public struct AccessoryEntity: Equatable, Hashable, Identifiable, Codable, Senda
     
     public var softwareVersion: String
     
-    public var characteristics: [BluetoothUUID]
+    public var characteristics: [CharacteristicEntity.ID]
     
     public var keys: [UUID]
     
@@ -60,7 +60,7 @@ public extension AccessoryEntity {
     
     init(
         _ value: AccessoryInformation,
-        characteristics: [BluetoothUUID] = [],
+        characteristics: [CharacteristicEntity.ID] = [],
         keys: [UUID] = [],
         pendingKeys: [UUID] = []
     ) {

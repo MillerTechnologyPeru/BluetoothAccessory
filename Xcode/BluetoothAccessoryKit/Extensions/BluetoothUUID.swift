@@ -8,6 +8,7 @@
 import Foundation
 import Bluetooth
 import BluetoothAccessory
+import CoreModel
 
 internal extension BluetoothUUID {
     
@@ -36,3 +37,5 @@ internal extension BluetoothUUID {
         return output
     }
 }
+
+extension BluetoothUUID: ObjectIDConvertible { }

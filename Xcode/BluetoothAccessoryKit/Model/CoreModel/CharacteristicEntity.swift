@@ -212,7 +212,8 @@ extension CharacteristicEntity: Entity {
             .isList : .bool,
             .isReadable: .bool,
             .isWritable: .bool,
-            .isWriteWithoutResponse: .bool
+            .isWriteWithoutResponse: .bool,
+            .lastUpdate: .date
         ]
     }
     

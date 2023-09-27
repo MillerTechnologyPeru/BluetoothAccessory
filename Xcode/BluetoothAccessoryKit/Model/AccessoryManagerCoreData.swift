@@ -181,7 +181,7 @@ internal extension AccessoryManager {
                     characteristic: metadata.type
                 )
                 var entity: CharacteristicEntity
-                if var modelData = try context.fetch(CharacteristicEntity.entityName, for: ObjectID(id)) {
+                if let modelData = try context.fetch(CharacteristicEntity.entityName, for: ObjectID(id)) {
                     entity = try CharacteristicEntity(from: modelData)
                     entity.update(metadata: metadata)
                 } else {
