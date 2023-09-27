@@ -59,7 +59,22 @@ public extension AccessoryManager {
         guard let userIdentity = try await cloudContainer.userIdentities(forUserRecordIDs: [currentUser])[currentUser] else {
             return nil
         }
-        return try userIdentity.lookupInfo?.emailAddress ?? emailAddresses(for: userIdentity).first
+        if let email = userIdentity.lookupInfo?.emailAddress {
+            return email
+        } else if let lookupInfo = userIdentity.lookupInfo {
+            // discover identity
+            let userIdentities = cloudContainer.discoverUserIdentities([lookupInfo])
+            for try await (identity, lookupInfo) in userIdentities {
+                if identity.userRecordID == currentUser, let email = lookupInfo.emailAddress {
+                    return email
+                }
+            }
+        }
+        // request access to contacts
+        if CNContactStore.authorizationStatus(for: .contacts) != .authorized {
+            try await contactStore.requestAccess(for: .contacts)
+        }
+        return try emailAddresses(for: userIdentity).first
     }
 }
 
@@ -72,6 +87,9 @@ internal extension AccessoryManager {
     
     func emailAddresses(for identity: CKUserIdentity) throws -> [String] {
         #if canImport(Contacts)
+        guard identity.contactIdentifiers.isEmpty == false else {
+            return []
+        }
         guard CNContactStore.authorizationStatus(for: .contacts) == .authorized else {
             return []
         }
