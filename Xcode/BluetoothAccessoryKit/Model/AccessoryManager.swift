@@ -89,7 +89,8 @@ public final class AccessoryManager: ObservableObject {
     
     internal lazy var backgroundContext = loadBackgroundContext()
     
-    internal var didLoadPersistentStores = false
+    @Published
+    internal var persistentStoreState: PersistentStoreState = .uninitialized
     
     // MARK: - Initialization
     

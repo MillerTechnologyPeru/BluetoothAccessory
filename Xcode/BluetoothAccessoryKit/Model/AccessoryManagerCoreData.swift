@@ -8,6 +8,12 @@
 import Foundation
 import CoreData
 import BluetoothAccessory
+public enum PersistentStoreState {
+    
+    case uninitialized
+    case loading
+    case loaded
+}
 
 public extension AccessoryManager {
     
@@ -66,16 +72,18 @@ internal extension AccessoryManager {
     }
     
     func loadPersistentStores() async {
-        guard didLoadPersistentStores == false else {
+        guard persistentStoreState == .uninitialized else {
             return
         }
+        persistentStoreState = .loading
         do {
             for try await store in persistentContainer.loadPersistentStores() {
                 log("Loaded CoreData store \(store.url?.absoluteString ?? "")")
             }
-            didLoadPersistentStores = true
+            persistentStoreState = .loaded
         }
         catch {
+            persistentStoreState = .uninitialized
             log("Error loading CoreData: \(error.localizedDescription)")
             // remove sqlite file at url
             for url in persistentContainer.persistentStoreDescriptions.compactMap({ $0.url }) {
