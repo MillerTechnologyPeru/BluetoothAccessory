@@ -21,10 +21,10 @@
     {
       "identity" : "coremodel",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:PureSwift/CoreModel.git",
+      "location" : "https://github.com/PureSwift/CoreModel.git",
       "state" : {
         "branch" : "master",
-        "revision" : "8aae5ba0673f7b2cd87a74490081a4fda91031c8"
+        "revision" : "4190671d49f573ea60a5b4c05d97064ddc8a48c8"
       }
     },
     {
