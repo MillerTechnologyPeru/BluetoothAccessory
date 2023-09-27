@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/PureSwift/Bluetooth.git",
       "state" : {
-        "revision" : "88943f1edfd9868e6339852ab3a9e6d61e077287",
-        "version" : "6.3.1"
+        "revision" : "686f941a690200776c6efac7aa3b94d35c2f561d",
+        "version" : "6.4.1"
       }
     },
     {
@@ -14,8 +14,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/twostraws/CodeScanner.git",
       "state" : {
-        "revision" : "d8f10d992ef32a4187b78a6df320facf75d631d8",
-        "version" : "2.3.1"
+        "revision" : "bf5d7087015620b250ee6c865b3c9039fc159d1a",
+        "version" : "2.3.3"
+      }
+    },
+    {
+      "identity" : "coremodel",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:PureSwift/CoreModel.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "8aae5ba0673f7b2cd87a74490081a4fda91031c8"
       }
     },
     {
@@ -24,7 +33,7 @@
       "location" : "https://github.com/PureSwift/GATT.git",
       "state" : {
         "branch" : "master",
-        "revision" : "aec59a4c95f3653b8db32cf0181625eab9f4978f"
+        "revision" : "c39a90af6fbd93a9a3afebb88c8cc8b9f19e62dd"
       }
     },
     {
@@ -34,15 +43,6 @@
       "state" : {
         "branch" : "master",
         "revision" : "ecb18d8ce4d88277cc4fb103973352d91e18c535"
-      }
-    },
-    {
-      "identity" : "predicate",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/PureSwift/Predicate",
-      "state" : {
-        "revision" : "79453305d5d441eb4bba15e715f8546a5ff3a5d4",
-        "version" : "1.2.0"
       }
     },
     {
@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-crypto.git",
       "state" : {
-        "revision" : "da0fe44138ab86e380f40a2acbd8a611b07d3f64",
-        "version" : "2.4.0"
+        "revision" : "60f13f60c4d093691934dc6cfdf5f508ada1f894",
+        "version" : "2.6.0"
       }
     },
     {
