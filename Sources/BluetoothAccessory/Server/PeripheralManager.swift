@@ -38,6 +38,8 @@ extension GATTPeripheral: AccessoryPeripheralManager {
             flags = [.lowEnergyGeneralDiscoverableMode, .notSupportedBREDR]
         case .characteristicChanged:
             flags = [.lowEnergyLimitedDiscoverableMode, .notSupportedBREDR]
+        case .setup:
+            flags = [.lowEnergyGeneralDiscoverableMode, .notSupportedBREDR]
         }
         try await hostController.setAdvertisingData(
             beacon: beacon,
