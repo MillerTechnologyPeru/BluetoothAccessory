@@ -11,6 +11,10 @@ import BluetoothAccessoryKit
 @main
 struct BluetoothAccessoryApp: App {
     
+    static let accessoryManager = AccessoryManager(
+        configuration: Self.configuration
+    )
+    
     #if os(macOS)
     @NSApplicationDelegateAdaptor(AppDelegate.self)
     var appDelegate
@@ -18,6 +22,9 @@ struct BluetoothAccessoryApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self)
     var appDelegate
     #endif
+    
+    @Environment(\.scenePhase)
+    private var phase
     
     @StateObject
     var accessoryManager: AccessoryManager
@@ -31,11 +38,8 @@ struct BluetoothAccessoryApp: App {
     }
     
     init() {
-        let accessoryManager = AccessoryManager(
-            configuration: Self.configuration
-        )
+        let accessoryManager = Self.accessoryManager
         _accessoryManager = .init(wrappedValue: accessoryManager)
-        appDelegate.accessoryManager = accessoryManager
         // print version
         accessoryManager.log("Launching Bluetooth Accessory v\(Bundle.InfoPlist.shortVersion) (\(Bundle.InfoPlist.version))")
         Task {
@@ -66,7 +70,6 @@ extension BluetoothAccessoryApp {
 private extension App {
     
     static func didLaunch(_ accessoryManager: AccessoryManager) async {
-        /*
         // CloudKit discoverability
         do {
             guard try await accessoryManager.cloudContainer.accountStatus() == .available,
@@ -76,7 +79,6 @@ private extension App {
             accessoryManager.log("☁️ CloudKit permisions \(status == .granted ? "granted" : "not granted")")
         }
         catch { accessoryManager.log("⚠️ Could not request CloudKit permissions. \(error.localizedDescription)") }
-        */
     }
 }
 
@@ -89,7 +91,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private(set) var didBecomeActive: Bool = false
     
-    var accessoryManager: AccessoryManager!
+    var accessoryManager: AccessoryManager {
+        BluetoothAccessoryApp.accessoryManager
+    }
     
     // MARK: - UIApplicationDelegate
     
@@ -118,7 +122,9 @@ final class AppDelegate: NSResponder, NSApplicationDelegate {
     
     static var shared: AppDelegate { NSApplication.shared.delegate as! AppDelegate }
     
-    var accessoryManager: AccessoryManager!
+    var accessoryManager: AccessoryManager {
+        BluetoothAccessoryApp.accessoryManager
+    }
     
     // MARK: - NSApplicationDelegate
         
