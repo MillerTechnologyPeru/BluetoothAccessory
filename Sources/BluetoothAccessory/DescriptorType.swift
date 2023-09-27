@@ -12,7 +12,7 @@ import BluetoothGATT
 #endif
 
 /// Descriptor Type
-public enum DescriptorType: UInt16, Codable, CaseIterable {
+public enum DescriptorType: UInt16, Codable, CaseIterable, Sendable {
     
     /// Data format of characteristic value.
     case format
@@ -39,7 +39,7 @@ public extension BluetoothUUID {
 }
 
 /// Accessory Descriptor
-public enum AccessoryDescriptor: Equatable, Hashable {
+public enum AccessoryDescriptor: Equatable, Hashable, Sendable {
     
     /// Data format of characteristic value.
     case format(CharacteristicFormat)

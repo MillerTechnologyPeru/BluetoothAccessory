@@ -26,7 +26,7 @@ public struct MetadataCharacteristic: Equatable, Hashable, AccessoryCharacterist
 
 // MARK: - Supporting Types
 
-public struct CharacteristicMetadata: Equatable, Hashable, Codable {
+public struct CharacteristicMetadata: Equatable, Hashable, Codable, Sendable {
     
     public let type: BluetoothUUID
     

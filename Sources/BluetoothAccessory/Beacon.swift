@@ -9,7 +9,7 @@ import Foundation
 import Bluetooth
 
 /// Bluetooth Accessory Beacon
-public enum AccessoryBeacon: Equatable, Hashable {
+public enum AccessoryBeacon: Equatable, Hashable, Sendable {
     
     /// Identifier
     case id(UUID)

@@ -6,7 +6,7 @@
 //
 
 /// Characteristic Unit
-public enum CharacteristicUnit: UInt8, Codable, CaseIterable {
+public enum CharacteristicUnit: UInt8, Codable, CaseIterable, Sendable {
     
     case arcdegrees
     case celsius

@@ -9,7 +9,7 @@ import Foundation
 import Bluetooth
 
 /// Accessory Characteristic Type
-public enum CharacteristicType: UInt16, Codable, CaseIterable {
+public enum CharacteristicType: UInt16, Codable, CaseIterable, Sendable {
     
     // Information
     

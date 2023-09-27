@@ -10,7 +10,7 @@ import Bluetooth
 import TLVCoding
 
 /// A Key's permission level.
-public enum Permission: Equatable, Hashable {
+public enum Permission: Equatable, Hashable, Sendable {
     
     /// This key belongs to the owner of the accessory and has unlimited rights.
     case owner
@@ -60,7 +60,7 @@ public extension Permission {
 // MARK: - PermissionType
 
 /// A Key's permission level.
-public enum PermissionType: UInt8, CaseIterable {
+public enum PermissionType: UInt8, CaseIterable, Sendable {
     
     case owner          = 0x00
     case admin          = 0x01
@@ -98,7 +98,7 @@ extension PermissionType: CustomStringConvertible {
 public extension Permission {
     
     /// Specifies the time and dates a permission is valid.
-    struct Schedule: Codable, Equatable, Hashable {
+    struct Schedule: Codable, Equatable, Hashable, Sendable {
         
         /// The date this permission becomes invalid.
         public var expiry: Date?
@@ -157,7 +157,7 @@ public extension Permission {
 public extension Permission.Schedule {
     
     /// The minute interval range the accessory can be used.
-    struct Interval: RawRepresentable, Equatable, Hashable {
+    struct Interval: RawRepresentable, Equatable, Hashable, Sendable {
         
         internal static let min: UInt16 = 0
         
@@ -186,7 +186,7 @@ public extension Permission.Schedule {
 
 public extension Permission.Schedule {
     
-    struct Weekdays: Codable, Equatable, Hashable {
+    struct Weekdays: Codable, Equatable, Hashable, Sendable {
         
         public var sunday: Bool
         public var monday: Bool

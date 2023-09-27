@@ -9,7 +9,7 @@ import Foundation
 import TLVCoding
 
 /// Characteristic Format
-public enum CharacteristicFormat: UInt8, Codable, CaseIterable {
+public enum CharacteristicFormat: UInt8, Codable, CaseIterable, Sendable {
     
     case tlv8
     case string
@@ -30,7 +30,7 @@ public enum CharacteristicFormat: UInt8, Codable, CaseIterable {
 }
 
 /// Characteristic Value
-public enum CharacteristicValue: Equatable, Hashable, Codable {
+public enum CharacteristicValue: Equatable, Hashable, Codable, Sendable {
     
     case tlv8(Data)
     case string(String)

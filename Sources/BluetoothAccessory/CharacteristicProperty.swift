@@ -9,7 +9,7 @@ import Foundation
 import Bluetooth
 
 /// Accessory Characteristic Property
-public enum CharacteristicProperty: UInt8, Codable, CaseIterable, BitMaskOption {
+public enum CharacteristicProperty: UInt8, Codable, CaseIterable, BitMaskOption, Sendable {
     
     /// Value can be read.
     case read                   = 0b00000001

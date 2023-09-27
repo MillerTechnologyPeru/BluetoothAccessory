@@ -9,7 +9,7 @@ import Foundation
 import TLVCoding
 
 /// A key accessing an accessory.
-public struct Key: Identifiable, Codable, Equatable, Hashable {
+public struct Key: Identifiable, Codable, Equatable, Hashable, Sendable {
     
     /// The unique identifier of the key.
     public let id: UUID

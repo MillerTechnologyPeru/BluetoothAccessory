@@ -9,7 +9,7 @@ import Foundation
 import Bluetooth
 
 /// Service Type
-public enum ServiceType: UInt16, Codable, CaseIterable {
+public enum ServiceType: UInt16, Codable, CaseIterable, Sendable {
     
     // Information
     case information                = 0
