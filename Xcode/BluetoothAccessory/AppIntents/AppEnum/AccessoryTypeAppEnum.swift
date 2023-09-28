@@ -49,10 +49,6 @@ enum AccessoryTypeAppEnum: UInt16, AppEnum, CaseIterable {
     case televisionSetTopBox
     case televisionStreamingStick
     
-    init(_ value: AccessoryType) {
-        self.init(rawValue: value.rawValue)!
-    }
-    
     static var typeDisplayRepresentation: TypeDisplayRepresentation {
         "Accessory Type"
     }
@@ -96,5 +92,21 @@ enum AccessoryTypeAppEnum: UInt16, AppEnum, CaseIterable {
             .televisionSetTopBox: "Television Set Top Box",
             .televisionStreamingStick: "Television Streaming Stick"
         ]
+    }
+}
+
+@available(macOS 13, iOS 16, watchOS 9, tvOS 16, *)
+extension AccessoryTypeAppEnum {
+    
+    init(_ value: AccessoryType) {
+        self.init(rawValue: value.rawValue)!
+    }
+}
+
+@available(macOS 13, iOS 16, watchOS 9, tvOS 16, *)
+extension AccessoryType {
+    
+    init(_ value: AccessoryTypeAppEnum) {
+        self.init(rawValue: value.rawValue)!
     }
 }
