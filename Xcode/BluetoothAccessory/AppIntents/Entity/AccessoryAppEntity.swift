@@ -53,6 +53,17 @@ extension AccessoryAppEntity {
         self.model = value.model
         self.softwareVersion = value.softwareVersion
     }
+    
+    init(_ value: AccessoryEntity) {
+        self.id = value.id
+        self.name = value.name
+        self.type = .init(value.type)
+        self.service = .init(value.service)
+        self.manufacturer = value.manufacturer
+        self.serialNumber = value.serialNumber
+        self.model = value.model
+        self.softwareVersion = value.softwareVersion
+    }
 }
 
 @available(macOS 13, iOS 16, watchOS 9, tvOS 16, *)
@@ -69,8 +80,6 @@ extension AccessoryAppEntity {
             subtitle: "\(serialNumber)"
         )
     }
-    
-    typealias DefaultQueryType = AccessoryEntityQuery
-    
+        
     static var defaultQuery = AccessoryEntityQuery()
 }
