@@ -63,10 +63,6 @@ enum ServiceTypeAppEnum: UInt16, AppEnum, CaseIterable {
     case camera                     = 700
     case securitySystem
     
-    init(_ value: ServiceType) {
-        self.init(rawValue: value.rawValue)!
-    }
-    
     static var typeDisplayRepresentation: TypeDisplayRepresentation {
         "Service Type"
     }
@@ -109,5 +105,21 @@ enum ServiceTypeAppEnum: UInt16, AppEnum, CaseIterable {
             .camera: "Camera",
             .securitySystem: "Security System"
         ]
+    }
+}
+
+@available(macOS 13, iOS 16, watchOS 9, tvOS 16, *)
+extension ServiceTypeAppEnum {
+    
+    init(_ value: ServiceType) {
+        self.init(rawValue: value.rawValue)!
+    }
+}
+
+@available(macOS 13, iOS 16, watchOS 9, tvOS 16, *)
+extension ServiceType {
+    
+    init(_ value: ServiceTypeAppEnum) {
+        self.init(rawValue: value.rawValue)!
     }
 }
