@@ -27,13 +27,7 @@ struct CharacteristicEntityQuery: EntityQuery {
     
     @MainActor
     func entities(for identifiers: [CharacteristicAppEntity.ID]) throws -> [CharacteristicAppEntity] {
-        return try identifiers.compactMap { id in
-            guard let characteristicModelData = try manager.managedObjectContext.fetch(CharacteristicEntity.entityName, for: ObjectID(id)) else {
-                return nil
-            }
-            let characteristicEntity = try CharacteristicEntity(from: characteristicModelData)
-            return CharacteristicAppEntity(characteristicEntity)
-        }
+        return try entities(for: identifiers.map { ObjectID($0) })
     }
     
     func suggestedEntities() -> [CharacteristicAppEntity] { [] }
@@ -86,11 +80,8 @@ extension CharacteristicEntityQuery: EntityPropertyQuery {
             predicate: predicate,
             fetchLimit: limit ?? 0
         )
-        return try manager.managedObjectContext
-            .fetch(fetchRequest)
-            .lazy
-            .map { try CharacteristicEntity(from: $0) }
-            .map { CharacteristicAppEntity($0) }
+        let objectIDs = try manager.managedObjectContext.fetchID(fetchRequest)
+        return try entities(for: objectIDs)
     }
     
     static var properties = EntityQueryProperties<CharacteristicAppEntity, CharacteristicEntityQueryPredicate> {
@@ -102,7 +93,7 @@ extension CharacteristicEntityQuery: EntityPropertyQuery {
             EqualToComparator { .characteristicTypeEqualTo($0) }
         }
         Property(\CharacteristicAppEntity.$accessory) {
-            EqualToComparator { .accessoryEqualTo($0) }
+            EqualToComparator { .accessoryEqualTo($0.id) }
         }
         Property(\CharacteristicAppEntity.$service) {
             EqualToComparator { .serviceTypeEqualTo($0) }
@@ -125,6 +116,21 @@ extension CharacteristicEntityQuery: EntityPropertyQuery {
 
 @available(macOS 13, iOS 16, watchOS 9, tvOS 16, *)
 private extension CharacteristicEntityQuery {
+    
+    @MainActor
+    func entities(for identifiers: [ObjectID]) throws -> [CharacteristicAppEntity] {
+        return try identifiers.compactMap { id in
+            guard let characteristicModelData = try manager.managedObjectContext.fetch(CharacteristicEntity.entityName, for: id) else {
+                return nil
+            }
+            let characteristicEntity = try CharacteristicEntity(from: characteristicModelData)
+            guard let accessoryModelData = try manager.managedObjectContext.fetch(AccessoryEntity.entityName, for: ObjectID(characteristicEntity.accessory)) else {
+                return nil
+            }
+            let accessoryEntity = try AccessoryEntity(from: accessoryModelData)
+            return CharacteristicAppEntity(characteristicEntity, accessory: .init(accessoryEntity))
+        }
+    }
     
     func sortDescriptor(for sort: Sort<CharacteristicAppEntity>) -> FetchRequest.SortDescriptor {
         let ascending = sort.order == .ascending
@@ -154,7 +160,7 @@ enum CharacteristicEntityQueryPredicate {
     
     case characteristicTypeEqualTo(String)
     case serviceTypeEqualTo(String)
-    case accessoryEqualTo(String)
+    case accessoryEqualTo(UUID)
     
     case formatEqualTo(CharacteristicFormat)
     case unitEqualTo(CharacteristicUnit?)
@@ -196,10 +202,7 @@ extension FetchRequest.Predicate.Comparison {
                 right: .attribute(.uuid(uuid)),
                 type: .equalTo
             )
-        case .accessoryEqualTo(let string):
-            guard let uuid = UUID(uuidString: string) else {
-                return nil
-            }
+        case .accessoryEqualTo(let uuid):
             self.init(
                 left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.accessory.rawValue)),
                 right: .relationship(.toOne(ObjectID(uuid))),

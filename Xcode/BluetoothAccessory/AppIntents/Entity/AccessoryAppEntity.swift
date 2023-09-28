@@ -83,3 +83,13 @@ extension AccessoryAppEntity {
         
     static var defaultQuery = AccessoryEntityQuery()
 }
+
+// MARK: - Equatable
+
+@available(macOS 13, iOS 16, watchOS 9, tvOS 16, *)
+extension AccessoryAppEntity: Equatable {
+    
+    static func == (lhs: AccessoryAppEntity, rhs: AccessoryAppEntity) -> Bool {
+        lhs.id == rhs.id
+    }
+}

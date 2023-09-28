@@ -25,7 +25,7 @@ struct CharacteristicAppEntity: AppEntity {
     var service: String
     
     @Property(title: "Accessory")
-    var accessory: String
+    var accessory: AccessoryAppEntity
     
     @Property(title: "Format")
     var format: CharacteristicFormatAppEnum
@@ -52,9 +52,9 @@ struct CharacteristicAppEntity: AppEntity {
 @available(macOS 13, iOS 16, watchOS 9, tvOS 16, *)
 extension CharacteristicAppEntity {
     
-    init(_ value: CharacteristicEntity) {
+    init(_ value: CharacteristicEntity, accessory: AccessoryAppEntity) {
         self.id = value.id
-        self.accessory = value.accessory.uuidString
+        self.accessory = accessory
         self.name = value.name
         self.type = value.type.rawValue
         self.service = value.service.rawValue
