@@ -101,8 +101,8 @@ extension CharacteristicValueEntity: Codable {
             let value = try container.decode(UInt8.self, forKey: .intValue)
             self.value = .uint8(value)
         case .uint16:
-            let value = try container.decode(UInt8.self, forKey: .intValue)
-            self.value = .uint8(value)
+            let value = try container.decode(UInt16.self, forKey: .intValue)
+            self.value = .uint16(value)
         case .uint32:
             let value = try container.decode(UInt32.self, forKey: .intValue)
             self.value = .uint32(value)
