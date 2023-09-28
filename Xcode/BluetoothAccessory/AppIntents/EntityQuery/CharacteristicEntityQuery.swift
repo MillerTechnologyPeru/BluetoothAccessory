@@ -40,31 +40,35 @@ extension CharacteristicEntityQuery: EntityPropertyQuery {
     
     @MainActor
     func entities(
-        matching predicates: [CharacteristicEntityQueryPredicate],
+        matching predicates: [CharacteristicEntityQuery.Predicate],
         mode: ComparatorMode,
         sortedBy sortDescriptors: [Sort<CharacteristicAppEntity>],
         limit: Int?
     ) throws -> [CharacteristicAppEntity] {
-        guard predicates.isEmpty == false else {
+        guard predicates.isEmpty == false, mode == .and || predicates.count == 1 else {
             return []
         }
-        var subpredicates = [FetchRequest.Predicate]()
+        var subpredicates = [CoreModel.FetchRequest.Predicate]()
         subpredicates.reserveCapacity(predicates.count)
-        var accessoryPredicate = false
+        var accessory: UUID?
         for predicate in predicates {
-            guard let comparison = FetchRequest.Predicate.Comparison(predicate) else {
+            guard let characteristicPredicate = CharacteristicEntity.Predicate(predicate) else {
                 return [] // invalid query
             }
+            let comparison = CoreModel.FetchRequest.Predicate.Comparison(characteristicPredicate)
             // check if filtering by accessory
             switch predicate {
-            case .accessoryEqualTo:
-                accessoryPredicate = true
+            case let .accessoryEqualTo(uuid):
+                guard accessory == nil else {
+                    return []
+                }
+                accessory = uuid
             default:
                 break
             }
             subpredicates.append(.comparison(comparison))
         }
-        guard accessoryPredicate else {
+        guard let accessory else {
             return []
         }
         let predicate: CoreModel.FetchRequest.Predicate
@@ -84,7 +88,7 @@ extension CharacteristicEntityQuery: EntityPropertyQuery {
         return try entities(for: objectIDs)
     }
     
-    static var properties = EntityQueryProperties<CharacteristicAppEntity, CharacteristicEntityQueryPredicate> {
+    static var properties = EntityQueryProperties<CharacteristicAppEntity, CharacteristicEntityQuery.Predicate> {
         Property(\CharacteristicAppEntity.$name) {
             EqualToComparator { .nameEqualTo($0) }
             ContainsComparator { .nameContains($0) }
@@ -99,10 +103,10 @@ extension CharacteristicEntityQuery: EntityPropertyQuery {
             EqualToComparator { .serviceTypeEqualTo($0) }
         }
         Property(\CharacteristicAppEntity.$format) {
-            EqualToComparator { .formatEqualTo(.init($0)) }
+            EqualToComparator { .formatEqualTo($0) }
         }
         Property(\CharacteristicAppEntity.$unit) {
-            EqualToComparator { .unitEqualTo($0.flatMap { .init($0) }) }
+            EqualToComparator { .unitEqualTo($0) }
         }
     }
     
@@ -153,73 +157,46 @@ private extension CharacteristicEntityQuery {
 
 // MARK: - Supporting Types
 
-enum CharacteristicEntityQueryPredicate {
+@available(macOS 13, iOS 16, watchOS 9, tvOS 16, *)
+extension CharacteristicEntityQuery {
     
-    case nameEqualTo(String)
-    case nameContains(String)
-    
-    case characteristicTypeEqualTo(String)
-    case serviceTypeEqualTo(String)
-    case accessoryEqualTo(UUID)
-    
-    case formatEqualTo(CharacteristicFormat)
-    case unitEqualTo(CharacteristicUnit?)
+    enum Predicate: Equatable, Hashable {
+        
+        case nameEqualTo(String)
+        case nameContains(String)
+        case characteristicTypeEqualTo(String)
+        case serviceTypeEqualTo(String)
+        case accessoryEqualTo(UUID)
+        case formatEqualTo(CharacteristicFormatAppEnum)
+        case unitEqualTo(CharacteristicUnitAppEnum?)
+    }
 }
 
-extension FetchRequest.Predicate.Comparison {
+@available(macOS 13, iOS 16, watchOS 9, tvOS 16, *)
+extension CharacteristicEntity.Predicate {
     
-    init?(_ predicate: CharacteristicEntityQueryPredicate) {
+    init?(_ predicate: CharacteristicEntityQuery.Predicate) {
         switch predicate {
         case .nameEqualTo(let string):
-            self.init(
-                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.name.rawValue)),
-                right: .attribute(.string(string)),
-                type: .equalTo,
-                options: [.caseInsensitive, .localeSensitive, .diacriticInsensitive]
-            )
+            self = .nameEqualTo(string)
         case .nameContains(let string):
-            self.init(
-                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.name.rawValue)),
-                right: .attribute(.string(string)),
-                type: .contains,
-                options: [.caseInsensitive, .localeSensitive, .diacriticInsensitive]
-            )
+            self = .nameContains(string)
         case .characteristicTypeEqualTo(let string):
-            guard let uuid = UUID(uuidString: string) else {
+            guard let uuid = BluetoothUUID(rawValue: string) else {
                 return nil
             }
-            self.init(
-                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.type.rawValue)),
-                right: .attribute(.uuid(uuid)),
-                type: .equalTo
-            )
+            self = .characteristicTypeEqualTo(uuid)
         case .serviceTypeEqualTo(let string):
-            guard let uuid = UUID(uuidString: string) else {
+            guard let uuid = BluetoothUUID(rawValue: string) else {
                 return nil
             }
-            self.init(
-                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.service.rawValue)),
-                right: .attribute(.uuid(uuid)),
-                type: .equalTo
-            )
+            self = .serviceTypeEqualTo(uuid)
         case .accessoryEqualTo(let uuid):
-            self.init(
-                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.accessory.rawValue)),
-                right: .relationship(.toOne(ObjectID(uuid))),
-                type: .equalTo
-            )
+            self = .accessoryEqualTo(uuid)
         case .formatEqualTo(let format):
-            self.init(
-                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.format.rawValue)),
-                right: .attribute(.int16(numericCast(format.rawValue))),
-                type: .equalTo
-            )
+            self = .formatEqualTo(.init(format))
         case .unitEqualTo(let unit):
-            self.init(
-                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.unit.rawValue)),
-                right: unit.flatMap { .attribute(.int16(numericCast($0.rawValue))) } ?? .attribute(.null),
-                type: .equalTo
-            )
+            self = .unitEqualTo(unit.flatMap({ .init($0) }))
         }
     }
 }

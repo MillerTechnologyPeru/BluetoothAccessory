@@ -286,3 +286,72 @@ extension CharacteristicEntity.ID: ObjectIDConvertible {
         self.init(rawValue: objectID.rawValue)
     }
 }
+
+// MARK: Predicate
+
+public extension CharacteristicEntity {
+    
+    /// Characteristic Entity
+    enum Predicate: Equatable, Hashable {
+        
+        case nameEqualTo(String)
+        case nameContains(String)
+        case characteristicTypeEqualTo(BluetoothUUID)
+        case serviceTypeEqualTo(BluetoothUUID)
+        case accessoryEqualTo(UUID)
+        case formatEqualTo(CharacteristicFormat)
+        case unitEqualTo(CharacteristicUnit?)
+    }
+}
+
+public extension FetchRequest.Predicate.Comparison {
+    
+    init(_ predicate: CharacteristicEntity.Predicate) {
+        switch predicate {
+        case .nameEqualTo(let string):
+            self.init(
+                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.name.rawValue)),
+                right: .attribute(.string(string)),
+                type: .equalTo,
+                options: [.caseInsensitive, .localeSensitive, .diacriticInsensitive]
+            )
+        case .nameContains(let string):
+            self.init(
+                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.name.rawValue)),
+                right: .attribute(.string(string)),
+                type: .contains,
+                options: [.caseInsensitive, .localeSensitive, .diacriticInsensitive]
+            )
+        case .characteristicTypeEqualTo(let uuid):
+            self.init(
+                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.type.rawValue)),
+                right: .attribute(.string(uuid.rawValue)),
+                type: .equalTo
+            )
+        case .serviceTypeEqualTo(let uuid):
+            self.init(
+                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.service.rawValue)),
+                right: .attribute(.string(uuid.rawValue)),
+                type: .equalTo
+            )
+        case .accessoryEqualTo(let uuid):
+            self.init(
+                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.accessory.rawValue)),
+                right: .relationship(.toOne(ObjectID(uuid))),
+                type: .equalTo
+            )
+        case .formatEqualTo(let format):
+            self.init(
+                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.format.rawValue)),
+                right: .attribute(.int16(numericCast(format.rawValue))),
+                type: .equalTo
+            )
+        case .unitEqualTo(let unit):
+            self.init(
+                left: .keyPath(.init(rawValue: CharacteristicEntity.CodingKeys.unit.rawValue)),
+                right: unit.flatMap { .attribute(.int16(numericCast($0.rawValue))) } ?? .attribute(.null),
+                type: .equalTo
+            )
+        }
+    }
+}
