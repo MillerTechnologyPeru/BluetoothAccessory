@@ -84,6 +84,12 @@ internal struct AccessoryCharacteristicCache {
         // Outlet
         append(PowerStateCharacteristic.self)
         
+        // Sensor
+        append(
+            CurrentTemperatureCharacteristic.self,
+            CurrentRelativeHumidityCharacteristic.self
+        )
+        
         return characteristicsCache
     }()
 }
