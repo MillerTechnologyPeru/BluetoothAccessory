@@ -26,7 +26,9 @@ public extension AccessoryCharacteristicRow {
                 SubtitleRow(title: Text("Pair Accessory"))
             })
             .sheet(isPresented: $showingSheet) {
-                SetupAccessoryView(accessory: accessory)
+                NavigationView {
+                    SetupAccessoryView(accessory: accessory)
+                }
             }
         }
     }

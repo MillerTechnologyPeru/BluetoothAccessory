@@ -17,27 +17,29 @@ import SFSafeSymbols
 public struct NearbyAccessoryView: View {
     
     @EnvironmentObject
-    var store: AccessoryManager
+    private var store: AccessoryManager
     
     @Environment(\.managedObjectContext)
-    var managedObjectContext
+    private var managedObjectContext
     
     let peripheral: AccessoryManager.Peripheral
     
     let scanResponse: AccessoryScanResponse
     
     @State
-    var cachedID: UUID?
+    private var cachedID: UUID?
     
     @State
-    var error: String?
+    private var error: String?
     
     @State
-    var isReloading = false
+    private var isReloading = false
     
     @State
-    var canShowActivityIndicator = true
+    private var canShowActivityIndicator = true
     
+    @State
+    private var characteristics: [CharacteristicCache] = []
     
     public init(
         peripheral: AccessoryManager.Peripheral,
@@ -54,7 +56,7 @@ public struct NearbyAccessoryView: View {
             manufacturerData: store[manufacturerData: peripheral],
             beacon: store[beacon: peripheral],
             key: cachedID.flatMap { store[cache: $0]?.key },
-            characteristics: cachedID.flatMap { try? store.characteristics(for: $0) } ?? [],
+            characteristics: characteristics,
             blacklist: blacklist,
             error: error
         )
@@ -121,8 +123,6 @@ internal extension NearbyAccessoryView {
             .removeKey
         ]
         
-        let characteristics = cachedID.flatMap { try? store.characteristics(for: $0) } ?? []
-        
         // hide setup if configured
         let isConfigured = characteristics.first(where: { $0.service == BluetoothUUID(service: .authentication) && $0.metadata.type == BluetoothUUID(characteristic: .isConfigured) })?.value == true
         #if os(iOS)
@@ -155,12 +155,20 @@ internal extension NearbyAccessoryView {
         self.isReloading = true
         defer { isReloading = false }
         do {
+            // load cache
+            Task {
+                if let id = self.cachedID {
+                    self.characteristics = try await store.characteristics(for: id)
+                }
+            }
+            // connect
             try await store.connection(for: peripheral) { connection in
                 // discover characteristics
                 let characteristics = try await store.discoverCharacteristics(connection: connection)
                 // read identifier
                 let id = try await store.identifier(connection: connection)
                 self.cachedID = id
+                self.characteristics = try await store.characteristics(for: id)
                 // read all non-list characteristics
                 let key = self.store[cache: id]?.key
                 assert(characteristics.isEmpty == false)
@@ -176,6 +184,7 @@ internal extension NearbyAccessoryView {
                         service: service,
                         connection: connection
                     )
+                    self.characteristics = try await store.characteristics(for: id)
                 }
             }
         }

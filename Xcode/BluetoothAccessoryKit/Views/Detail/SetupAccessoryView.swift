@@ -26,6 +26,9 @@ public struct SetupAccessoryView: View {
     @State
     private var state: SetupState = .camera
     
+    @State
+    private var username = ""
+    
     public init(
         accessory: UUID? = nil,
         success: ((UUID) -> ())? = nil
@@ -48,28 +51,43 @@ public struct SetupAccessoryView: View {
     public var body: some View {
         stateView
             .navigationTitle("Setup")
+            .task {
+                await loadUsername()
+            }
     }
 }
-
 
 private extension SetupAccessoryView {
     
     #if os(iOS)
     func scanResult(_ result: Result<ScanResult, ScanError>) {
+        let result = didScan(result)
         switch result {
-        case let .success(scanResult):
-            guard let accessoryURL = AccessoryURL(rawValue: scanResult.string),
-                  case let .setup(accessory, secret) = accessoryURL,
-                  self.accessory == accessory || self.accessory == nil else {
-                self.state = .error(BluetoothAccessoryError.invalidQRCode)
-                return
-            }
+        case let .success((accessory, secret)):
             self.state = .confirm(accessory, secret)
         case let .failure(error):
             self.state = .error(error)
         }
     }
+    
+    func didScan(_ result: Result<ScanResult, ScanError>) -> Result<(UUID, KeyData), Error> {
+        switch result {
+        case .success(let scanResult):
+            return didScan(scanResult.string).mapError({ $0 as Error })
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
     #endif
+    
+    func didScan(_ string: String) -> Result<(UUID, KeyData), BluetoothAccessoryError> {
+        guard let accessoryURL = AccessoryURL(rawValue: string),
+              case let .setup(accessory, secret) = accessoryURL,
+              self.accessory == accessory || self.accessory == nil else {
+            return .failure(.invalidQRCode)
+        }
+        return .success((accessory, secret))
+    }
     
     func setup(accessory: UUID, using sharedSecret: KeyData, name: String) {
         self.state = .loading(accessory, name)
@@ -91,6 +109,19 @@ private extension SetupAccessoryView {
         }
     }
     
+    func loadUsername() async {
+        do {
+            if username.isEmpty {
+                if let username = try await store.loadUsername() {
+                    self.username = username
+                }
+            }
+        }
+        catch {
+            store.log("Unable to load username. \(error)")
+        }
+    }
+    
     func retry() {
         self.state = .camera
     }
@@ -105,7 +136,7 @@ private extension SetupAccessoryView {
             #endif
         case let .confirm(accessory, sharedSecret):
             return AnyView(
-                ConfirmView(accessory: accessory) { name in
+                ConfirmView(accessory: accessory, username: $username) { name in
                     setup(accessory: accessory, using: sharedSecret, name: name)
                 }
             )
@@ -168,14 +199,24 @@ internal extension SetupAccessoryView {
         
         let confirm: (String) -> ()
         
-        @State
-        private var name: String = "@cloud.com"
+        @Binding
+        private var username: String
+        
+        init(
+            accessory: UUID,
+            username: Binding<String>,
+            confirm: @escaping (String) -> Void
+        ) {
+            self.accessory = accessory
+            self.confirm = confirm
+            self._username = username
+        }
         
         var body: some View {
             VStack(alignment: .center, spacing: 16) {
-                TextField("Accessory Name", text: $name, prompt: Text("Accessory Lock"))
+                TextField("Username", text: $username)
                 Button("Configure") {
-                    confirm(name)
+                    confirm(username)
                 }
             }
             .padding(30)

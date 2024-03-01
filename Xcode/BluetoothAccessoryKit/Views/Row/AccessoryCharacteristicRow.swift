@@ -39,17 +39,17 @@ internal extension AccessoryCharacteristicRow.StateView {
             return AnyView(AccessoryCharacteristicRow.Setup(accessory: characteristic.accessory))
         default:
             return AnyView(
-                SubtitleRow(
+                DetailRow(
                     title: Text(verbatim: characteristic.metadata.name),
-                    subtitle: subtitle
+                    detail: detailText
                 )
             )
         }
     }
     
-    var subtitle: Text? {
+    var detailText: Text? {
         switch characteristic.value {
-        case .none:
+        case .none, .list:
             return nil
         case let .single(value):
             let description: String
@@ -61,8 +61,6 @@ internal extension AccessoryCharacteristicRow.StateView {
                 description = value.description
             }
             return Text(verbatim: description)
-        case let .list(items):
-            return Text("\(items.count) values")
         }
     }
     

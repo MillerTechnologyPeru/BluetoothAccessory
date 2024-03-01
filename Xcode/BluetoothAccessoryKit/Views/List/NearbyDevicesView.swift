@@ -16,7 +16,7 @@ import SFSafeSymbols
 public struct NearbyDevicesView: View {
     
     @EnvironmentObject
-    var store: AccessoryManager
+    private var store: AccessoryManager
     
     @State
     private var scanTask: Task<Void, Never>?

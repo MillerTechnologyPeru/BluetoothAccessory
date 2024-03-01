@@ -20,6 +20,18 @@
 		6E2C9BD329CF6341002F1B28 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = 6E2C9BD229CF6341002F1B28 /* CodeScanner */; };
 		6E2C9BD629CF637D002F1B28 /* DarwinGATT in Frameworks */ = {isa = PBXBuildFile; productRef = 6E2C9BD529CF637D002F1B28 /* DarwinGATT */; };
 		6E2C9BD829CF637D002F1B28 /* GATT in Frameworks */ = {isa = PBXBuildFile; productRef = 6E2C9BD729CF637D002F1B28 /* GATT */; };
+		6E5B4A5E2AC4BFED00F41D5A /* SubtitleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A5D2AC4BFED00F41D5A /* SubtitleRow.swift */; };
+		6E5B4A602AC4C00500F41D5A /* DetailRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A5F2AC4C00500F41D5A /* DetailRow.swift */; };
+		6E5B4A662AC4C5AC00F41D5A /* AccessoryAppEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A642AC4C59500F41D5A /* AccessoryAppEntity.swift */; };
+		6E5B4A682AC4C7AC00F41D5A /* Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A672AC4C7AC00F41D5A /* Shortcuts.swift */; };
+		6E5B4A6B2AC4C85500F41D5A /* AccessoryTypeAppEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A6A2AC4C85500F41D5A /* AccessoryTypeAppEnum.swift */; };
+		6E5B4A6D2AC4C85E00F41D5A /* ServiceTypeAppEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A6C2AC4C85E00F41D5A /* ServiceTypeAppEnum.swift */; };
+		6E5B4A702AC4CE6900F41D5A /* AccessoryEntityQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A6F2AC4CE6900F41D5A /* AccessoryEntityQuery.swift */; };
+		6E5B4A722AC4F54A00F41D5A /* CharacteristicAppEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A712AC4F54A00F41D5A /* CharacteristicAppEntity.swift */; };
+		6E5B4A742AC4FF0900F41D5A /* CharacteristicFormatAppEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A732AC4FF0900F41D5A /* CharacteristicFormatAppEnum.swift */; };
+		6E5B4A762AC4FF1400F41D5A /* CharacteristicUnitAppEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A752AC4FF1400F41D5A /* CharacteristicUnitAppEnum.swift */; };
+		6E5B4A782AC50BA300F41D5A /* CharacteristicEntityQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A772AC50BA300F41D5A /* CharacteristicEntityQuery.swift */; };
+		6E5B4A7B2AC5334D00F41D5A /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A7A2AC5334D00F41D5A /* AppIntents.swift */; };
 		6E63874229D1679400E1BD42 /* CharacteristicCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E63874129D1679400E1BD42 /* CharacteristicCache.swift */; };
 		6E63874629D19C1200E1BD42 /* AccessoryCharacteristicRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E63874529D19C1200E1BD42 /* AccessoryCharacteristicRow.swift */; };
 		6E71635A29D392A50042565D /* EnvironmentValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E71635929D392A50042565D /* EnvironmentValues.swift */; };
@@ -68,7 +80,6 @@
 		6EFCFFE829D12ECA004B6DE8 /* AccessoryPeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFE729D12ECA004B6DE8 /* AccessoryPeripheral.swift */; };
 		6EFCFFEA29D12EDB004B6DE8 /* ScanDataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFE929D12EDB004B6DE8 /* ScanDataCache.swift */; };
 		6EFCFFEC29D134FB004B6DE8 /* NearbyAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFEB29D134FB004B6DE8 /* NearbyAccessoryView.swift */; };
-		6EFCFFEE29D142EC004B6DE8 /* SubtitleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFCFFED29D142EC004B6DE8 /* SubtitleRow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -106,6 +117,18 @@
 		6E2C9BBA29CF5C47002F1B28 /* BluetoothAccessoryKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothAccessoryKit.swift; sourceTree = "<group>"; };
 		6E2C9BC129CF5DBF002F1B28 /* BluetoothAccessory */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = BluetoothAccessory; path = ..; sourceTree = "<group>"; };
 		6E2C9BC529CF6075002F1B28 /* BluetoothAccessoryApp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "BluetoothAccessoryApp-Info.plist"; sourceTree = "<group>"; };
+		6E5B4A5D2AC4BFED00F41D5A /* SubtitleRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubtitleRow.swift; sourceTree = "<group>"; };
+		6E5B4A5F2AC4C00500F41D5A /* DetailRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailRow.swift; sourceTree = "<group>"; };
+		6E5B4A642AC4C59500F41D5A /* AccessoryAppEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryAppEntity.swift; sourceTree = "<group>"; };
+		6E5B4A672AC4C7AC00F41D5A /* Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shortcuts.swift; sourceTree = "<group>"; };
+		6E5B4A6A2AC4C85500F41D5A /* AccessoryTypeAppEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryTypeAppEnum.swift; sourceTree = "<group>"; };
+		6E5B4A6C2AC4C85E00F41D5A /* ServiceTypeAppEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceTypeAppEnum.swift; sourceTree = "<group>"; };
+		6E5B4A6F2AC4CE6900F41D5A /* AccessoryEntityQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryEntityQuery.swift; sourceTree = "<group>"; };
+		6E5B4A712AC4F54A00F41D5A /* CharacteristicAppEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacteristicAppEntity.swift; sourceTree = "<group>"; };
+		6E5B4A732AC4FF0900F41D5A /* CharacteristicFormatAppEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacteristicFormatAppEnum.swift; sourceTree = "<group>"; };
+		6E5B4A752AC4FF1400F41D5A /* CharacteristicUnitAppEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacteristicUnitAppEnum.swift; sourceTree = "<group>"; };
+		6E5B4A772AC50BA300F41D5A /* CharacteristicEntityQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacteristicEntityQuery.swift; sourceTree = "<group>"; };
+		6E5B4A7A2AC5334D00F41D5A /* AppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 		6E63874129D1679400E1BD42 /* CharacteristicCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacteristicCache.swift; sourceTree = "<group>"; };
 		6E63874529D19C1200E1BD42 /* AccessoryCharacteristicRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryCharacteristicRow.swift; sourceTree = "<group>"; };
 		6E71635929D392A50042565D /* EnvironmentValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentValues.swift; sourceTree = "<group>"; };
@@ -152,7 +175,6 @@
 		6EFCFFE729D12ECA004B6DE8 /* AccessoryPeripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryPeripheral.swift; sourceTree = "<group>"; };
 		6EFCFFE929D12EDB004B6DE8 /* ScanDataCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDataCache.swift; sourceTree = "<group>"; };
 		6EFCFFEB29D134FB004B6DE8 /* NearbyAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyAccessoryView.swift; sourceTree = "<group>"; };
-		6EFCFFED29D142EC004B6DE8 /* SubtitleRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtitleRow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -209,6 +231,8 @@
 				6E2C9B9A29CF5AD2002F1B28 /* App.swift */,
 				6E71638729D564EC0042565D /* InfoPlist.swift */,
 				6E2C9B9C29CF5AD2002F1B28 /* ContentView.swift */,
+				6E5B4A792AC5334100F41D5A /* Extensions */,
+				6E5B4A612AC4C53B00F41D5A /* AppIntents */,
 				6E2C9B9E29CF5AD3002F1B28 /* Assets.xcassets */,
 				6E2C9BA029CF5AD3002F1B28 /* BluetoothAccessory.entitlements */,
 				6E2C9BA129CF5AD3002F1B28 /* Preview Content */,
@@ -227,10 +251,10 @@
 		6E2C9BAF29CF5BF9002F1B28 /* BluetoothAccessoryKit */ = {
 			isa = PBXGroup;
 			children = (
-				6EFCFFD029D078AF004B6DE8 /* Views */,
-				6EFCFFCA29D05F23004B6DE8 /* Extensions */,
 				6E2C9BBA29CF5C47002F1B28 /* BluetoothAccessoryKit.swift */,
+				6EFCFFCA29D05F23004B6DE8 /* Extensions */,
 				6EFCFFCF29D061B3004B6DE8 /* Model */,
+				6EFCFFD029D078AF004B6DE8 /* Views */,
 			);
 			path = BluetoothAccessoryKit;
 			sourceTree = "<group>";
@@ -248,6 +272,90 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6E5B4A5A2AC49BAC00F41D5A /* Row */ = {
+			isa = PBXGroup;
+			children = (
+				6E71636F29D41C1A0042565D /* SetupCharacteristicRow.swift */,
+				6E63874529D19C1200E1BD42 /* AccessoryCharacteristicRow.swift */,
+				6E5B4A5D2AC4BFED00F41D5A /* SubtitleRow.swift */,
+				6E5B4A5F2AC4C00500F41D5A /* DetailRow.swift */,
+			);
+			path = Row;
+			sourceTree = "<group>";
+		};
+		6E5B4A5B2AC49BB100F41D5A /* List */ = {
+			isa = PBXGroup;
+			children = (
+				6EFCFFD129D07A33004B6DE8 /* NearbyDevicesView.swift */,
+			);
+			path = List;
+			sourceTree = "<group>";
+		};
+		6E5B4A5C2AC49BB900F41D5A /* Detail */ = {
+			isa = PBXGroup;
+			children = (
+				6E71637129D420860042565D /* SetupAccessoryView.swift */,
+				6EFCFFEB29D134FB004B6DE8 /* NearbyAccessoryView.swift */,
+			);
+			path = Detail;
+			sourceTree = "<group>";
+		};
+		6E5B4A612AC4C53B00F41D5A /* AppIntents */ = {
+			isa = PBXGroup;
+			children = (
+				6E5B4A6E2AC4CE1900F41D5A /* EntityQuery */,
+				6E5B4A692AC4C84D00F41D5A /* AppEnum */,
+				6E5B4A632AC4C56700F41D5A /* Intent */,
+				6E5B4A622AC4C56000F41D5A /* Entity */,
+				6E5B4A672AC4C7AC00F41D5A /* Shortcuts.swift */,
+			);
+			path = AppIntents;
+			sourceTree = "<group>";
+		};
+		6E5B4A622AC4C56000F41D5A /* Entity */ = {
+			isa = PBXGroup;
+			children = (
+				6E5B4A642AC4C59500F41D5A /* AccessoryAppEntity.swift */,
+				6E5B4A712AC4F54A00F41D5A /* CharacteristicAppEntity.swift */,
+			);
+			path = Entity;
+			sourceTree = "<group>";
+		};
+		6E5B4A632AC4C56700F41D5A /* Intent */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Intent;
+			sourceTree = "<group>";
+		};
+		6E5B4A692AC4C84D00F41D5A /* AppEnum */ = {
+			isa = PBXGroup;
+			children = (
+				6E5B4A6A2AC4C85500F41D5A /* AccessoryTypeAppEnum.swift */,
+				6E5B4A6C2AC4C85E00F41D5A /* ServiceTypeAppEnum.swift */,
+				6E5B4A732AC4FF0900F41D5A /* CharacteristicFormatAppEnum.swift */,
+				6E5B4A752AC4FF1400F41D5A /* CharacteristicUnitAppEnum.swift */,
+			);
+			path = AppEnum;
+			sourceTree = "<group>";
+		};
+		6E5B4A6E2AC4CE1900F41D5A /* EntityQuery */ = {
+			isa = PBXGroup;
+			children = (
+				6E5B4A6F2AC4CE6900F41D5A /* AccessoryEntityQuery.swift */,
+				6E5B4A772AC50BA300F41D5A /* CharacteristicEntityQuery.swift */,
+			);
+			path = EntityQuery;
+			sourceTree = "<group>";
+		};
+		6E5B4A792AC5334100F41D5A /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				6E5B4A7A2AC5334D00F41D5A /* AppIntents.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 		6E8D1EA82AC1C673009ACD6D /* CoreModel */ = {
@@ -315,12 +423,9 @@
 		6EFCFFD029D078AF004B6DE8 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				6EFCFFD129D07A33004B6DE8 /* NearbyDevicesView.swift */,
-				6EFCFFEB29D134FB004B6DE8 /* NearbyAccessoryView.swift */,
-				6EFCFFED29D142EC004B6DE8 /* SubtitleRow.swift */,
-				6E63874529D19C1200E1BD42 /* AccessoryCharacteristicRow.swift */,
-				6E71636F29D41C1A0042565D /* SetupCharacteristicRow.swift */,
-				6E71637129D420860042565D /* SetupAccessoryView.swift */,
+				6E5B4A5C2AC49BB900F41D5A /* Detail */,
+				6E5B4A5B2AC49BB100F41D5A /* List */,
+				6E5B4A5A2AC49BAC00F41D5A /* Row */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -454,9 +559,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6E5B4A6B2AC4C85500F41D5A /* AccessoryTypeAppEnum.swift in Sources */,
 				6E71638929D565710042565D /* InfoPlist.swift in Sources */,
+				6E5B4A742AC4FF0900F41D5A /* CharacteristicFormatAppEnum.swift in Sources */,
+				6E5B4A7B2AC5334D00F41D5A /* AppIntents.swift in Sources */,
+				6E5B4A662AC4C5AC00F41D5A /* AccessoryAppEntity.swift in Sources */,
+				6E5B4A762AC4FF1400F41D5A /* CharacteristicUnitAppEnum.swift in Sources */,
 				6E2C9B9D29CF5AD2002F1B28 /* ContentView.swift in Sources */,
+				6E5B4A782AC50BA300F41D5A /* CharacteristicEntityQuery.swift in Sources */,
+				6E5B4A702AC4CE6900F41D5A /* AccessoryEntityQuery.swift in Sources */,
+				6E5B4A722AC4F54A00F41D5A /* CharacteristicAppEntity.swift in Sources */,
 				6E2C9B9B29CF5AD2002F1B28 /* App.swift in Sources */,
+				6E5B4A682AC4C7AC00F41D5A /* Shortcuts.swift in Sources */,
+				6E5B4A6D2AC4C85E00F41D5A /* ServiceTypeAppEnum.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -469,6 +584,7 @@
 				6E71637E29D4D12E0042565D /* AccessoryManagerFileManager.swift in Sources */,
 				6EFCFFE229D12EA4004B6DE8 /* AccessoryManagerLog.swift in Sources */,
 				6EFCFFEA29D12EDB004B6DE8 /* ScanDataCache.swift in Sources */,
+				6E5B4A602AC4C00500F41D5A /* DetailRow.swift in Sources */,
 				6E71637C29D4C7250042565D /* CloudKit.swift in Sources */,
 				6EFCFFDC29D116FB004B6DE8 /* UUID.swift in Sources */,
 				6E71637A29D4B0560042565D /* AccessoryManagerCoreData.swift in Sources */,
@@ -486,7 +602,6 @@
 				6E8D1EAC2AC1C755009ACD6D /* CharacteristicEntity.swift in Sources */,
 				6E71637429D428D40042565D /* NewKeyDocument.swift in Sources */,
 				6E71638029D4D2140042565D /* FileManager.swift in Sources */,
-				6EFCFFEE29D142EC004B6DE8 /* SubtitleRow.swift in Sources */,
 				6E71638229D4D3CE0042565D /* AccessoryCache.swift in Sources */,
 				6EFCFFE629D12EBE004B6DE8 /* AccessoryInformation.swift in Sources */,
 				6EFCFFC729D05E24004B6DE8 /* AccessoryManager.swift in Sources */,
@@ -496,6 +611,7 @@
 				6E8D1EB02AC28F57009ACD6D /* KeyEntity.swift in Sources */,
 				6E71638629D4E13E0042565D /* JSONFile.swift in Sources */,
 				6EFCFFCD29D05F23004B6DE8 /* Central.swift in Sources */,
+				6E5B4A5E2AC4BFED00F41D5A /* SubtitleRow.swift in Sources */,
 				6EFCFFE829D12ECA004B6DE8 /* AccessoryPeripheral.swift in Sources */,
 				6E71635A29D392A50042565D /* EnvironmentValues.swift in Sources */,
 				6EFCFFE429D12EAD004B6DE8 /* AccessoryManagerKeychain.swift in Sources */,
