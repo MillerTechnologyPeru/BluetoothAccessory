@@ -20,8 +20,6 @@ public extension CharacteristicUnit {
             return "°"
         case .celsius:
             return "°C"
-        case .fahrenheit:
-            return "°F"
         case .lux:
             return "lx"
         case .microgramsPerMCubed:

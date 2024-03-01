@@ -10,7 +10,6 @@ public enum CharacteristicUnit: UInt8, Codable, CaseIterable, Sendable {
     
     case arcdegrees
     case celsius
-    case fahrenheit
     case lux
     case microgramsPerMCubed
     case percentage
