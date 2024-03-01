@@ -36,10 +36,10 @@ typealias NativePeripheral = DarwinPeripheral
 #endif
 
 @main
-struct SolarBluetoothTool: ParsableCommand {
+struct ThermostatBluetoothTool: ParsableCommand {
     
     static let configuration = CommandConfiguration(
-        abstract: "Example deamon for a Bluetooth Solar Inverter.",
+        abstract: "Example deamon for a Bluetooth Temperature and Humidity Sensor.",
         version: "1.0.0"
     )
     
@@ -50,9 +50,9 @@ struct SolarBluetoothTool: ParsableCommand {
     var authentication: String = "authentication.json"
     
     @Option(help: "The interval (in seconds) at which data is refreshed.")
-    var refreshInterval: Int = 1
+    var refreshInterval: Int = 5
     
-    private static var server: SolarBluetoothServer<NativePeripheral, AuthenticationManager>!
+    private static var server: BluetoothServer<NativePeripheral, AuthenticationManager>!
     
     private static let fileManager = FileManager()
     
@@ -101,13 +101,13 @@ struct SolarBluetoothTool: ParsableCommand {
         let peripheral = try await loadBluetooth()
         
         // publish GATT server, enable advertising
-        Self.server = try await SolarBluetoothServer(
+        Self.server = try await BluetoothServer(
             peripheral: peripheral,
             id: configuration.id,
             rssi: configuration.rssi,
             model: configuration.model,
             serialNumber: configuration.id.description,
-            softwareVersion: SolarBluetoothTool.configuration.version,
+            softwareVersion: ThermostatBluetoothTool.configuration.version,
             refreshInterval: TimeInterval(refreshInterval),
             authentication: authentication
         )
@@ -134,7 +134,7 @@ struct SolarBluetoothTool: ParsableCommand {
             #endif
             return configuration
         } else {
-            let configuration = AccessoryConfiguration(rssi: 0, model: "MPPT-1001") // default value
+            let configuration = AccessoryConfiguration(rssi: 0, model: "TMS1") // default value
             let data = try configuration.encode()
             let didCreate = Self.fileManager.createFile(atPath: fileURL.path, contents: data)
             precondition(didCreate)
@@ -172,7 +172,7 @@ struct SolarBluetoothTool: ParsableCommand {
         let peripheral = DarwinPeripheral(
             options: .init(
                 showPowerAlert: true,
-                restoreIdentifier: "com.colemancda.solar-bluetooth"
+                restoreIdentifier: "com.colemancda.temp-sensor-bluetooth"
             )
         )
         #endif

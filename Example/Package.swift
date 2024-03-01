@@ -57,8 +57,8 @@ let package = Package(
             targets: ["LockAccessory"]
         ),
         .executable(
-            name: "ThermostatAccessory",
-            targets: ["ThermostatAccessory"]
+            name: "TemperatureSensorAccessory",
+            targets: ["TemperatureSensorAccessory"]
         ),
         .executable(
             name: "SolarAccessory",
@@ -97,7 +97,7 @@ let package = Package(
             dependencies: bluetoothDependencies + ["BluetoothAccessoryExample"]
         ),
         .executableTarget(
-            name: "ThermostatAccessory",
+            name: "TemperatureSensorAccessory",
             dependencies: bluetoothDependencies + ["BluetoothAccessoryExample"]
         ),
         .executableTarget(
