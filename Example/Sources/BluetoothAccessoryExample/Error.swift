@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum CommandError: Error {
+public enum CommandError: Error {
     
     /// Unable to load Bluetooth controller.
     case bluetoothUnavailable
