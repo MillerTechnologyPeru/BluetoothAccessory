@@ -33,17 +33,17 @@ public struct SetupRequest: Equatable, Hashable, Codable {
     /// Key secret
     public let secret: KeyData
     
-    /// Key username
-    public let name: String
+    /// Key user
+    public let user: UUID
     
     public init(
         id: UUID = UUID(),
         secret: KeyData = KeyData(),
-        name: String
+        user: UUID
     ) {
         self.id = id
         self.secret = secret
-        self.name = name
+        self.user = user
     }
 }
 
@@ -55,7 +55,7 @@ public extension Key {
     init(setup: SetupRequest, created: Date = Date()) {
         self.init(
             id: setup.id,
-            name: setup.name,
+            user: setup.user,
             created: created.removingMiliseconds,
             permission: .owner
         )

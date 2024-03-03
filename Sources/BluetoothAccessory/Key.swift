@@ -14,8 +14,8 @@ public struct Key: Identifiable, Codable, Equatable, Hashable, Sendable {
     /// The unique identifier of the key.
     public let id: UUID
     
-    /// The name of the key.
-    public let name: String
+    /// The owner of the key.
+    public let user: UUID
     
     /// Date key was created.
     public let created: Date
@@ -25,12 +25,12 @@ public struct Key: Identifiable, Codable, Equatable, Hashable, Sendable {
     
     public init(
         id: UUID = UUID(),
-        name: String = "",
+        user: UUID,
         created: Date = Date(),
         permission: Permission
     ) {
         self.id = id
-        self.name = name
+        self.user = user
         self.created = created
         self.permission = permission
     }

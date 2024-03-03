@@ -31,7 +31,7 @@ public struct CreateNewKeyRequest: Equatable, Hashable, Codable {
     public let id: UUID
     
     /// The name of the new key.
-    public let name: String
+    public let user: UUID
     
     /// The permission of the new key.
     public let permission: Permission
@@ -50,7 +50,7 @@ public extension CreateNewKeyRequest {
     init(key: NewKey, secret: KeyData) {
         
         self.id = key.id
-        self.name = key.name
+        self.user = key.user
         self.permission = key.permission
         self.expiration = key.expiration
         self.secret = secret
@@ -62,7 +62,7 @@ public extension NewKey {
     init(request: CreateNewKeyRequest, created: Date = Date()) {
         
         self.id = request.id
-        self.name = request.name
+        self.user = request.user
         self.permission = request.permission
         self.expiration = request.expiration
         self.created = created.removingMiliseconds

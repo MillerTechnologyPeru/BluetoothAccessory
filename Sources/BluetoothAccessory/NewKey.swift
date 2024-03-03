@@ -13,8 +13,8 @@ public struct NewKey: Codable, Equatable, Hashable, Identifiable, Sendable {
     /// The unique identifier of the key.
     public let id: UUID
     
-    /// The name of the key.
-    public let name: String
+    /// The owner of the key.
+    public let user: UUID
     
     /// Key's permissions.
     public let permission: Permission
@@ -26,13 +26,13 @@ public struct NewKey: Codable, Equatable, Hashable, Identifiable, Sendable {
     public let expiration: Date
     
     public init(id: UUID = UUID(),
-                name: String,
+                user: UUID,
                 permission: Permission = .anytime,
                 created: Date = Date(),
                 expiration: Date = Date().addingTimeInterval(60 * 60 * 24)) {
         
         self.id = id
-        self.name = name
+        self.user = user
         self.permission = permission
         self.created = created
         self.expiration = expiration
@@ -74,7 +74,7 @@ internal extension Key {
     init(_ newKey: NewKey) {
         self.init(
             id: newKey.id,
-            name: newKey.name,
+            user: newKey.user,
             created: newKey.created,
             permission: newKey.permission
         )
@@ -86,7 +86,7 @@ public extension NewKey {
     func confirm() -> Key {
         Key(
             id: id,
-            name: name,
+            user: user,
             created: created,
             permission: permission
         )
