@@ -15,17 +15,17 @@ public struct AccessoryManufacturerData: Equatable, Hashable, Codable {
     
     public let id: UUID
     
-    public var accessoryType: AccessoryType
+    public var type: AccessoryType
     
     public var state: GlobalStateNumber
     
     public init(
         id: UUID,
-        accessoryType: AccessoryType = .other,
+        type: AccessoryType = .other,
         state: GlobalStateNumber = .setup
     ) {
         self.id = id
-        self.accessoryType = accessoryType
+        self.type = type
         self.state = state
     }
 }
@@ -48,7 +48,7 @@ public extension AccessoryManufacturerData {
               let accessoryType = AccessoryType(rawValue: UInt16(littleEndian: UInt16(bytes: (manufacturerData.additionalData[16], manufacturerData.additionalData[17]))))
             else { return nil }
         self.id = UUID(UInt128(littleEndian: littleEndianUUID))
-        self.accessoryType = accessoryType
+        self.type = accessoryType
         self.state = GlobalStateNumber(rawValue: UInt16(littleEndian: UInt16(bytes: (manufacturerData.additionalData[18], manufacturerData.additionalData[19]))))
     }
 }
@@ -70,7 +70,7 @@ extension AccessoryManufacturerData: DataConvertible {
     /// Append data representation into buffer.
     static func += <T: DataContainer> (data: inout T, value: AccessoryManufacturerData) {
         data += UInt128(uuid: value.id).littleEndian
-        data += value.accessoryType.rawValue.littleEndian
+        data += value.type.rawValue.littleEndian
         data += value.state.rawValue.littleEndian
     }
     
