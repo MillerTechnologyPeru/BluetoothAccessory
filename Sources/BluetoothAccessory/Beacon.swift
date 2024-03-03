@@ -9,29 +9,79 @@ import Foundation
 import Bluetooth
 
 /// Bluetooth Accessory Beacon
-public struct AccessoryBeacon: Equatable, Hashable, Sendable, Codable {
+public enum AccessoryBeacon: Equatable, Hashable, Sendable, Codable {
     
-    public let id: UUID
+    /// Generic Beacon advertising the accessory.
+    case accessory(UUID? = nil, AccessoryType, GlobalStateNumber)
     
-    public let type: AccessoryType
+    /// Beacon used for waking up app for state changes.
+    case characteristicChanged(CharacteristicType, GlobalStateNumber)
+}
+
+internal extension AccessoryBeacon {
     
-    public var state: GlobalStateNumber
+    enum DefinedUUID: UInt32, CaseIterable {
+        
+        case accessory = 0
+        case characteristicChanged = 1
+    }
+}
+
+internal extension UUID {
     
-    public init(id: UUID, type: AccessoryType, state: GlobalStateNumber) {
-        self.id = id
-        self.type = type
-        self.state = state
+    init(beacon: AccessoryBeacon.DefinedUUID) {
+        self.init(UInt128(bluetoothAccessory: beacon.rawValue))
+    }
+}
+
+internal extension AccessoryBeacon {
+    
+    var uuid: UUID {
+        switch self {
+        case let .accessory(uuid, _, _):
+            return uuid ?? UUID(beacon: .accessory)
+        case .characteristicChanged:
+            return UUID(beacon: .characteristicChanged)
+        }
+    }
+    
+    var major: UInt16 {
+        switch self {
+        case let .accessory(_, accessoryType, _):
+            return accessoryType.rawValue
+        case let .characteristicChanged(characteristicType, _):
+            return characteristicType.rawValue
+        }
+    }
+    
+    var minor: UInt16 {
+        switch self {
+        case let .accessory(_, _, state):
+            return state.rawValue
+        case let .characteristicChanged(_, state):
+            return state.rawValue
+        }
     }
 }
 
 public extension AccessoryBeacon {
     
-    init(beacon: AppleBeacon) {
-        self.init(
-            id: beacon.uuid,
-            type: AccessoryType(rawValue: beacon.major) ?? .other,
-            state: GlobalStateNumber(rawValue: beacon.minor)
-        )
+    init?(beacon: AppleBeacon) {
+        switch beacon.uuid {
+        case UUID(beacon: .characteristicChanged):
+            guard let characteristicType = CharacteristicType(rawValue: beacon.major) else {
+                return nil
+            }
+            let state = GlobalStateNumber(rawValue: beacon.minor)
+            self = .characteristicChanged(characteristicType, state)
+        default:
+            let uuid = beacon.uuid == UUID(beacon: .accessory) ? nil : beacon.uuid
+            guard let accessoryType = AccessoryType(rawValue: beacon.major) else {
+                return nil
+            }
+            let state = GlobalStateNumber(rawValue: beacon.minor)
+            self = .accessory(uuid, accessoryType, state)
+        }
     }
 }
 
@@ -39,9 +89,9 @@ public extension AppleBeacon {
     
     init(bluetoothAccessory beacon: AccessoryBeacon, rssi: Int8) {
         self.init(
-            uuid: beacon.id,
-            major: beacon.type.rawValue,
-            minor: beacon.state.rawValue,
+            uuid: beacon.uuid,
+            major: beacon.major,
+            minor: beacon.minor,
             rssi: rssi
         )
     }
