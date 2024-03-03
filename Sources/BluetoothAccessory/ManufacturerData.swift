@@ -17,31 +17,39 @@ public struct AccessoryManufacturerData: Equatable, Hashable, Codable {
     
     public var accessoryType: AccessoryType
     
-    public var isConfigured: Bool
+    public var state: GlobalStateNumber
     
     public init(
         id: UUID,
         accessoryType: AccessoryType = .other,
-        isConfigured: Bool = true
+        state: GlobalStateNumber = .setup
     ) {
         self.id = id
         self.accessoryType = accessoryType
-        self.isConfigured = isConfigured
+        self.state = state
     }
 }
 
 public extension AccessoryManufacturerData {
     
+    var isConfigured: Bool {
+        state != .setup
+    }
+}
+
+public extension AccessoryManufacturerData {
+    
+    static var length: Int { 20 }
+    
     init?(manufacturerData: GATT.ManufacturerSpecificData) {
         guard manufacturerData.companyIdentifier == AccessoryManufacturerData.companyIdentifier,
-              manufacturerData.additionalData.count == 19,
+              manufacturerData.additionalData.count == Self.length,
               let littleEndianUUID = UInt128(data: Data(manufacturerData.additionalData.prefix(UInt128.length))),
-              let accessoryType = AccessoryType(rawValue: UInt16(littleEndian: UInt16(bytes: (manufacturerData.additionalData[16], manufacturerData.additionalData[17])))),
-              let isConfigured = Bool(byteValue: manufacturerData.additionalData[18])
+              let accessoryType = AccessoryType(rawValue: UInt16(littleEndian: UInt16(bytes: (manufacturerData.additionalData[16], manufacturerData.additionalData[17]))))
             else { return nil }
         self.id = UUID(UInt128(littleEndian: littleEndianUUID))
         self.accessoryType = accessoryType
-        self.isConfigured = isConfigured
+        self.state = GlobalStateNumber(rawValue: UInt16(littleEndian: UInt16(bytes: (manufacturerData.additionalData[18], manufacturerData.additionalData[19]))))
     }
 }
 
@@ -63,11 +71,11 @@ extension AccessoryManufacturerData: DataConvertible {
     static func += <T: DataContainer> (data: inout T, value: AccessoryManufacturerData) {
         data += UInt128(uuid: value.id).littleEndian
         data += value.accessoryType.rawValue.littleEndian
-        data += value.isConfigured.byteValue
+        data += value.state.rawValue.littleEndian
     }
     
     /// Length of value when encoded into data.
     var dataLength: Int {
-        19
+        Self.length
     }
 }

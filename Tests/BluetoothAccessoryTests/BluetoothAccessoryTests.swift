@@ -125,7 +125,7 @@ final class BluetoothAccessoryTests: XCTestCase {
         let manufacturerData = AccessoryManufacturerData(
             id: UUID(),
             accessoryType: AccessoryType.allCases.randomElement()!,
-            isConfigured: Bool.random()
+            state: GlobalStateNumber(rawValue: .random(in: .min ..< .max))
         )
         
         XCTAssertEqual(AccessoryManufacturerData(manufacturerData: GATT.ManufacturerSpecificData(bluetoothAccessory: manufacturerData)), manufacturerData)
