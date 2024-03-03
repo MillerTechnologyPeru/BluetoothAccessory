@@ -10,7 +10,13 @@ import Foundation
 /// Accessory Custom URL scheme
 public enum AccessoryURL: Equatable, Hashable {
     
+    /// View the specified accessory details
+    case accessory(UUID)
+    
+    /// Setup the accessory with the provided secret
     case setup(UUID, KeyData)
+    
+    /// Accept the new key invitation
     case newKey(NewKey.Invitation)
 }
 
@@ -29,11 +35,13 @@ internal extension AccessoryURL {
         switch self {
         case .setup: return .setup
         case .newKey: return .newKey
+        case .accessory: return .accessory
         }
     }
     
     enum URLType: String {
         
+        case accessory
         case setup
         case newKey = "newkey"
         
@@ -42,6 +50,8 @@ internal extension AccessoryURL {
             case .setup:
                 return 3
             case .newKey:
+                return 2
+            case .accessory:
                 return 2
             }
         }
@@ -91,6 +101,8 @@ public extension URL {
             let data = try! AccessoryURL.encoder.encode(newKey)
             let base64 = data.base64URLEncodedString()
             path.append(base64)
+        case let .accessory(accessoryIdentifier):
+            path.append(accessoryIdentifier.uuidString)
         }
         var components = URLComponents()
         components.scheme = AccessoryURL.scheme
@@ -124,6 +136,10 @@ public extension AccessoryURL {
                   let invitation = try? AccessoryURL.decoder.decode(NewKey.Invitation.self, from: data)
                 else { return nil }
             self = .newKey(invitation)
+        case .accessory:
+            guard let accessoryIdentifier = UUID(uuidString: pathComponents[1])
+                else { return nil }
+            self = .accessory(accessoryIdentifier)
         }
     }
 }
