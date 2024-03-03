@@ -32,15 +32,10 @@ extension GATTPeripheral: AccessoryPeripheralManager {
         // write classic BT name
         try await hostController.writeLocalName(name)
         // advertise iBeacon and set interval
-        let flags: GAPFlags
-        switch beacon {
-        case .id:
-            flags = [.lowEnergyGeneralDiscoverableMode, .notSupportedBREDR]
-        case .characteristicChanged:
-            flags = [.lowEnergyLimitedDiscoverableMode, .notSupportedBREDR]
-        case .setup:
-            flags = [.lowEnergyGeneralDiscoverableMode, .notSupportedBREDR]
-        }
+        let flags: GAPFlags = [
+            .lowEnergyGeneralDiscoverableMode,
+            .notSupportedBREDR
+        ]
         try await hostController.setAdvertisingData(
             beacon: beacon,
             rssi: rssi,

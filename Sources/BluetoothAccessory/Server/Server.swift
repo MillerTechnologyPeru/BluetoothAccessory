@@ -19,13 +19,19 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
     
     public let id: UUID
     
+    public let type: AccessoryType
+    
     public let rssi: Int8
     
     public let name: String
     
     public let advertisedService: ServiceType
     
-    public private(set) var beacon: AccessoryBeacon
+    public private(set) var state: GlobalStateNumber = .setup
+    
+    internal var beacon: AccessoryBeacon {
+        .init(id: id, type: type, state: state)
+    }
     
     var services: [any AccessoryService]
     
@@ -43,6 +49,7 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
         peripheral: Peripheral,
         delegate: BluetoothAccessoryServerDelegate? = nil,
         id: UUID,
+        type: AccessoryType,
         rssi: Int8,
         name: String,
         advertised service: ServiceType,
@@ -51,11 +58,11 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
         self.peripheral = peripheral
         self.delegate = delegate
         self.id = id
+        self.type = type
         self.rssi = rssi
         self.name = name
         self.advertisedService = service
         self.services = services
-        self.beacon = .id(id)
         self.setPeripheralCallbacks()
         await self.updateValues()
         try await self.start()
@@ -119,7 +126,6 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
             name: name,
             service: advertisedService
         )
-        self.beacon = beacon
         delegate?.didAdvertise(beacon: beacon)
     }
         
@@ -226,7 +232,7 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
         case BluetoothUUID(characteristic: .authenticate):
             // TODO: Optimize
             guard let authenticationMessage = authenticationMessage,
-                type(of: self.services[serviceIndex]).type == BluetoothUUID(service: .authentication),
+                  Swift.type(of: self.services[serviceIndex]).type == BluetoothUUID(service: .authentication),
                 case .single(let value) = characteristic.value,
                 let characteristic = AuthenticateCharacteristic(characteristicValue: value) else {
                 assertionFailure()
@@ -384,7 +390,7 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
     
     private func characteristic(for uuid: BluetoothUUID, service serviceUUID: BluetoothUUID) -> (serviceIndex: Int, characteristic: AnyManagedCharacteristic)? {
         for (serviceIndex, service) in services.enumerated() {
-            guard type(of: service).type == serviceUUID else {
+            guard Swift.type(of: service).type == serviceUUID else {
                 continue
             }
             for characteristic in service.characteristics {

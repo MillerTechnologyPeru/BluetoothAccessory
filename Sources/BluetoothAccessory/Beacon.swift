@@ -9,82 +9,40 @@ import Foundation
 import Bluetooth
 
 /// Bluetooth Accessory Beacon
-public enum AccessoryBeacon: Equatable, Hashable, Sendable {
+public struct AccessoryBeacon: Equatable, Hashable, Sendable, Codable {
     
-    /// Identifier
-    case id(UUID)
+    public let id: UUID
     
-    /// Characteristic changed
-    case characteristicChanged(UUID, CharacteristicType)
+    public let type: AccessoryType
     
-    // Setup mode
-    case setup(UUID, AccessoryType)
+    public var state: GlobalStateNumber
+    
+    public init(id: UUID, type: AccessoryType, state: GlobalStateNumber) {
+        self.id = id
+        self.type = type
+        self.state = state
+    }
 }
 
 public extension AccessoryBeacon {
     
-    var uuid: UUID {
-        switch self {
-        case let .id(uuid):
-            return uuid
-        case let .characteristicChanged(uuid, _):
-            return uuid
-        case let .setup(uuid, _):
-            return uuid
-        }
-    }
-    
-    var major: UInt16 {
-        switch self {
-        case .id:
-            return 0x00
-        case .characteristicChanged:
-            return 0x01
-        case .setup:
-            return 0x02
-        }
-    }
-    
-    var minor: UInt16 {
-        switch self {
-        case .id:
-            return 0x00
-        case let .characteristicChanged(_, type):
-            return type.rawValue
-        case let .setup(_, type):
-            return type.rawValue
-        }
+    init(beacon: AppleBeacon) {
+        self.init(
+            id: beacon.uuid,
+            type: AccessoryType(rawValue: beacon.major) ?? .other,
+            state: GlobalStateNumber(rawValue: beacon.minor)
+        )
     }
 }
 
 public extension AppleBeacon {
     
     init(bluetoothAccessory beacon: AccessoryBeacon, rssi: Int8) {
-        self.init(uuid: beacon.uuid, major: beacon.major, minor: beacon.minor, rssi: rssi)
-    }
-}
-
-public extension AccessoryBeacon {
-    
-    init?(beacon: AppleBeacon) {
-        switch beacon.major {
-        case 0x00:
-            guard beacon.minor == 0x00 else {
-                return nil
-            }
-            self = .id(beacon.uuid)
-        case 0x01:
-            guard let characteristicType = CharacteristicType(rawValue: beacon.minor) else {
-                return nil
-            }
-            self = .characteristicChanged(beacon.uuid, characteristicType)
-        case 0x02:
-            guard let accessoryType = AccessoryType(rawValue: beacon.minor) else {
-                return nil
-            }
-            self = .setup(beacon.uuid, accessoryType)
-        default:
-            return nil
-        }
+        self.init(
+            uuid: beacon.id,
+            major: beacon.type.rawValue,
+            minor: beacon.state.rawValue,
+            rssi: rssi
+        )
     }
 }

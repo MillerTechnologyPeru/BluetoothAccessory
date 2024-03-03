@@ -288,7 +288,8 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
         self.server = try await BluetoothAccessoryServer(
             peripheral: peripheral,
             delegate: self,
-            id: id,
+            id: id, 
+            type: accessoryType,
             rssi: rssi,
             name: name,
             advertised: advertisedService,
