@@ -29,10 +29,6 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
     
     public private(set) var state: GlobalStateNumber = .setup
     
-    internal var beacon: AccessoryBeacon {
-        .init(id: id, type: type, state: state)
-    }
-    
     var services: [any AccessoryService]
     
     weak var delegate: BluetoothAccessoryServerDelegate?
@@ -116,6 +112,8 @@ public actor BluetoothAccessoryServer <Peripheral: AccessoryPeripheralManager>: 
     
     private func start() async throws {
         try await peripheral.start()
+        // start advertising
+        let beacon = AccessoryBeacon.accessory(id, type, state)
         try await advertise(beacon: beacon)
     }
     
