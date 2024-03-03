@@ -47,13 +47,13 @@ final class ServerTests: XCTestCase {
         let (peripheral, central, scanData) = try await testPeripheral()
         let server = try await TestServer(peripheral: peripheral)
         
-        let ownerName = "colemancda@icloud.com"
+        let owner = UUID()
         let key = Credential(id: UUID(), secret: KeyData())
         let setupSecret = server.setupSharedSecret
         let setupRequest = SetupRequest(
             id: key.id,
             secret: key.secret,
-            name: ownerName
+            user: owner
         )
         
         try await central.connection(for: scanData.peripheral) { connection in
@@ -88,7 +88,7 @@ final class ServerTests: XCTestCase {
             // verify new key
             XCTAssertEqual(ownerKey.id, key.id)
             XCTAssertEqual(ownerKey.permission, .owner)
-            XCTAssertEqual(ownerKey.name, ownerName)
+            XCTAssertEqual(ownerKey.user, owner)
             
             // verify setup request reset
             let serverSetupValue = await server.authentication.setup
@@ -104,7 +104,7 @@ final class ServerTests: XCTestCase {
             
             // create new key
             try await Task.sleep(nanoseconds: 10_000_000)
-            let newKey = NewKey(name: "johndoe@mac.com")
+            let newKey = NewKey(user: UUID())
             let invitation = try await connection.createKey(newKey, device: id, key: key)
             
             // confirm key
@@ -164,10 +164,11 @@ final class ServerTests: XCTestCase {
         let (peripheral, central, scanData) = try await testPeripheral()
         let server = try await TestServer(peripheral: peripheral)
         
-        let credential = Credential(id: UUID(), secret: KeyData())
+        let user = UUID()
+        let credential = Credential(id: user, secret: KeyData())
         let ownerKey = Key(
             id: credential.id,
-            name: "colemancda@icloud.com",
+            user: user,
             created: Date(),
             permission: .owner
         )
@@ -345,7 +346,7 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
                     assertionFailure()
                     return
                 }
-                log("Did identify with key \(key.name)")
+                log("Did identify with key \(key.user)")
                 lastIdentify = Date()
                 // clear value
                 await self.server.update(InformationService.self) {
@@ -359,7 +360,7 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
                 return
             }
             let powerState = await self.outlet.powerState
-            log("Did turn \(powerState ? "on" : "off") with key \(key.name)")
+            log("Did turn \(powerState ? "on" : "off") with key \(key.user)")
             
         case await authentication.$setup.handle:
             //assert(await authentication.$setup.value == characteristicValue)
@@ -370,7 +371,7 @@ actor TestServer <Peripheral: AccessoryPeripheralManager>: BluetoothAccessorySer
             // create new key
             let ownerKey = Key(setup: request)
             await self.add(key: ownerKey, secret: request.secret)
-            log("Setup owner key for \(ownerKey.name)")
+            log("Setup owner key for \(ownerKey.user)")
             // clear value
             await self.server.update(AuthenticationService.self) {
                 $0.setup = nil
