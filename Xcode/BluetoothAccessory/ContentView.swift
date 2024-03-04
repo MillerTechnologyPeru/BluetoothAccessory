@@ -9,7 +9,7 @@ import SwiftUI
 import BluetoothAccessoryKit
 
 struct ContentView: View {
-    
+        
     var body: some View {
         #if os(iOS)
         AccessoryTabView()

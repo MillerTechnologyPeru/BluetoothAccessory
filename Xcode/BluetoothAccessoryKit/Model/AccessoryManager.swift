@@ -75,7 +75,7 @@ public final class AccessoryManager: ObservableObject {
     
     public lazy var cloudContainer = loadCloudContainer()
     
-    #if os(iOS)
+    #if os(iOS) && !APPCLIP
     internal lazy var keyValueStore: NSUbiquitousKeyValueStore = .default
     #endif
     
@@ -145,8 +145,7 @@ public extension AccessoryManager.Configuration {
     static var `default`: AccessoryManager.Configuration {
         AccessoryManager.Configuration(
             central: NativeCentral.Options(
-                showPowerAlert: true,
-                restoreIdentifier: "com.colemancda.BluetoothAccessory.CBCentralManager"
+                showPowerAlert: true
             ),
             appGroup: "group.com.colemancda.BluetoothAccessory",
             keychain: (

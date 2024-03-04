@@ -23,3 +23,44 @@ struct AccessoryRow: View {
         }
     }
 }
+
+// MARK: - Preview
+
+#Preview {
+    List {
+        AccessoryRow(accessory: PairedAccessory(
+            information: AccessoryInformation(
+                id: UUID(),
+                name: "Smart Bulb",
+                type: .lightbulb,
+                service: .lightbulb,
+                manufacturer: "Smart Home Inc.",
+                serialNumber: UUID().uuidString,
+                model: "Bulb101",
+                softwareVersion: "1.0.5"
+            ),
+            key: Key(
+                user: UUID(),
+                permission: .owner
+            ),
+            name: "Living Room Lamp"
+        ))
+        AccessoryRow(accessory: PairedAccessory(
+            information: AccessoryInformation(
+                id: UUID(),
+                name: "Smart Lock",
+                type: .doorLock,
+                service: .lock,
+                manufacturer: "Smart Home Inc.",
+                serialNumber: UUID().uuidString,
+                model: "Lock201",
+                softwareVersion: "1.0.2"
+            ),
+            key: Key(
+                user: UUID(),
+                permission: .owner
+            ),
+            name: "Front Door"
+        ))
+    }
+}

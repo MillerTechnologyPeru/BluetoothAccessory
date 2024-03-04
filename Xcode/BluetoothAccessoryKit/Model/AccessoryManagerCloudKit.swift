@@ -20,7 +20,7 @@ internal extension AccessoryManager {
         return container
     }
     
-    #if os(iOS)
+    #if os(iOS) && !APPCLIP
     func loadCloudKeyValueObserver() {
         // observe changes
         keyValueStoreObserver = NotificationCenter.default.addObserver(

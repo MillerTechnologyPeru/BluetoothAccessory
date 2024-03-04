@@ -115,7 +115,7 @@ public extension AccessoryManager {
                     return (accessory, information)
                 }
                 catch {
-                    log("Unable to get identifier for peripheral \(peripheral)")
+                    log("Unable to get identifier for peripheral \(peripheral). \(error)")
                 }
             }
             throw BluetoothAccessoryError.notInRange(id)

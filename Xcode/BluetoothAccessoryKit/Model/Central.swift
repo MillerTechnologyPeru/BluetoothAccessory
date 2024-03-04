@@ -12,11 +12,5 @@ import GATT
 import DarwinGATT
 import BluetoothAccessory
 
-#if targetEnvironment(simulator)
-public typealias NativeCentral = MockCentral
-public typealias NativePeripheral = MockCentral.Peripheral
-#else
 public typealias NativeCentral = DarwinCentral
 public typealias NativePeripheral = DarwinCentral.Peripheral
-#endif
-

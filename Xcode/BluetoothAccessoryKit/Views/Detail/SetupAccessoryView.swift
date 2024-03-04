@@ -9,8 +9,12 @@ import Foundation
 import SwiftUI
 import Bluetooth
 import BluetoothAccessory
+
+#if canImport(SFSafeSymbols)
 import SFSafeSymbols
-#if os(iOS) && !APPCLIP
+#endif
+
+#if canImport(CodeScanner) && os(iOS) && !APPCLIP
 import CodeScanner
 #endif
 
@@ -18,11 +22,11 @@ public struct SetupAccessoryView: View {
     
     @EnvironmentObject
     private var store: AccessoryManager
-        
+    
     private let success: ((PairedAccessory) -> ())?
     
     @State
-    private var state: SetupState = .camera(nil)
+    private var state: SetupState
     
     @State
     private var configuredName = ""
@@ -33,7 +37,7 @@ public struct SetupAccessoryView: View {
         success: ((PairedAccessory) -> ())? = nil
     ) {
         self.success = success
-        self.state = .camera(accessory)
+        _state = .init(initialValue: .camera(accessory))
     }
     #endif
     
@@ -43,7 +47,7 @@ public struct SetupAccessoryView: View {
         success: ((PairedAccessory) -> ())? = nil
     ) {
         self.success = success
-        self.state = .scanning(accessory, sharedSecret)
+        _state = .init(initialValue: .scanning(accessory, sharedSecret))
     }
     
     public var body: some View {
@@ -92,6 +96,10 @@ private extension SetupAccessoryView {
     }
     
     func scan(for accessory: UUID, using sharedSecret: KeyData) {
+        if let pairedAccessory = store[cache: accessory] {
+            self.state = .success(pairedAccessory)
+            return
+        }
         self.state = .scanning(accessory, sharedSecret)
         let store = self.store
         let sleepTask = Task {
@@ -103,7 +111,9 @@ private extension SetupAccessoryView {
                 let (peripheral, information) = try await store.setupScan(for: accessory)
                 newState = .confirm(peripheral, information, sharedSecret)
             } catch {
-                newState = .error(error)
+                newState = .error(error, retry: {
+                    self.scan(for: accessory, using: sharedSecret)
+                })
             }
             try await sleepTask.value
             self.state = newState
@@ -131,7 +141,7 @@ private extension SetupAccessoryView {
                 )
                 newState = .success(pairedAccessory)
             } catch {
-                newState = .error(error)
+                newState = .error(error, retry: { self.retry() })
             }
             try await sleepTask.value
             self.state = newState
@@ -175,7 +185,7 @@ private extension SetupAccessoryView {
                     name: name
                 )
             )
-        case let .error(error):
+        case let .error(error, retry):
             return AnyView(
                 ErrorView(
                     error: error,
@@ -202,7 +212,7 @@ internal extension SetupAccessoryView {
         case confirm(AccessoryPeripheral<NativePeripheral>, AccessoryInformation, KeyData)
         case pairing(AccessoryPeripheral<NativePeripheral>, String)
         case success(PairedAccessory)
-        case error(Error)
+        case error(Error, retry: () -> ())
     }
 }
 
@@ -222,62 +232,65 @@ internal extension SetupAccessoryView {
     #endif
     
     struct ConfirmView: View {
-                
+        
         let information: AccessoryInformation
-                
+        
         let confirm: (String) -> ()
         
         @State
         private var name = ""
         
         var body: some View {
-            VStack(alignment: .leading, spacing: 16) {
-                
-                if #available(iOS 16, macOS 13, *) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    
+                    if #available(iOS 16, macOS 13, *) {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Image(systemSymbol: information.type.symbol)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .foregroundColor(.gray)
+                            Spacer()
+                        }
+                        Spacer()
+                    }
+                    
+                    HStack {
+                        Text("Name:")
+                        TextField("\(information.name)", text: $name)
+                    }
+                    
+                    Label(title: {
+                        Text(verbatim: information.manufacturer)
+                    }, icon: {
+                        Text("Manufacturer:")
+                    })
+                    
+                    Label(title: {
+                        Text(verbatim: information.serialNumber)
+                    }, icon: {
+                        Text("Serial Number:")
+                    })
+                    
                     Spacer()
+                    
+                    // Configure Button
                     HStack {
                         Spacer()
-                        Image(systemSymbol: information.type.symbol)
-                            .resizable()
-                            .foregroundColor(.gray)
+                        Button("Configure") {
+                            let name = name.isEmpty ? information.name : name
+                            confirm(name)
+                            self.name = ""
+                        }
                         Spacer()
                     }
+                    
                     Spacer()
                 }
-                
-                HStack {
-                    Text("Name:")
-                    TextField("\(information.name)", text: $name)
-                }
-                
-                Label(title: {
-                    Text(verbatim: information.manufacturer)
-                }, icon: {
-                    Text("Manufacturer:")
-                })
-                
-                Label(title: {
-                    Text(verbatim: information.serialNumber)
-                }, icon: {
-                    Text("Serial Number:")
-                })
-                
-                Spacer()
-                
-                // Configure Button
-                HStack {
-                    Spacer()
-                    Button("Configure") {
-                        let name = name.isEmpty ? information.name : name
-                        confirm(name)
-                        self.name = ""
-                    }
-                    Spacer()
-                }
-                
-                Spacer()
+                .padding(30)
             }
-            .padding(30)
         }
     }
     

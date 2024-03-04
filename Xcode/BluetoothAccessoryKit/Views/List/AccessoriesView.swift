@@ -19,18 +19,6 @@ public struct AccessoriesView: View {
     @EnvironmentObject
     private var store: AccessoryManager
     
-    @State
-    var showSetup = false
-    
-    /*
-    @Binding
-    var showSetup: Bool
-    
-    public init(showSetup: Binding<Bool>) {
-        _showSetup = showSetup
-    }
-    */
-    
     public init() { }
     
     public var body: some View {
@@ -42,27 +30,14 @@ public struct AccessoriesView: View {
             } else {
                 List {
                     ForEach(accessories) { accessory in
-                        AccessoryRow(accessory: accessory)
+                        Link(destination: URL(AccessoryURL.accessory(accessory.id)), label: {
+                            AccessoryRow(accessory: accessory)
+                        })
                     }
                 }
             }
         }
         .navigationTitle("Devices")
-#if !APPCLIP
-        .toolbar {
-            
-            Button(action: {
-                add()
-            }, label: {
-                Image(systemSymbol: .plus)
-            })
-        }
-        .sheet(isPresented: $showSetup) {
-            NavigationView {
-                SetupAccessoryView()
-            }
-        }
-#endif
     }
 }
 
@@ -72,10 +47,6 @@ private extension AccessoriesView {
         store.cache.values
             .sorted(by: { $0.information.type.rawValue < $1.information.type.rawValue })
             .sorted(by: { $0.name < $1.name })
-    }
-    
-    func add() {
-        showSetup = true
     }
 }
 
