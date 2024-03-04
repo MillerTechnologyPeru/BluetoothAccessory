@@ -83,8 +83,7 @@ private extension SetupAccessoryView {
             return .failure(.invalidQRCode)
         }
         // Validate UUID if provided
-        if case let .camera(uuid) = state,
-           let uuid {
+        if case let .camera(uuid) = state, let uuid {
             guard uuid == accessory else {
                 return .failure(.invalidQRCode)
             }
@@ -94,13 +93,20 @@ private extension SetupAccessoryView {
     
     func scan(for accessory: UUID, using sharedSecret: KeyData) {
         self.state = .scanning(accessory, sharedSecret)
+        let store = self.store
+        let sleepTask = Task {
+            try await Task.sleep(timeInterval: 1.0)
+        }
         Task {
+            let newState: SetupState
             do {
                 let (peripheral, information) = try await store.setupScan(for: accessory)
-                self.state = .confirm(peripheral, information, sharedSecret)
+                newState = .confirm(peripheral, information, sharedSecret)
             } catch {
-                self.state = .error(error)
+                newState = .error(error)
             }
+            try await sleepTask.value
+            self.state = newState
         }
     }
     
@@ -110,7 +116,12 @@ private extension SetupAccessoryView {
         with name: String
     ) {
         self.state = .pairing(accessory, name)
+        let store = self.store
+        let sleepTask = Task {
+            try await Task.sleep(timeInterval: 1.0)
+        }
         Task {
+            let newState: SetupState
             do {
                 // start pairing
                 let pairedAccessory = try await store.setup(
@@ -118,10 +129,12 @@ private extension SetupAccessoryView {
                     using: sharedSecret,
                     name: name
                 )
-                self.state = .success(pairedAccessory)
+                newState = .success(pairedAccessory)
             } catch {
-                self.state = .error(error)
+                newState = .error(error)
             }
+            try await sleepTask.value
+            self.state = newState
         }
     }
     
@@ -218,27 +231,51 @@ internal extension SetupAccessoryView {
         private var name = ""
         
         var body: some View {
-            VStack(alignment: .center, spacing: 16) {
-                // TODO: Show accessory type image
-                TextField("Name", text: $name, prompt: Text(verbatim: information.name))
+            VStack(alignment: .leading, spacing: 16) {
+                
+                if #available(iOS 16, macOS 13, *) {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Image(systemSymbol: information.type.symbol)
+                            .resizable()
+                            .foregroundColor(.gray)
+                        Spacer()
+                    }
+                    Spacer()
+                }
+                
+                HStack {
+                    Text("Name")
+                    TextField("\(information.name)", text: $name)
+                }
                 
                 Label(title: {
                     Text(verbatim: information.manufacturer)
                 }, icon: {
-                    Text("Manufacturer")
+                    Text("Manufacturer:")
                 })
                 
                 Label(title: {
                     Text(verbatim: information.serialNumber)
                 }, icon: {
-                    Text("Serial Number")
+                    Text("Serial Number:")
                 })
                 
-                Button("Configure") {
-                    let name = name.isEmpty ? information.name : name
-                    confirm(name)
-                    self.name = ""
+                Spacer()
+                
+                // Configure Button
+                HStack {
+                    Spacer()
+                    Button("Configure") {
+                        let name = name.isEmpty ? information.name : name
+                        confirm(name)
+                        self.name = ""
+                    }
+                    Spacer()
                 }
+                
+                Spacer()
             }
             .padding(30)
         }
@@ -252,7 +289,6 @@ internal extension SetupAccessoryView {
         
         var body: some View {
             VStack(alignment: .center, spacing: 16) {
-                // TODO: Accessory Type image
                 Text("Pairing \(name)")
                 ProgressView()
                     .progressViewStyle(.circular)
@@ -325,9 +361,22 @@ internal extension SetupAccessoryView {
 
 #if DEBUG
 struct SetupAccessoryView_Previews: PreviewProvider {
+    
     static var previews: some View {
-        SetupAccessoryView()
+        SetupAccessoryView.ConfirmView(
+            information: AccessoryInformation(
+                id: UUID(),
+                name: "Smart Bulb",
+                type: .lightbulb,
+                service: .lightbulb,
+                manufacturer: "Smart Home Inc.",
+                serialNumber: UUID().uuidString,
+                model: "Bulb101",
+                softwareVersion: "1.0.5"
+            ), confirm: { name in
+                print("Will pair accessory \(name)")
+            }
+        )
     }
 }
 #endif
-
