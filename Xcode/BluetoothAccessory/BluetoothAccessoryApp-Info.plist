@@ -2,23 +2,26 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.colemancda.BluetoothAccessory</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>bluetooth-accessory</string>
+			</array>
+		</dict>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	<key>UIFileSharingEnabled</key>
-	<true/>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Location access is needed for iBeacon tracking.</string>
-	<key>NSContactsUsageDescription</key>
-	<string>Access to your contacts is needed to load email addresses for users.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Access to the camera is needed for scanning pairing codes.</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Bluetooth is needed to communicate with accessories.</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>
@@ -26,5 +29,7 @@
 		<string>location</string>
 		<string>remote-notification</string>
 	</array>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 </dict>
 </plist>
