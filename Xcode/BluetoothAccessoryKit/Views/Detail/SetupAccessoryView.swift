@@ -18,131 +18,146 @@ public struct SetupAccessoryView: View {
     
     @EnvironmentObject
     private var store: AccessoryManager
-    
-    public let accessory: UUID?
-    
-    private let success: ((UUID) -> ())?
+        
+    private let success: ((PairedAccessory) -> ())?
     
     @State
-    private var state: SetupState = .camera
+    private var state: SetupState = .camera(nil)
     
     @State
-    private var username = ""
+    private var configuredName = ""
     
+    #if os(iOS)
     public init(
         accessory: UUID? = nil,
-        success: ((UUID) -> ())? = nil
+        success: ((PairedAccessory) -> ())? = nil
     ) {
-        self.accessory = accessory
         self.success = success
-        self.state = .camera
+        self.state = .camera(accessory)
     }
+    #endif
     
     public init(
         accessory: UUID,
         sharedSecret: KeyData,
-        success: ((UUID) -> ())? = nil
+        success: ((PairedAccessory) -> ())? = nil
     ) {
-        self.accessory = accessory
         self.success = success
-        self.state = .confirm(accessory, sharedSecret)
+        self.state = .scanning(accessory, sharedSecret)
     }
     
     public var body: some View {
         stateView
             .navigationTitle("Setup")
-            .task {
-                await loadUsername()
-            }
     }
 }
 
 private extension SetupAccessoryView {
     
     #if os(iOS)
-    func scanResult(_ result: Result<ScanResult, ScanError>) {
-        let result = didScan(result)
+    func scanCodeResult(_ result: Result<ScanResult, ScanError>) {
+        let result = didScanCode(result)
         switch result {
         case let .success((accessory, secret)):
-            self.state = .confirm(accessory, secret)
+            self.state = .scanning(accessory, secret)
         case let .failure(error):
             self.state = .error(error)
         }
     }
     
-    func didScan(_ result: Result<ScanResult, ScanError>) -> Result<(UUID, KeyData), Error> {
+    func didScanCode(_ result: Result<ScanResult, ScanError>) -> Result<(UUID, KeyData), Error> {
         switch result {
         case .success(let scanResult):
-            return didScan(scanResult.string).mapError({ $0 as Error })
+            return didScanCode(scanResult.string).mapError({ $0 as Error })
         case .failure(let error):
             return .failure(error)
         }
     }
     #endif
     
-    func didScan(_ string: String) -> Result<(UUID, KeyData), BluetoothAccessoryError> {
-        guard let accessoryURL = AccessoryURL(rawValue: string),
-              case let .setup(accessory, secret) = accessoryURL,
-              self.accessory == accessory || self.accessory == nil else {
+    func didScanCode(_ string: String) -> Result<(UUID, KeyData), BluetoothAccessoryError> {
+        // Validate URL
+        guard let url = URL(string: string),
+              let accessoryURL = AccessoryURL(web: url),
+              case let .setup(accessory, secret) = accessoryURL else {
             return .failure(.invalidQRCode)
+        }
+        // Validate UUID if provided
+        if case let .camera(uuid) = state,
+           let uuid {
+            guard uuid == accessory else {
+                return .failure(.invalidQRCode)
+            }
         }
         return .success((accessory, secret))
     }
     
-    func setup(accessory: UUID, using sharedSecret: KeyData, name: String) {
-        self.state = .loading(accessory, name)
+    func scan(for accessory: UUID, using sharedSecret: KeyData) {
+        self.state = .scanning(accessory, sharedSecret)
         Task {
             do {
-                guard store.state == .poweredOn else {
-                    throw BluetoothAccessoryError.bluetoothUnavailable
-                }
-                let peripheral = try await store.peripheral(for: accessory)
-                try await store.setup(
-                    peripheral,
-                    using: sharedSecret,
-                    name: name
-                )
-                self.state = .success(accessory, name)
+                let (peripheral, information) = try await store.setupScan(for: accessory)
+                self.state = .confirm(peripheral, information, sharedSecret)
             } catch {
                 self.state = .error(error)
             }
         }
     }
     
-    func loadUsername() async {
-        do {
-            if username.isEmpty {
-                if let username = try await store.loadUsername() {
-                    self.username = username
-                }
+    func setup(
+        accessory: AccessoryPeripheral<NativePeripheral>,
+        using sharedSecret: KeyData,
+        with name: String
+    ) {
+        self.state = .pairing(accessory, name)
+        Task {
+            do {
+                // start pairing
+                let pairedAccessory = try await store.setup(
+                    accessory,
+                    using: sharedSecret,
+                    name: name
+                )
+                self.state = .success(pairedAccessory)
+            } catch {
+                self.state = .error(error)
             }
-        }
-        catch {
-            store.log("Unable to load username. \(error)")
         }
     }
     
     func retry() {
-        self.state = .camera
+        self.state = .camera(nil)
+        self.configuredName = ""
     }
     
     var stateView: some View {
         switch state {
         case .camera:
             #if os(iOS) && !targetEnvironment(simulator)
-            return AnyView(CameraView(completion: scanResult))
+            return AnyView(CameraView(completion: scanCodeResult))
             #else
             return AnyView(Text("Setup this accessory on your iOS device."))
             #endif
-        case let .confirm(accessory, sharedSecret):
+        case let .scanning(accessory, sharedSecret):
             return AnyView(
-                ConfirmView(accessory: accessory, username: $username) { name in
-                    setup(accessory: accessory, using: sharedSecret, name: name)
+                ScanningView(accessory: accessory)
+                    .task {
+                        scan(for: accessory, using: sharedSecret)
+                    }
+            )
+        case let .confirm(accessory, information, sharedSecret):
+            return AnyView(
+                ConfirmView(information: information) { name in
+                    setup(
+                        accessory: accessory,
+                        using: sharedSecret,
+                        with: name
+                    )
                 }
             )
-        case let .loading(accessory, name):
+        case let .pairing(accessory, name):
             return AnyView(
-                LoadingView(
+                PairingView(
                     accessory: accessory,
                     name: name
                 )
@@ -154,11 +169,10 @@ private extension SetupAccessoryView {
                     retry: retry
                 )
             )
-        case let .success(accessory, name):
+        case let .success(accessory):
             return AnyView(
                 SuccessView(
                     accessory: accessory,
-                    name: name,
                     completion: success
                 )
             )
@@ -170,10 +184,11 @@ internal extension SetupAccessoryView {
     
     enum SetupState {
         
-        case camera
-        case confirm(UUID, KeyData)
-        case loading(UUID, String)
-        case success(UUID, String)
+        case camera(UUID?)
+        case scanning(UUID, KeyData)
+        case confirm(AccessoryPeripheral<NativePeripheral>, AccessoryInformation, KeyData)
+        case pairing(AccessoryPeripheral<NativePeripheral>, String)
+        case success(PairedAccessory)
         case error(Error)
     }
 }
@@ -194,44 +209,67 @@ internal extension SetupAccessoryView {
     #endif
     
     struct ConfirmView: View {
-        
-        let accessory: UUID
-        
+                
+        let information: AccessoryInformation
+                
         let confirm: (String) -> ()
         
-        @Binding
-        private var username: String
-        
-        init(
-            accessory: UUID,
-            username: Binding<String>,
-            confirm: @escaping (String) -> Void
-        ) {
-            self.accessory = accessory
-            self.confirm = confirm
-            self._username = username
-        }
+        @State
+        private var name = ""
         
         var body: some View {
             VStack(alignment: .center, spacing: 16) {
-                TextField("Username", text: $username)
+                // TODO: Show accessory type image
+                TextField("Name", text: $name, prompt: Text(verbatim: information.name))
+                
+                Label(title: {
+                    Text(verbatim: information.manufacturer)
+                }, icon: {
+                    Text("Manufacturer")
+                })
+                
+                Label(title: {
+                    Text(verbatim: information.serialNumber)
+                }, icon: {
+                    Text("Serial Number")
+                })
+                
                 Button("Configure") {
-                    confirm(username)
+                    let name = name.isEmpty ? information.name : name
+                    confirm(name)
+                    self.name = ""
                 }
             }
             .padding(30)
         }
     }
     
-    struct LoadingView: View {
+    struct PairingView: View {
         
-        let accessory: UUID
+        let accessory: AccessoryPeripheral<NativePeripheral>
         
         let name: String
         
         var body: some View {
             VStack(alignment: .center, spacing: 16) {
-                Text("Configuring accessory...")
+                // TODO: Accessory Type image
+                Text("Pairing \(name)")
+                ProgressView()
+                    .progressViewStyle(.circular)
+            }
+        }
+    }
+    
+    struct ScanningView: View {
+        
+        let accessory: UUID
+        
+        var body: some View {
+            VStack(alignment: .center, spacing: 16) {
+                Text("Scanning...")
+                #if DEBUG
+                Text(verbatim: accessory.description)
+                #endif
                 ProgressView()
                     .progressViewStyle(.circular)
             }
@@ -240,18 +278,16 @@ internal extension SetupAccessoryView {
     
     struct SuccessView: View {
         
-        let accessory: UUID
-        
-        let name: String
-        
-        let completion: ((UUID) -> ())?
+        let accessory: PairedAccessory
+                
+        let completion: ((PairedAccessory) -> ())?
         
         var body: some View {
             VStack(alignment: .center, spacing: 16) {
                 Image(systemSymbol: .checkmarkCircleFill)
                     .symbolRenderingMode(.palette)
                     .accentColor(.green)
-                Text("Successfully setup \(name).")
+                Text("Successfully setup \(accessory.name).")
                 ProgressView()
                     .progressViewStyle(.circular)
             }
