@@ -18,6 +18,36 @@ public enum AccessoryBeacon: Equatable, Hashable, Sendable, Codable {
     case characteristicChanged(CharacteristicType, GlobalStateNumber)
 }
 
+public extension AccessoryBeacon {
+    
+    var accessory: UUID? {
+        switch self {
+        case let .accessory(uuid, _, _):
+            return uuid
+        case .characteristicChanged:
+            return nil
+        }
+    }
+    
+    var accessoryType: AccessoryType? {
+        switch self {
+        case let .accessory(_, type, _):
+            return type
+        case .characteristicChanged:
+            return nil
+        }
+    }
+    
+    var state: GlobalStateNumber {
+        switch self {
+        case let .accessory(_, _, state):
+            return state
+        case let .characteristicChanged(_, state):
+            return state
+        }
+    }
+}
+
 internal extension AccessoryBeacon {
     
     enum DefinedUUID: UInt32, CaseIterable {
