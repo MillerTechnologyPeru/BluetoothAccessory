@@ -11,7 +11,6 @@ import Bluetooth
 import GATT
 import DarwinGATT
 import BluetoothAccessory
-import SFSafeSymbols
 
 /// List of Paired Accessories
 public struct AccessoriesView: View {

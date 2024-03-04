@@ -70,7 +70,6 @@
 		6EA074862B95E72E00D31F54 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6EA074852B95E72E00D31F54 /* Preview Assets.xcassets */; };
 		6EA0748B2B95E72E00D31F54 /* Clip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 6EA0747C2B95E72D00D31F54 /* Clip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6EA074912B95E82700D31F54 /* BluetoothAccessory in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074902B95E82700D31F54 /* BluetoothAccessory */; };
-		6EA074932B95E82700D31F54 /* SFSafeSymbols in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074922B95E82700D31F54 /* SFSafeSymbols */; };
 		6EA074952B95E82700D31F54 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074942B95E82700D31F54 /* KeychainAccess */; };
 		6EA074972B95E82700D31F54 /* DarwinGATT in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074962B95E82700D31F54 /* DarwinGATT */; };
 		6EA074992B95E82700D31F54 /* GATT in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074982B95E82700D31F54 /* GATT */; };
@@ -300,7 +299,6 @@
 			files = (
 				6EA074992B95E82700D31F54 /* GATT in Frameworks */,
 				6EA0749B2B95E82700D31F54 /* CoreDataModel in Frameworks */,
-				6EA074932B95E82700D31F54 /* SFSafeSymbols in Frameworks */,
 				6EA0749D2B95E82700D31F54 /* CoreModel in Frameworks */,
 				6EA074912B95E82700D31F54 /* BluetoothAccessory in Frameworks */,
 				6EA074952B95E82700D31F54 /* KeychainAccess in Frameworks */,
@@ -642,7 +640,6 @@
 			name = Clip;
 			packageProductDependencies = (
 				6EA074902B95E82700D31F54 /* BluetoothAccessory */,
-				6EA074922B95E82700D31F54 /* SFSafeSymbols */,
 				6EA074942B95E82700D31F54 /* KeychainAccess */,
 				6EA074962B95E82700D31F54 /* DarwinGATT */,
 				6EA074982B95E82700D31F54 /* GATT */,
@@ -1386,11 +1383,6 @@
 		6EA074902B95E82700D31F54 /* BluetoothAccessory */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = BluetoothAccessory;
-		};
-		6EA074922B95E82700D31F54 /* SFSafeSymbols */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6E2C9BC829CF6224002F1B28 /* XCRemoteSwiftPackageReference "SFSafeSymbols" */;
-			productName = SFSafeSymbols;
 		};
 		6EA074942B95E82700D31F54 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -9,6 +9,9 @@ import Foundation
 import SwiftUI
 import Bluetooth
 import BluetoothAccessory
+#if canImport(SFSafeSymbols)
+import SFSafeSymbols
+#endif
 
 public struct AccessoryDetailView: View {
     
@@ -126,7 +129,6 @@ internal extension AccessoryDetailView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     
-                    if #available(iOS 16, macOS 13, *) {
                         VStack {
                             Spacer()
                             HStack {
@@ -140,7 +142,7 @@ internal extension AccessoryDetailView {
                             Spacer()
                         }
                         .frame(maxHeight: 150)
-                    }
+                    
                     /*
                     ForEach(services) { service in
                         Section(service.name) {

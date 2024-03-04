@@ -244,7 +244,6 @@ internal extension SetupAccessoryView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     
-                    if #available(iOS 16, macOS 13, *) {
                         Spacer()
                         HStack {
                             Spacer()
@@ -255,7 +254,6 @@ internal extension SetupAccessoryView {
                             Spacer()
                         }
                         Spacer()
-                    }
                     
                     HStack {
                         Text("Name:")
