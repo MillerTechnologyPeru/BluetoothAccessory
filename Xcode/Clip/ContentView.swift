@@ -28,12 +28,8 @@ struct ContentView: View {
                     case .accessory(let accessory):
                         AccessoryDetailView(accessory: accessory)
                     case .setup(let accessory, let sharedSecret):
-                        if store[cache: accessory] != nil {
-                            AccessoryDetailView(accessory: accessory)
-                        } else {
-                            SetupAccessoryView(accessory: accessory, sharedSecret: sharedSecret) { _ in
-                                self.url = .accessory(accessory)
-                            }
+                        SetupAccessoryView(accessory: accessory, sharedSecret: sharedSecret) { _ in
+                            self.url = .accessory(accessory)
                         }
                     case .newKey(let invitation):
                         Text("Accessory Invitation \(invitation.device)")
