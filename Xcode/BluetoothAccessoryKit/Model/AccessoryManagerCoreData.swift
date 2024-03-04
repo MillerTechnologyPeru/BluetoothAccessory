@@ -9,6 +9,7 @@ import Foundation
 import CoreData
 import CoreModel
 import CoreDataModel
+import Bluetooth
 import BluetoothAccessory
 
 public enum PersistentStoreState {

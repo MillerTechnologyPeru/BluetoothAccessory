@@ -48,7 +48,9 @@ public struct AccessoriesView: View {
             }
         }
         .navigationTitle("Devices")
+#if !APPCLIP
         .toolbar {
+            
             Button(action: {
                 add()
             }, label: {
@@ -60,6 +62,7 @@ public struct AccessoriesView: View {
                 SetupAccessoryView()
             }
         }
+#endif
     }
 }
 

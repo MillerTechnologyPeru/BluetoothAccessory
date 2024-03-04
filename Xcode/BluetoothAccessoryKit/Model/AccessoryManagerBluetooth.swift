@@ -541,7 +541,11 @@ public extension AccessoryManager {
     
     typealias Descriptor = GATT.Descriptor<Central.Peripheral, Central.AttributeID>
     
+    #if APPCLIP
+    typealias ScanDataCache = Clip.ScanDataCache<Central.Peripheral, Central.Advertisement>
+    typealias AccessoryPeripheral = Clip.AccessoryPeripheral<Central.Peripheral>
+    #else
     typealias ScanDataCache = BluetoothAccessoryKit.ScanDataCache<Central.Peripheral, Central.Advertisement>
-    
     typealias AccessoryPeripheral = BluetoothAccessoryKit.AccessoryPeripheral<Central.Peripheral>
+    #endif
 }

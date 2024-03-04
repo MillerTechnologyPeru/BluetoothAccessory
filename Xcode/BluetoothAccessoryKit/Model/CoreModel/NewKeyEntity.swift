@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreModel
+import BluetoothAccessory
 
 /// New Key Entity
 public struct NewKeyEntity: Equatable, Hashable, Identifiable, Codable, Sendable {

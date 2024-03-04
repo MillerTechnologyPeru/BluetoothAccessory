@@ -10,7 +10,7 @@ import SwiftUI
 import Bluetooth
 import BluetoothAccessory
 import SFSafeSymbols
-#if os(iOS)
+#if os(iOS) && !APPCLIP
 import CodeScanner
 #endif
 
@@ -27,7 +27,7 @@ public struct SetupAccessoryView: View {
     @State
     private var configuredName = ""
     
-    #if os(iOS)
+    #if os(iOS) && !APPCLIP
     public init(
         accessory: UUID? = nil,
         success: ((PairedAccessory) -> ())? = nil
@@ -54,7 +54,7 @@ public struct SetupAccessoryView: View {
 
 private extension SetupAccessoryView {
     
-    #if os(iOS)
+    #if os(iOS) && !APPCLIP
     func scanCodeResult(_ result: Result<ScanResult, ScanError>) {
         let result = didScanCode(result)
         switch result {
@@ -146,7 +146,7 @@ private extension SetupAccessoryView {
     var stateView: some View {
         switch state {
         case .camera:
-            #if os(iOS) && !targetEnvironment(simulator)
+            #if os(iOS) && !targetEnvironment(simulator) && !APPCLIP
             return AnyView(CameraView(completion: scanCodeResult))
             #else
             return AnyView(Text("Setup this accessory on your iOS device."))
@@ -208,7 +208,7 @@ internal extension SetupAccessoryView {
 
 internal extension SetupAccessoryView {
     
-    #if os(iOS)
+    #if os(iOS) && !APPCLIP
     struct CameraView: View {
         
         let completion: ((Result<ScanResult, ScanError>) -> ())
@@ -246,7 +246,7 @@ internal extension SetupAccessoryView {
                 }
                 
                 HStack {
-                    Text("Name")
+                    Text("Name:")
                     TextField("\(information.name)", text: $name)
                 }
                 
