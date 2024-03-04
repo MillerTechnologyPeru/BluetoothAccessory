@@ -27,4 +27,21 @@ final class URLTests: XCTestCase {
         XCTAssertEqual(identifier.uuidString, "524792BF-E5B6-49C9-AEDF-C352A100FD4B")
         XCTAssertEqual(secret.data.base64URLEncodedString(), "b8Y72Q8SN9Bh7PCH2fNCU_oKp4sWu-dhv9x0n2tPIHk")
     }
+    
+    func testWeb() {
+        
+        let string = "https://bluetoothaccessory.com/accessory/524792BF-E5B6-49C9-AEDF-C352A100FD4B"
+        
+        guard let url = URL(string: string),
+              let accessoryURL = AccessoryURL(web: url)
+            else { XCTFail("Invalid URL"); return }
+        
+        XCTAssertEqual(url.path, URL(accessoryURL).path)
+        
+        guard case let .accessory(identifier) = accessoryURL
+            else { XCTFail("Invalid URL"); return }
+        
+        XCTAssertEqual(identifier.uuidString, "524792BF-E5B6-49C9-AEDF-C352A100FD4B")
+        XCTAssertEqual(AccessoryURL(web: URL(accessoryURL)), accessoryURL)
+    }
 }

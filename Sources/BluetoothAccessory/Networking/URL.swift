@@ -142,4 +142,19 @@ public extension AccessoryURL {
             self = .accessory(accessoryIdentifier)
         }
     }
+    
+    /// Initialize from Web URL
+    init?(web url: URL) {
+        switch url.scheme {
+        case "https":
+            guard let url = URL(string: AccessoryURL.scheme + ":" + url.path) else {
+                return nil
+            }
+            self.init(url: url)
+        case AccessoryURL.scheme:
+            self.init(url: url)
+        default:
+            return nil
+        }
+    }
 }
