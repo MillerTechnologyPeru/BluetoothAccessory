@@ -139,3 +139,21 @@ public extension AccessoryManager {
         }
     }
 }
+
+public extension AccessoryManager.Configuration {
+    
+    static var `default`: AccessoryManager.Configuration {
+        AccessoryManager.Configuration(
+            central: NativeCentral.Options(
+                showPowerAlert: true,
+                restoreIdentifier: "com.colemancda.BluetoothAccessory.CBCentralManager"
+            ),
+            appGroup: "group.com.colemancda.BluetoothAccessory",
+            keychain: (
+                service: "com.colemancda.BluetoothAccessory",
+                group: "4W79SG34MW.com.colemancda.BluetoothAccessory"
+            ),
+            cloud: "iCloud.com.colemancda.BluetoothAccessory"
+        )
+    }
+}

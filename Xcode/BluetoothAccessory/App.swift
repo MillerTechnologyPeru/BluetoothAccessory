@@ -12,7 +12,7 @@ import BluetoothAccessoryKit
 struct BluetoothAccessoryApp: App {
     
     static let accessoryManager = AccessoryManager(
-        configuration: Self.configuration
+        configuration: .default
     )
     
     #if os(macOS)
@@ -46,24 +46,6 @@ struct BluetoothAccessoryApp: App {
             try? await Task.sleep(timeInterval: 0.2)
             await Self.didLaunch(accessoryManager)
         }
-    }
-}
-
-extension BluetoothAccessoryApp {
-    
-    static var configuration: AccessoryManager.Configuration {
-        AccessoryManager.Configuration(
-            central: NativeCentral.Options(
-                showPowerAlert: true,
-                restoreIdentifier: "com.colemancda.BluetoothAccessory.CBCentralManager"
-            ),
-            appGroup: "group.com.colemancda.BluetoothAccessory",
-            keychain: (
-                service: "com.colemancda.BluetoothAccessory",
-                group: "4W79SG34MW.com.colemancda.BluetoothAccessory"
-            ),
-            cloud: "iCloud.com.colemancda.BluetoothAccessory"
-        )
     }
 }
 
