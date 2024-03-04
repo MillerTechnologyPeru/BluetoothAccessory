@@ -35,7 +35,7 @@ public struct AccessoryInformation: Equatable, Hashable, Codable, Identifiable, 
     public let name: String
     
     /// Accessory type
-    public let accessory: AccessoryType
+    public let type: AccessoryType
     
     /// Accessory advertised service
     public let service: ServiceType

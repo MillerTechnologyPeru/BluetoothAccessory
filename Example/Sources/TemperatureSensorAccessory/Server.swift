@@ -110,7 +110,8 @@ public actor BluetoothServer <Peripheral: AccessoryPeripheralManager, Authentica
         self.server = try await BluetoothAccessoryServer(
             peripheral: peripheral,
             delegate: self,
-            id: id,
+            id: id, 
+            type: accessoryType,
             rssi: rssi,
             name: name,
             advertised: advertisedService,
@@ -238,7 +239,7 @@ extension BluetoothServer: BluetoothAccessoryServerDelegate {
                     assertionFailure()
                     return
                 }
-                log("Did identify with key \(key.name)")
+                log("Did identify with key \(key.id)")
                 lastIdentify = (key.id, Date())
                 // clear value
                 await self.server.update(InformationService.self) {
@@ -258,7 +259,7 @@ extension BluetoothServer: BluetoothAccessoryServerDelegate {
                 assertionFailure()
                 return
             }
-            log("Setup owner key for \(request.name)")
+            log("Setup owner key for \(request.id)")
             // clear value
             let newKeysValue = await self.authenticationDelegate.allKeys
             await self.server.update(AuthenticationService.self) {

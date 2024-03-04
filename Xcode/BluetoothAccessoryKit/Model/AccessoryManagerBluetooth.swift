@@ -420,7 +420,7 @@ internal extension AccessoryManager {
         let information = AccessoryInformation(
             id: id,
             name: name,
-            accessory: accessoryType,
+            type: accessoryType,
             service: scanResponse.service,
             manufacturer: manufacturer,
             serialNumber: serialNumber,

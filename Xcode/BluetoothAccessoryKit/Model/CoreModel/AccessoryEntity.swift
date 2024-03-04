@@ -66,7 +66,7 @@ public extension AccessoryEntity {
     ) {
         self.id = value.id
         self.name = value.name
-        self.type = value.accessory
+        self.type = value.type
         self.service = value.service
         self.manufacturer = value.manufacturer
         self.serialNumber = value.serialNumber

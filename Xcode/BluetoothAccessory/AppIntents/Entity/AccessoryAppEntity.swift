@@ -46,7 +46,7 @@ extension AccessoryAppEntity {
     init(_ value: AccessoryInformation) {
         self.id = value.id
         self.name = value.name
-        self.type = .init(value.accessory)
+        self.type = .init(value.type)
         self.service = .init(value.service)
         self.manufacturer = value.manufacturer
         self.serialNumber = value.serialNumber

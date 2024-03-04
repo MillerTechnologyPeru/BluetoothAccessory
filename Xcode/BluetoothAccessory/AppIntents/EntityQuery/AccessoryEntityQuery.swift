@@ -48,7 +48,7 @@ extension AccessoryEntityQuery: EntityStringQuery {
             .map { $0.information }
             .filter {
                 $0.name.localizedCaseInsensitiveContains(query)
-                || $0.accessory.description.localizedCaseInsensitiveContains(query)
+                || $0.type.description.localizedCaseInsensitiveContains(query)
                 || $0.service.description.localizedCaseInsensitiveContains(query)
                 || $0.manufacturer.description.localizedCaseInsensitiveContains(query)
                 || $0.model.description.localizedCaseInsensitiveContains(query)
@@ -154,7 +154,7 @@ enum AccessoryEntityQueryPredicate {
         case .serialNumberEqualTo(let string):
             return value.serialNumber.lowercased() == string.lowercased()
         case .accessoryTypeEqualTo(let accessoryType):
-            return value.accessory == accessoryType
+            return value.type == accessoryType
         case .serviceTypeEqualTo(let serviceType):
             return value.service == serviceType
         case .manufacturerEqualTo(let string):
