@@ -52,6 +52,11 @@ public extension Preferences {
 
 public extension Preferences {
     
+    var user: UUID? {
+        get { return self[.user] }
+        set { self[.user] = newValue }
+    }
+    
     var isAppInstalled: Bool {
         get { return self[.isAppInstalled] ?? false }
         set { self[.isAppInstalled] = newValue }
@@ -117,6 +122,7 @@ public extension Preferences {
     
     enum Key: String, CaseIterable {
         
+        case user                               = "com.colemancda.BluetoothAccessory.UserDefaults.User"
         case isAppInstalled                     = "com.colemancda.BluetoothAccessory.UserDefaults.AppInstalled"
         case appVersion                         = "com.colemancda.BluetoothAccessory.UserDefaults.AppVersion"
         case isCloudBackupEnabled               = "com.colemancda.BluetoothAccessory.UserDefaults.CloudBackupEnabled"
