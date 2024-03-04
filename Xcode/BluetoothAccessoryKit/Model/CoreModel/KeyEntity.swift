@@ -18,7 +18,7 @@ public struct KeyEntity: Equatable, Hashable, Identifiable, Codable, Sendable {
     
     public let created: Date
     
-    public let name: String
+    public let user: UUID
     
     public let permission: PermissionType
     
@@ -47,7 +47,7 @@ public struct KeyEntity: Equatable, Hashable, Identifiable, Codable, Sendable {
         case id
         case accessory
         case created
-        case name
+        case user
         case permission
         case scheduleExpiry
         case monday
@@ -68,7 +68,7 @@ public extension KeyEntity {
         self.id = value.id
         self.accessory = accessory
         self.created = value.created
-        self.name = value.name
+        self.user = value.user
         self.permission = value.permission.type
         let schedule = value.permission.schedule
         self.scheduleExpiry = schedule?.expiry
@@ -93,7 +93,7 @@ extension KeyEntity: Entity {
     public static var attributes: [CodingKeys: AttributeType] {
         [
             .created : .date,
-            .name: .string,
+            .user: .uuid,
             .permission: .string,
             .scheduleExpiry: .date,
             .monday: .bool,

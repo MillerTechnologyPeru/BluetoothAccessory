@@ -21,6 +21,9 @@ public struct PairedAccessory: Equatable, Hashable, Codable, Identifiable, Senda
     
     /// Key for the paired accessory
     public let key: Key
+    
+    /// Configured customized name.
+    public var name: String
 }
 
 public struct AccessoryInformation: Equatable, Hashable, Codable, Identifiable, Sendable {
@@ -29,20 +32,20 @@ public struct AccessoryInformation: Equatable, Hashable, Codable, Identifiable, 
     public let id: UUID
     
     /// Accessory name
-    public var name: String
+    public let name: String
     
     /// Accessory type
     public let accessory: AccessoryType
     
     /// Accessory advertised service
-    public var service: ServiceType
+    public let service: ServiceType
     
     /// Manufacturer Name
-    public var manufacturer: String
+    public let manufacturer: String
     
-    public var serialNumber: String
+    public let serialNumber: String
     
-    public var model: String
+    public let model: String
     
-    public var softwareVersion: String
+    public let softwareVersion: String
 }

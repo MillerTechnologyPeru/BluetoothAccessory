@@ -75,7 +75,7 @@ public struct NearbyAccessoryView: View {
 internal extension NearbyAccessoryView {
     
     var advertisementID: UUID? {
-        store[manufacturerData: peripheral]?.id ?? store[beacon: peripheral]?.uuid
+        store[manufacturerData: peripheral]?.id ?? store[beacon: peripheral]?.accessory
     }
     
     var isConnected: Bool {
@@ -239,12 +239,12 @@ internal extension NearbyAccessoryView.StateView {
     }
     
     var advertisedID: UUID? {
-        manufacturerData?.id ?? beacon?.uuid
+        manufacturerData?.id ?? beacon?.accessory
     }
     
     var advertisementSection: some View {
         Section(content: {
-            if let accessoryType = manufacturerData?.accessoryType {
+            if let accessoryType = manufacturerData?.type {
                 SubtitleRow(
                     title: Text("Type"),
                     subtitle: Text(verbatim: accessoryType.description)

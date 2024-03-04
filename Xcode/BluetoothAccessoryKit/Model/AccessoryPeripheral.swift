@@ -17,6 +17,9 @@ public struct AccessoryPeripheral <Peripheral: GATT.Peer>: Equatable, Hashable, 
     /// UUID from iBeacon or Accessory Manufacturer Data
     public let id: UUID
     
+    /// Accessory type.
+    public let type: AccessoryType
+    
     /// Name from scan response.
     public let name: String
     

@@ -166,12 +166,12 @@ internal extension NearbyDevicesView {
             VStack(alignment: .leading) {
                 Text(verbatim: item.scanResponse.name)
                     .font(.title3)
-                if let id = item.manufacturerData?.id ?? item.beacon?.uuid {
+                if let id = item.manufacturerData?.id ?? item.beacon?.accessory {
                     Text(verbatim: id.description)
                 }
                 Text("Service: \("\(item.scanResponse.service)")")
                 if let manufacturerData = item.manufacturerData {
-                    Text("Type: \(manufacturerData.accessoryType.description)")
+                    Text("Type: \(manufacturerData.type.description)")
                     if manufacturerData.isConfigured == false {
                         Text("Ready for Setup")
                     }

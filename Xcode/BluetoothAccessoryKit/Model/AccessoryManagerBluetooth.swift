@@ -63,6 +63,9 @@ public extension AccessoryManager {
     }
     
     func peripheral(for id: UUID) async throws -> AccessoryPeripheral {
+        guard state == .poweredOn else {
+            throw BluetoothAccessoryError.bluetoothUnavailable
+        }
         // return cached value
         if let peripheral = accessoryPeripherals[id] {
             return peripheral
@@ -74,6 +77,50 @@ public extension AccessoryManager {
             throw BluetoothAccessoryError.notInRange(id)
         }
         return peripheral
+    }
+    
+    /// Scan and read information.
+    func setupScan(for id: UUID) async throws -> (AccessoryPeripheral, AccessoryInformation) {
+        guard state == .poweredOn else {
+            throw BluetoothAccessoryError.bluetoothUnavailable
+        }
+        do {
+            let accessory = try await self.peripheral(for: id)
+            let information = try await connection(for: accessory.peripheral) { connection in
+                try await readInformation(connection: connection)
+            }
+            return (accessory, information)
+        }
+        catch BluetoothAccessoryError.notInRange {
+            #if DEBUG
+            // connect to devices that only have scan responses
+            let missingInformationPeripherals = scanResponses.compactMap { (peripheral, scanResponse) in
+                if accessoryPeripherals.values.contains(where: { $0.peripheral == peripheral }) == false {
+                    return peripheral
+                } else {
+                    return nil
+                }
+            }
+            for peripheral in missingInformationPeripherals {
+                // TODO: timeout
+                do {
+                    let information = try await connection(for: peripheral) { connection in
+                        try await readInformation(connection: connection)
+                    }
+                    guard id == information.id else {
+                        continue
+                    }
+                    // return cached peripheral
+                    let accessory = try await self.peripheral(for: id)
+                    return (accessory, information)
+                }
+                catch {
+                    log("Unable to get identifier for peripheral \(peripheral)")
+                }
+            }
+            throw BluetoothAccessoryError.notInRange(id)
+            #endif
+        }
     }
     
     func scan(
@@ -291,16 +338,17 @@ public extension AccessoryManager {
         try await updateCoreDataCharacteristicValue(.single(newValue), for: characteristicUUID, service: service, accessory: id)
     }
     
+    @discardableResult
     func setup(
         _ peripheral: AccessoryPeripheral,
         using sharedSecret: KeyData,
-        name: String
-    ) async throws {
+        name: String? = nil
+    ) async throws -> PairedAccessory {
         let keyData = KeyData()
         let request = SetupRequest(
             id: UUID(),
             secret: keyData,
-            name: name
+            user: user
         )
         let information = try await self.connection(for: peripheral.peripheral) { connection in
             try await connection.setup(request, using: sharedSecret)
@@ -311,13 +359,13 @@ public extension AccessoryManager {
         let key = Key(setup: request)
         let accessory = PairedAccessory(
             information: information,
-            key: key
+            key: key,
+            name: name ?? information.name
         )
         self[key: key.id] = keyData
         self[cache: information.id] = accessory
+        return accessory
     }
-    
-    
 }
 
 // MARK: - Internal Methods
@@ -339,13 +387,15 @@ internal extension AccessoryManager {
         if let uuid = self.accessoryPeripherals.first(where: { $0.value.peripheral == connection.peripheral })?.key {
             return uuid
         }
-        // read identifier
+        // read identifier and type
         let id = try await connection.readIdentifier()
         // cache new found device
         if let scanResponse = self.scanResponses[connection.peripheral] {
+            let type = try await connection.readAccessoryType()
             self.accessoryPeripherals[id] = .init(
                 peripheral: connection.peripheral,
-                id: id,
+                id: id, 
+                type: type,
                 name: scanResponse.name,
                 service: scanResponse.service
             )
@@ -457,13 +507,15 @@ private extension AccessoryManager {
         // cache identified accessory
         let manufacturerData = cache.manufacturerData.flatMap { AccessoryManufacturerData(manufacturerData: $0) }
         let accessoryBeacon = cache.beacon.flatMap { AccessoryBeacon(beacon: $0) }
-        guard let id = manufacturerData?.id ?? accessoryBeacon?.uuid else {
+        guard let id = manufacturerData?.id ?? accessoryBeacon?.accessory,
+            let type = manufacturerData?.type ?? accessoryBeacon?.accessoryType else {
             return false
         }
         
         let accessory = AccessoryPeripheral(
             peripheral: scanData.peripheral,
             id: id,
+            type: type,
             name: name,
             service: service
         )

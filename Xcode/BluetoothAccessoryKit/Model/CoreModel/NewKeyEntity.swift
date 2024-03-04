@@ -17,7 +17,7 @@ public struct NewKeyEntity: Equatable, Hashable, Identifiable, Codable, Sendable
     
     public let created: Date
     
-    public let name: String
+    public let user: UUID
     
     public let expiration: Date
     
@@ -48,7 +48,7 @@ public struct NewKeyEntity: Equatable, Hashable, Identifiable, Codable, Sendable
         case id
         case accessory
         case created
-        case name
+        case user
         case expiration
         case permission
         case scheduleExpiry
@@ -70,7 +70,7 @@ public extension NewKeyEntity {
         self.id = value.id
         self.accessory = accessory
         self.created = value.created
-        self.name = value.name
+        self.user = value.user
         self.expiration = value.expiration
         self.permission = value.permission.type
         let schedule = value.permission.schedule
@@ -96,7 +96,7 @@ extension NewKeyEntity: Entity {
     public static var attributes: [CodingKeys: AttributeType] {
         [
             .created : .date,
-            .name: .string,
+            .user: .uuid,
             .expiration: .date,
             .permission: .string,
             .scheduleExpiry: .date,
