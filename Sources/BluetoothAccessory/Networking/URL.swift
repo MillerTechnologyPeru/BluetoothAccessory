@@ -23,6 +23,17 @@ public enum AccessoryURL: Equatable, Hashable {
 public extension AccessoryURL {
     
     static var scheme: String { "bluetooth-accessory" }
+    
+    var accessory: UUID {
+        switch self {
+        case .accessory(let uuid):
+            return uuid
+        case .setup(let uuid, _):
+            return uuid
+        case .newKey(let invitation):
+            return invitation.device
+        }
+    }
 }
 
 internal extension AccessoryURL {
