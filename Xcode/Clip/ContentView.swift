@@ -17,6 +17,9 @@ struct ContentView: View {
     @State
     var url: AccessoryURL?
     
+    @State
+    var selectedAccessory: UUID?
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -34,7 +37,7 @@ struct ContentView: View {
                     case .newKey(let invitation):
                         Text("Accessory Invitation \(invitation.device)")
                     case nil:
-                        AccessoriesView()
+                        AccessoriesView(selection: $selectedAccessory)
                     }
                 }
             }

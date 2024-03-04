@@ -28,7 +28,7 @@ struct AccessoryTabView: View {
             
             // Devices
             NavigationView {
-                AccessoriesView()
+                AccessoriesView(url: $url)
                     .toolbar {
                         Button(action: {
                             setupSheet = true
@@ -74,6 +74,7 @@ struct AccessoryTabView: View {
             try? await store.wait(for: .poweredOn)
         }
         .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: handleUserActivity)
+        .onOpenURL(perform: openURL)
         .sheet(isPresented: $setupSheet, onDismiss: { self.url = nil }) {
             NavigationView {
                 switch url {
@@ -90,10 +91,20 @@ struct AccessoryTabView: View {
 private extension AccessoryTabView {
     
     func handleUserActivity(_ userActivity: NSUserActivity) {
-        guard let url = userActivity.webpageURL,
-              let accessoryURL = AccessoryURL(web: url) else {
+        guard let url = userActivity.webpageURL else {
             return
         }
+        openURL(url)
+    }
+    
+    func openURL(_ url: URL) {
+        guard let accessoryURL = AccessoryURL(web: url) else {
+            return
+        }
+        openURL(accessoryURL)
+    }
+    
+    func openURL(_ accessoryURL: AccessoryURL) {
         let accessory = accessoryURL.accessory
         // check if accessory is already paired
         let resolvedURL: AccessoryURL

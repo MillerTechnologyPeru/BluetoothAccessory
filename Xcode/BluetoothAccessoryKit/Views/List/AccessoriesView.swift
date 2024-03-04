@@ -19,7 +19,20 @@ public struct AccessoriesView: View {
     @EnvironmentObject
     private var store: AccessoryManager
     
-    public init() { }
+    @Binding
+    var selection: UUID?
+    
+    public init(selection: Binding<UUID?>) {
+        _selection = selection
+    }
+    
+    public init(url: Binding<AccessoryURL?>) {
+        _selection = Binding(get: {
+            return url.wrappedValue?.accessory
+        }, set: { newValue in
+            url.wrappedValue = newValue.flatMap { .accessory($0) }
+        })
+    }
     
     public var body: some View {
         VStack {
@@ -30,9 +43,14 @@ public struct AccessoriesView: View {
             } else {
                 List {
                     ForEach(accessories) { accessory in
-                        Link(destination: URL(AccessoryURL.accessory(accessory.id)), label: {
-                            AccessoryRow(accessory: accessory)
-                        })
+                        NavigationLink(
+                            isActive: isActiveBinding(for: accessory.id),
+                            destination: {
+                                AccessoryDetailView(accessory: accessory.id)
+                            }, label: {
+                                AccessoryRow(accessory: accessory)
+                            }
+                        )
                     }
                 }
             }
@@ -48,8 +66,15 @@ private extension AccessoriesView {
             .sorted(by: { $0.information.type.rawValue < $1.information.type.rawValue })
             .sorted(by: { $0.name < $1.name })
     }
-}
-
-#Preview {
-    AccessoriesView()
+    
+    func isActiveBinding(for destination: UUID) -> Binding<Bool> {
+        Binding(get: {
+                guard let selection = self.selection else { return false }
+                return destination == selection
+        }, set: { isActive in
+            if isActive {
+                self.selection = destination
+            }
+        })
+    }
 }
