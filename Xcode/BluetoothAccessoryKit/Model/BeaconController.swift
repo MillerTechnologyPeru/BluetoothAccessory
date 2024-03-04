@@ -13,9 +13,7 @@ import CoreLocation
 public final class BeaconController {
     
     // MARK: - Initialiation
-    
-    public static let shared = BeaconController()
-    
+        
     private init() { }
     
     // MARK: - Properties
