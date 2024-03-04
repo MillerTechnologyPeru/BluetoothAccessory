@@ -53,8 +53,8 @@ public extension Preferences {
 public extension Preferences {
     
     var user: UUID? {
-        get { return self[.user] }
-        set { self[.user] = newValue }
+        get { return (self[.user] as String?).flatMap { UUID(uuidString: $0) } }
+        set { self[.user] = newValue?.uuidString }
     }
     
     var isAppInstalled: Bool {
