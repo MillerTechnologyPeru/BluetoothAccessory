@@ -105,6 +105,7 @@ private extension AccessoryTabView {
     }
     
     func openURL(_ accessoryURL: AccessoryURL) {
+        print("Open URL \(accessoryURL)")
         let accessory = accessoryURL.accessory
         // check if accessory is already paired
         let resolvedURL: AccessoryURL

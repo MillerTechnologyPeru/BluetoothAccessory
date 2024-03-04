@@ -28,7 +28,12 @@ public struct AccessoriesView: View {
     
     public init(url: Binding<AccessoryURL?>) {
         _selection = Binding(get: {
-            return url.wrappedValue?.accessory
+            switch url.wrappedValue {
+            case let .accessory(id):
+                return id
+            default:
+                return nil
+            }
         }, set: { newValue in
             url.wrappedValue = newValue.flatMap { .accessory($0) }
         })
@@ -44,10 +49,10 @@ public struct AccessoriesView: View {
                 List {
                     ForEach(accessories) { accessory in
                         NavigationLink(
-                            isActive: isActiveBinding(for: accessory.id),
-                            destination: {
-                                AccessoryDetailView(accessory: accessory.id)
-                            }, label: {
+                            destination: AccessoryDetailView(accessory: accessory.id),
+                            tag: accessory.id,
+                            selection: $selection,
+                            label: {
                                 AccessoryRow(accessory: accessory)
                             }
                         )
@@ -69,8 +74,7 @@ private extension AccessoriesView {
     
     func isActiveBinding(for destination: UUID) -> Binding<Bool> {
         Binding(get: {
-                guard let selection = self.selection else { return false }
-                return destination == selection
+            return self.selection == destination
         }, set: { isActive in
             if isActive {
                 self.selection = destination
