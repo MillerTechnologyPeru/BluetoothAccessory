@@ -20,6 +20,7 @@ struct AccessoryTabView: View {
     @State
     var url: AccessoryURL?
     
+    @State
     private var setupSheet = false
     
     var body: some View {
@@ -30,7 +31,7 @@ struct AccessoryTabView: View {
                 AccessoriesView()
                     .toolbar {
                         Button(action: {
-                            showSetup = true
+                            setupSheet = true
                         }, label: {
                             Image(systemSymbol: .plus)
                         })
@@ -73,8 +74,15 @@ struct AccessoryTabView: View {
             try? await store.wait(for: .poweredOn)
         }
         .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: handleUserActivity)
-        .sheet(isPresented: showSetup, onDismiss: { self.url = nil }) {
-            SetupAccessoryView()
+        .sheet(isPresented: $setupSheet, onDismiss: { self.url = nil }) {
+            NavigationView {
+                switch url {
+                case .setup(let uuid, let keyData):
+                    SetupAccessoryView(accessory: uuid, sharedSecret: keyData, success: didSetup)
+                default:
+                    SetupAccessoryView(success: didSetup)
+                }
+            }
         }
     }
 }
@@ -88,19 +96,31 @@ private extension AccessoryTabView {
         }
         let accessory = accessoryURL.accessory
         // check if accessory is already paired
+        let resolvedURL: AccessoryURL
         if store[cache: accessory] != nil {
             // dont show setup or invitation if paired
-            self.url = .accessory(accessory)
+            resolvedURL = .accessory(accessory)
         } else {
-            self.url = accessoryURL
+            resolvedURL = accessoryURL
         }
         // handle link
         let tab: TabItem
-        switch self.url {
-        case let .accessory(accessory):
+        switch resolvedURL {
+        case .accessory:
             // show accessory detail
             tab = .devices
+        case  .setup:
+            tab = .devices
+            self.setupSheet = true
+        case .newKey:
+            tab = .devices
         }
+        self.selection = tab
+        self.url = resolvedURL
+    }
+    
+    func didSetup(accessory: PairedAccessory) {
+        self.url = .accessory(accessory.id)
     }
     
     var devicesTabSymbol: SFSymbol {

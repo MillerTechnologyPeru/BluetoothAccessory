@@ -228,7 +228,7 @@ private extension AccessoryDetailView.PairedAccessoryView {
 // MARK: - Preview
 
 #Preview {
-    NavigationStack {
+    NavigationView {
         AccessoryDetailView.PairedAccessoryView(
             accessory: PairedAccessory(
                 information: AccessoryInformation(

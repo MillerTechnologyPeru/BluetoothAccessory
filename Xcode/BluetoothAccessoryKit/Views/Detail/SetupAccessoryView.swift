@@ -65,7 +65,7 @@ private extension SetupAccessoryView {
         case let .success((accessory, secret)):
             self.state = .scanning(accessory, secret)
         case let .failure(error):
-            self.state = .error(error)
+            self.state = .error(error, retry: { self.retry() })
         }
     }
     
