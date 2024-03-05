@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreSpotlight
 import SFSafeSymbols
 import BluetoothAccessoryKit
 
@@ -74,6 +75,7 @@ struct AccessoryTabView: View {
             try? await store.wait(for: .poweredOn)
         }
         .onContinueUserActivity(NSUserActivityTypeBrowsingWeb, perform: handleUserActivity)
+        .onContinueUserActivity(CSSearchableItemActionType, perform: handleSpotlight)
         .onOpenURL(perform: openURL)
         .sheet(isPresented: $setupSheet, onDismiss: { self.url = nil }) {
             NavigationView {
@@ -90,6 +92,16 @@ struct AccessoryTabView: View {
 
 private extension AccessoryTabView {
     
+    func handleSpotlight(_ userActivity: NSUserActivity) {
+        guard let activityIdentifier = userActivity.userInfo?[CSSearchableItemActivityIdentifier] as? String else {
+            return
+        }
+        guard let accessoryURL = AccessoryURL(rawValue: activityIdentifier) else {
+            return
+        }
+        openURL(accessoryURL)
+    }
+    
     func handleUserActivity(_ userActivity: NSUserActivity) {
         guard let url = userActivity.webpageURL else {
             return
@@ -99,6 +111,7 @@ private extension AccessoryTabView {
     
     func openURL(_ url: URL) {
         guard let accessoryURL = AccessoryURL(web: url) else {
+            store.log("Invalid URL \(url)")
             return
         }
         openURL(accessoryURL)

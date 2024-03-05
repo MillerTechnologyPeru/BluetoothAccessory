@@ -12,6 +12,12 @@ import CoreSpotlight
 #if canImport(CoreSpotlight) && os(iOS) || os(macOS)
 internal extension AccessoryManager {
     
+    func loadSpotlight() -> SpotlightController {
+        let spotlight = SpotlightController(index: .default())
+        spotlight.log = { [unowned self] in self.log("🔦 Spotlight: " + $0) }
+        return spotlight
+    }
+    
     func updateSpotlight() async {
         guard SpotlightController.isSupported else { return }
         do { try await spotlight.reindexAll(Array(cache.values)) }

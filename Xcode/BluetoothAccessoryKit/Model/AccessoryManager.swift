@@ -76,7 +76,7 @@ public final class AccessoryManager: ObservableObject {
     public lazy var cloudContainer = loadCloudContainer()
     
     #if canImport(CoreSpotlight) && os(iOS) || os(macOS)
-    internal lazy var spotlight = SpotlightController(index: .default())
+    internal lazy var spotlight = loadSpotlight()
     #endif
     
     #if os(iOS) && !APPCLIP
