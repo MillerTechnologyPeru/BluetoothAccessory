@@ -122,6 +122,10 @@
 		6EA074CE2B96043600D31F54 /* AccessoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA074CD2B96043600D31F54 /* AccessoryDetailView.swift */; };
 		6EA074CF2B96043A00D31F54 /* AccessoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA074CD2B96043600D31F54 /* AccessoryDetailView.swift */; };
 		6EA074D02B96563800D31F54 /* AccessoriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9891342B95CCAD001F9B1A /* AccessoriesView.swift */; };
+		6EA074D22B9692AF00D31F54 /* CoreSpotlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA074D12B9692AF00D31F54 /* CoreSpotlight.swift */; };
+		6EA074D42B96A10800D31F54 /* AccessoryManagerSpotlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA074D32B96A10800D31F54 /* AccessoryManagerSpotlight.swift */; };
+		6EA074D52B96A22600D31F54 /* CoreSpotlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA074D12B9692AF00D31F54 /* CoreSpotlight.swift */; };
+		6EA074D62B96A25100D31F54 /* AccessoryManagerSpotlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA074D32B96A10800D31F54 /* AccessoryManagerSpotlight.swift */; };
 		6EDB1A902B950CFE003A8A7F /* AccessoryManagerPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EDB1A8F2B950CFE003A8A7F /* AccessoryManagerPreferences.swift */; };
 		6EDB1A922B95B4D8003A8A7F /* SFSymbol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EDB1A912B95B4D8003A8A7F /* SFSymbol.swift */; };
 		6EF1EC1E29DF747200113ED4 /* CharacteristicUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EF1EC1D29DF747200113ED4 /* CharacteristicUnit.swift */; };
@@ -247,6 +251,8 @@
 		6EA074872B95E72E00D31F54 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6EA074882B95E72E00D31F54 /* Clip.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Clip.entitlements; sourceTree = "<group>"; };
 		6EA074CD2B96043600D31F54 /* AccessoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryDetailView.swift; sourceTree = "<group>"; };
+		6EA074D12B9692AF00D31F54 /* CoreSpotlight.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreSpotlight.swift; sourceTree = "<group>"; };
+		6EA074D32B96A10800D31F54 /* AccessoryManagerSpotlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryManagerSpotlight.swift; sourceTree = "<group>"; };
 		6EDB1A8F2B950CFE003A8A7F /* AccessoryManagerPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryManagerPreferences.swift; sourceTree = "<group>"; };
 		6EDB1A912B95B4D8003A8A7F /* SFSymbol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SFSymbol.swift; sourceTree = "<group>"; };
 		6EF1EC1D29DF747200113ED4 /* CharacteristicUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacteristicUnit.swift; sourceTree = "<group>"; };
@@ -540,8 +546,10 @@
 				6EFCFFE329D12EAD004B6DE8 /* AccessoryManagerKeychain.swift */,
 				6EDB1A8F2B950CFE003A8A7F /* AccessoryManagerPreferences.swift */,
 				6EFCFFE129D12EA4004B6DE8 /* AccessoryManagerLog.swift */,
+				6EA074D32B96A10800D31F54 /* AccessoryManagerSpotlight.swift */,
 				6EFCFFE729D12ECA004B6DE8 /* AccessoryPeripheral.swift */,
 				6E71636329D40FF10042565D /* BeaconController.swift */,
+				6EA074D12B9692AF00D31F54 /* CoreSpotlight.swift */,
 				6EFCFFCB29D05F23004B6DE8 /* Central.swift */,
 				6E63874129D1679400E1BD42 /* CharacteristicCache.swift */,
 				6E71638529D4E13E0042565D /* JSONFile.swift */,
@@ -769,6 +777,7 @@
 				6EFCFFCE29D05F23004B6DE8 /* Task.swift in Sources */,
 				6E71636629D4100A0042565D /* Permission.swift in Sources */,
 				6E71636429D40FF10042565D /* BeaconController.swift in Sources */,
+				6EA074D22B9692AF00D31F54 /* CoreSpotlight.swift in Sources */,
 				6EFCFFD929D116FB004B6DE8 /* Data.swift in Sources */,
 				6EFCFFDE29D116FB004B6DE8 /* DataConvertible.swift in Sources */,
 				6EA074CE2B96043600D31F54 /* AccessoryDetailView.swift in Sources */,
@@ -777,6 +786,7 @@
 				6E71637029D41C1A0042565D /* SetupCharacteristicRow.swift in Sources */,
 				6E71636A29D411DB0042565D /* Error.swift in Sources */,
 				6EFCFFE029D12E79004B6DE8 /* AccessoryManagerBluetooth.swift in Sources */,
+				6EA074D42B96A10800D31F54 /* AccessoryManagerSpotlight.swift in Sources */,
 				6E8D1EAC2AC1C755009ACD6D /* CharacteristicEntity.swift in Sources */,
 				6E71637429D428D40042565D /* NewKeyDocument.swift in Sources */,
 				6E71638029D4D2140042565D /* FileManager.swift in Sources */,
@@ -839,7 +849,9 @@
 				6EA074A22B95E91100D31F54 /* CharacteristicUnit.swift in Sources */,
 				6EA074AF2B95E91600D31F54 /* CharacteristicValueEntity.swift in Sources */,
 				6EA074A92B95E91100D31F54 /* Data.swift in Sources */,
+				6EA074D52B96A22600D31F54 /* CoreSpotlight.swift in Sources */,
 				6EA074AC2B95E91100D31F54 /* Hexadecimal.swift in Sources */,
+				6EA074D62B96A25100D31F54 /* AccessoryManagerSpotlight.swift in Sources */,
 				6EA074C32B95E91D00D31F54 /* AccessoryInformation.swift in Sources */,
 				6EA0749F2B95E91100D31F54 /* iBeacon.swift in Sources */,
 				6EA074C82B95E92800D31F54 /* SetupAccessoryView.swift in Sources */,

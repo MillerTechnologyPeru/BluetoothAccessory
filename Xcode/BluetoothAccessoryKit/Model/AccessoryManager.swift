@@ -75,6 +75,10 @@ public final class AccessoryManager: ObservableObject {
     
     public lazy var cloudContainer = loadCloudContainer()
     
+    #if canImport(CoreSpotlight) && os(iOS) || os(macOS)
+    internal lazy var spotlight = SpotlightController(index: .default())
+    #endif
+    
     #if os(iOS) && !APPCLIP
     internal lazy var keyValueStore: NSUbiquitousKeyValueStore = .default
     #endif

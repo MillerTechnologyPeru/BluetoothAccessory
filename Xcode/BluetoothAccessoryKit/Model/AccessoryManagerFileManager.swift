@@ -24,6 +24,9 @@ public extension AccessoryManager {
             do { try await updateCoreDataCache() }
             catch { assertionFailure("\(error)") }
         }
+        Task {
+            await updateSpotlight()
+        }
         return file
     }
     
@@ -45,6 +48,9 @@ public extension AccessoryManager {
             Task {
                 do { try await updateCoreDataCache() }
                 catch { assertionFailure("\(error)") }
+            }
+            Task {
+                await updateSpotlight()
             }
         }
     }
