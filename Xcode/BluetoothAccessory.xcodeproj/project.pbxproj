@@ -20,6 +20,7 @@
 		6E2C9BD329CF6341002F1B28 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = 6E2C9BD229CF6341002F1B28 /* CodeScanner */; };
 		6E2C9BD629CF637D002F1B28 /* DarwinGATT in Frameworks */ = {isa = PBXBuildFile; productRef = 6E2C9BD529CF637D002F1B28 /* DarwinGATT */; };
 		6E2C9BD829CF637D002F1B28 /* GATT in Frameworks */ = {isa = PBXBuildFile; productRef = 6E2C9BD729CF637D002F1B28 /* GATT */; };
+		6E38D1522B96B68600A46D7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6E38D1512B96B68600A46D7D /* Assets.xcassets */; };
 		6E5B4A5E2AC4BFED00F41D5A /* SubtitleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A5D2AC4BFED00F41D5A /* SubtitleRow.swift */; };
 		6E5B4A602AC4C00500F41D5A /* DetailRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A5F2AC4C00500F41D5A /* DetailRow.swift */; };
 		6E5B4A662AC4C5AC00F41D5A /* AccessoryAppEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B4A642AC4C59500F41D5A /* AccessoryAppEntity.swift */; };
@@ -68,7 +69,7 @@
 		6EA074812B95E72D00D31F54 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA074802B95E72D00D31F54 /* ContentView.swift */; };
 		6EA074832B95E72E00D31F54 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6EA074822B95E72E00D31F54 /* Assets.xcassets */; };
 		6EA074862B95E72E00D31F54 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6EA074852B95E72E00D31F54 /* Preview Assets.xcassets */; };
-		6EA0748B2B95E72E00D31F54 /* Clip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 6EA0747C2B95E72D00D31F54 /* Clip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		6EA0748B2B95E72E00D31F54 /* Clip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 6EA0747C2B95E72D00D31F54 /* Clip.app */; platformFilters = (ios, xros, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6EA074912B95E82700D31F54 /* BluetoothAccessory in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074902B95E82700D31F54 /* BluetoothAccessory */; };
 		6EA074952B95E82700D31F54 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074942B95E82700D31F54 /* KeychainAccess */; };
 		6EA074972B95E82700D31F54 /* DarwinGATT in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074962B95E82700D31F54 /* DarwinGATT */; };
@@ -201,6 +202,7 @@
 		6E2C9BBA29CF5C47002F1B28 /* BluetoothAccessoryKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothAccessoryKit.swift; sourceTree = "<group>"; };
 		6E2C9BC129CF5DBF002F1B28 /* BluetoothAccessory */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = BluetoothAccessory; path = ..; sourceTree = "<group>"; };
 		6E2C9BC529CF6075002F1B28 /* BluetoothAccessoryApp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "BluetoothAccessoryApp-Info.plist"; sourceTree = "<group>"; };
+		6E38D1512B96B68600A46D7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6E5B4A5D2AC4BFED00F41D5A /* SubtitleRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubtitleRow.swift; sourceTree = "<group>"; };
 		6E5B4A5F2AC4C00500F41D5A /* DetailRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailRow.swift; sourceTree = "<group>"; };
 		6E5B4A642AC4C59500F41D5A /* AccessoryAppEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryAppEntity.swift; sourceTree = "<group>"; };
@@ -366,6 +368,7 @@
 			isa = PBXGroup;
 			children = (
 				6E2C9BBA29CF5C47002F1B28 /* BluetoothAccessoryKit.swift */,
+				6E38D1512B96B68600A46D7D /* Assets.xcassets */,
 				6EFCFFCA29D05F23004B6DE8 /* Extensions */,
 				6EFCFFCF29D061B3004B6DE8 /* Model */,
 				6EFCFFD029D078AF004B6DE8 /* Views */,
@@ -721,6 +724,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6E38D1522B96B68600A46D7D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -885,6 +889,10 @@
 		};
 		6EA0748A2B95E72E00D31F54 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+				xros,
+			);
 			target = 6EA0747B2B95E72D00D31F54 /* Clip */;
 			targetProxy = 6EA074892B95E72E00D31F54 /* PBXContainerItemProxy */;
 		};

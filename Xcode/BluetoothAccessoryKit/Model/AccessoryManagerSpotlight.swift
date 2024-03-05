@@ -6,15 +6,19 @@
 //
 
 import Foundation
-import BluetoothAccessory
 import CoreSpotlight
+import SwiftUI
+import BluetoothAccessory
+#if canImport(SFSafeSymbols) && !APPCLIP
+import SFSafeSymbols
+#endif
 
 #if canImport(CoreSpotlight) && os(iOS) || os(macOS)
 internal extension AccessoryManager {
     
     func loadSpotlight() -> SpotlightController {
-        let spotlight = SpotlightController(index: .default())
-        spotlight.log = { [unowned self] in self.log("🔦 Spotlight: " + $0) }
+        let log = { [unowned self] in self.log("🔦 Spotlight: " + $0) }
+        let spotlight = SpotlightController(index: .default(), log: log)
         return spotlight
     }
     
@@ -39,12 +43,11 @@ extension PairedAccessory: CoreSpotlightSearchable {
         AccessoryURL.accessory(accessory).rawValue
     }
     
-    public func searchableAttributeSet() -> CSSearchableItemAttributeSet {
+    public func searchableAttributeSet() async -> CSSearchableItemAttributeSet {
         let attributeSet = CSSearchableItemAttributeSet(itemContentType: Swift.type(of: self).itemContentType)
         attributeSet.displayName = name
         attributeSet.contentDescription = information.type.description
         attributeSet.version = information.softwareVersion.description
-        //attributeSet.thumbnailData = Data()
         attributeSet.keywords = [
             information.id.uuidString,
             information.service.description,
@@ -53,8 +56,40 @@ extension PairedAccessory: CoreSpotlightSearchable {
             information.model,
             key.permission.type.localizedText
         ]
+        
+        // add image
+        #if os(iOS)
+        if #available(iOS 16.0, *) {
+            do {
+                let imageData = try await renderSpotlightImage()
+                attributeSet.thumbnailData = imageData
+            }
+            catch {
+                assertionFailure("\(error)")
+            }
+        }
+        #endif
+        
         return attributeSet
     }
+    
+    #if os(iOS)
+    @MainActor
+    @available(iOS 16.0, *)
+    private func renderSpotlightImage() throws -> Data {
+        let symbol = information.type.symbol
+        let view = Image(systemSymbol: symbol)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .foregroundColor(.accent)
+            .frame(width: 250, height: 250)
+        let renderer = ImageRenderer(content: view)
+        guard let pngData = renderer.uiImage?.pngData() else {
+            throw CocoaError(.featureUnsupported)
+        }
+        return pngData
+    }
+    #endif
 }
 
 #endif

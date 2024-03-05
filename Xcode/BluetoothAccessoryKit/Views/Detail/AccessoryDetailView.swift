@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import Bluetooth
 import BluetoothAccessory
-#if canImport(SFSafeSymbols)
+#if canImport(SFSafeSymbols) && !APPCLIP
 import SFSafeSymbols
 #endif
 
@@ -136,7 +136,7 @@ internal extension AccessoryDetailView {
                                 Image(systemSymbol: accessory.information.type.symbol)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(.accentColor)
                                 Spacer()
                             }
                             Spacer()

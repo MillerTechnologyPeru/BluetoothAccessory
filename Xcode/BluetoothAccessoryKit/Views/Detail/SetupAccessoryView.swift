@@ -10,7 +10,7 @@ import SwiftUI
 import Bluetooth
 import BluetoothAccessory
 
-#if canImport(SFSafeSymbols)
+#if canImport(SFSafeSymbols) && !APPCLIP
 import SFSafeSymbols
 #endif
 

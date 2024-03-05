@@ -21,22 +21,26 @@ import AppKit
 #endif
 
 /// Manage the Spotlight index.
-public final class SpotlightController {
+public actor SpotlightController {
     
     // MARK: - Initialization
-        
-    public init(index: CSSearchableIndex = .default()) {
+    
+    public init(
+        index: CSSearchableIndex = .default(),
+        log: ((String) -> ())?
+    ) {
         self.index = index
+        self.log = log
     }
     
     // MARK: - Properties
     
     internal let index: CSSearchableIndex
     
-    public var log: ((String) -> ())?
+    public let log: ((String) -> ())?
     
     /// Returns a Boolean value that indicates whether indexing is available on the current device.
-    public static var isSupported: Bool {
+    public nonisolated static var isSupported: Bool {
         return CSSearchableIndex.isIndexingAvailable()
     }
     
@@ -46,8 +50,18 @@ public final class SpotlightController {
         _ items: [T]
     ) async throws {
         
-        let searchableItems = items
-            .map { $0.searchableItem() }
+        let searchableItems = await withTaskGroup(of: CSSearchableItem.self, returning: [CSSearchableItem].self) { taskGroup in
+            for item in items {
+                taskGroup.addTask {
+                    await item.searchableItem()
+                }
+            }
+            var results = [CSSearchableItem]()
+            for await result in taskGroup {
+                results.append(result)
+            }
+            return results
+        }
         
         try await index.deleteSearchableItems(withDomainIdentifiers: [T.searchDomain])
         log?("Deleted all old items")
@@ -65,18 +79,16 @@ public protocol CoreSpotlightSearchable {
     static var searchDomain: String { get }
     
     var searchIdentifier: String { get }
-    
-    func searchableItem() -> CSSearchableItem
-    
-    func searchableAttributeSet() -> CSSearchableItemAttributeSet
+        
+    func searchableAttributeSet() async -> CSSearchableItemAttributeSet
 }
 
 public extension CoreSpotlightSearchable {
     
     static var itemContentType: String { return UTType.text.identifier }
     
-    func searchableItem() -> CSSearchableItem {
-        let attributeSet = searchableAttributeSet()
+    func searchableItem() async -> CSSearchableItem {
+        let attributeSet = await searchableAttributeSet()
         return CSSearchableItem(
             uniqueIdentifier: searchIdentifier,
             domainIdentifier: type(of: self).searchDomain,
