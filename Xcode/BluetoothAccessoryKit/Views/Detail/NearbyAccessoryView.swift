@@ -84,7 +84,7 @@ internal extension NearbyAccessoryView {
     
     var leftBarButtonItem: some View {
         if isReloading, canShowActivityIndicator {
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             return AnyView(
                 ProgressView()
                     .progressViewStyle(.circular)
@@ -106,7 +106,7 @@ internal extension NearbyAccessoryView {
             }) {
                 Image(systemSymbol: .arrowClockwise)
             })
-            #elseif os(iOS)
+            #elseif os(iOS) || os(visionOS)
             return AnyView(EmptyView()) // only pull to refresh supported
             #endif
         }

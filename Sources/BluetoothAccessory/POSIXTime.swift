@@ -6,7 +6,7 @@
 //  Copyright © 2015 PureSwift. All rights reserved.
 //
 
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
+#if canImport(Darwin)
     import Darwin.C
 #elseif os(Linux)
     import Glibc
@@ -87,12 +87,9 @@ internal extension tm {
 
 // MARK: - Cross-Platform Support
 
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-    
+#if canImport(Darwin)
     internal typealias POSIXMicroseconds = __darwin_suseconds_t
-    
 #elseif os(Linux)
-    
     internal typealias POSIXMicroseconds = __suseconds_t
     
     internal func modf(value: Double) -> (Double, Double) {

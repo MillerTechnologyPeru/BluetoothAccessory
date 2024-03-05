@@ -31,11 +31,13 @@ struct AccessoryTabView: View {
             NavigationView {
                 AccessoriesView(url: $url)
                     .toolbar {
+                        #if os(iOS)
                         Button(action: {
                             setupSheet = true
                         }, label: {
                             Image(systemSymbol: .plus)
                         })
+                        #endif
                     }
                 if let accessory = url?.accessory, store[cache: accessory] != nil {
                     AccessoryDetailView(accessory: accessory)
@@ -83,7 +85,11 @@ struct AccessoryTabView: View {
                 case .setup(let uuid, let keyData):
                     SetupAccessoryView(accessory: uuid, sharedSecret: keyData, success: didSetup)
                 default:
+                    #if os(iOS)
                     SetupAccessoryView(success: didSetup)
+                    #else
+                    EmptyView()
+                    #endif
                 }
             }
         }

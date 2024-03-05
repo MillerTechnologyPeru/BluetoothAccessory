@@ -69,7 +69,7 @@
 		6EA074812B95E72D00D31F54 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA074802B95E72D00D31F54 /* ContentView.swift */; };
 		6EA074832B95E72E00D31F54 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6EA074822B95E72E00D31F54 /* Assets.xcassets */; };
 		6EA074862B95E72E00D31F54 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6EA074852B95E72E00D31F54 /* Preview Assets.xcassets */; };
-		6EA0748B2B95E72E00D31F54 /* Clip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 6EA0747C2B95E72D00D31F54 /* Clip.app */; platformFilters = (ios, xros, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		6EA0748B2B95E72E00D31F54 /* Clip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 6EA0747C2B95E72D00D31F54 /* Clip.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6EA074912B95E82700D31F54 /* BluetoothAccessory in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074902B95E82700D31F54 /* BluetoothAccessory */; };
 		6EA074952B95E82700D31F54 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074942B95E82700D31F54 /* KeychainAccess */; };
 		6EA074972B95E82700D31F54 /* DarwinGATT in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA074962B95E82700D31F54 /* DarwinGATT */; };
@@ -889,10 +889,7 @@
 		};
 		6EA0748A2B95E72E00D31F54 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilters = (
-				ios,
-				xros,
-			);
+			platformFilter = ios;
 			target = 6EA0747B2B95E72D00D31F54 /* Clip */;
 			targetProxy = 6EA074892B95E72E00D31F54 /* PBXContainerItemProxy */;
 		};
@@ -1148,11 +1145,12 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1190,10 +1188,11 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};

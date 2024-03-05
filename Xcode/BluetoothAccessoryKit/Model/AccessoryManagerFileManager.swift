@@ -24,9 +24,11 @@ public extension AccessoryManager {
             do { try await updateCoreDataCache() }
             catch { assertionFailure("\(error)") }
         }
+        #if canImport(CoreSpotlight) && os(iOS) || os(macOS)
         Task {
             await updateSpotlight()
         }
+        #endif
         return file
     }
     
@@ -49,9 +51,11 @@ public extension AccessoryManager {
                 do { try await updateCoreDataCache() }
                 catch { assertionFailure("\(error)") }
             }
+            #if canImport(CoreSpotlight) && os(iOS) || os(macOS)
             Task {
                 await updateSpotlight()
             }
+            #endif
         }
     }
 }

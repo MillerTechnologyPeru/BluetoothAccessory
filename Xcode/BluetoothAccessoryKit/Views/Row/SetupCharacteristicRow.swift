@@ -10,6 +10,7 @@ import SwiftUI
 import Bluetooth
 import BluetoothAccessory
 
+#if os(iOS) && !APPCLIP
 public extension AccessoryCharacteristicRow {
     
     struct Setup: View {
@@ -33,3 +34,4 @@ public extension AccessoryCharacteristicRow {
         }
     }
 }
+#endif

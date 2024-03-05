@@ -36,7 +36,16 @@ internal extension AccessoryCharacteristicRow.StateView {
     var content: some View {
         switch BluetoothUUID.accessoryCharacteristicType[characteristic.metadata.type] {
         case .setup:
+            #if os(iOS) && !APPCLIP
             return AnyView(AccessoryCharacteristicRow.Setup(accessory: characteristic.accessory))
+            #else
+            return AnyView(
+                DetailRow(
+                    title: Text(verbatim: characteristic.metadata.name),
+                    detail: detailText
+                )
+            )
+            #endif
         default:
             return AnyView(
                 DetailRow(
